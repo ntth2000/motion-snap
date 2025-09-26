@@ -1,0 +1,35 @@
+# Python (BE)
+BE/venv/
+BE/__pycache__/
+*.pyc
+.env
+
+# Node (FE)
+# Logs
+FE/logs
+FE/*.log
+FE/npm-debug.log*
+FE/yarn-debug.log*
+FE/yarn-error.log*
+FE/pnpm-debug.log*
+FE/lerna-debug.log*
+
+FE/node_modules
+FE/dist
+FE/dist-ssr
+FE/*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Mac/VSCode
+.DS_Store
+.vscode/
