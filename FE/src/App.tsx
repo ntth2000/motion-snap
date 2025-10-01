@@ -1,19 +1,29 @@
-import './styles/base.css'
-import { Route, Routes } from 'react-router'
-import { routes } from './routes'
-import { ConfigProvider } from 'antd'
+import './styles/base.css';
+import { Route, Routes } from 'react-router';
+import { routes } from './routes';
+import { ConfigProvider } from 'antd';
 
 function App() {
-
   return (
     <div>
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: "#222",
-            colorBgBase: "#ffffff",
+            colorPrimary: '#222',
+            colorBgBase: '#fff',
+            fontSize: 16,
           },
-        }}>
+          hashed: false,
+          components: {
+            Modal: {
+              wireframe: true,
+            },
+            Layout: {
+              headerBg: '#fff',
+            },
+          },
+        }}
+      >
         <Routes>
           {routes.map(({ path, Component }) => (
             <Route path={path} element={<Component />} />
@@ -21,7 +31,7 @@ function App() {
         </Routes>
       </ConfigProvider>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
