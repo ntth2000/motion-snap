@@ -1,16 +1,14 @@
 import { Typography } from 'antd';
 import AppLayout from '../../layout/AppLayout';
+import UploadVideo from '../../components/UploadVideo';
 
 export default function DashboardPage() {
   const userName = 'Alice';
 
   return (
     <AppLayout userName={userName}>
-      <div>
-        <Typography.Title level={4}>Welcome back, {userName}</Typography.Title>
-        <Typography.Paragraph type="secondary">
-          This is your dashboard.
-        </Typography.Paragraph>
+      <div style={{ height: '100%' }}>
+        <UploadVideo />
       </div>
     </AppLayout>
   );

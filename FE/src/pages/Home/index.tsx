@@ -1,5 +1,10 @@
 import React from 'react';
+import UploadVideo from '../../components/UploadVideo';
 
 export default function Home() {
-  return <div>Home</div>;
+  return (
+    <div>
+      <UploadVideo />
+    </div>
+  );
 }

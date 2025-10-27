@@ -1,9 +1,9 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, Upload, Typography } from 'antd';
+import { Button, UploadFile, UploadProps, Upload, Typography } from 'antd';
 import { useState } from 'react';
-const { Text } = Typography;
+const { Text, Title } = Typography;
 const UploadVideo: React.FC = () => {
-  const [fileList, setFileList] = useState<any[]>([
+  const [fileList, setFileList] = useState<UploadFile[]>([
     {
       uid: '-1',
       name: 'xxx.png',
@@ -11,7 +11,7 @@ const UploadVideo: React.FC = () => {
       url: 'http://www.baidu.com/xxx.png',
     },
   ]);
-  const handleChange = (info: any) => {
+  const handleChange: UploadProps['onChange'] = (info) => {
     let newFileList = [...info.fileList];
 
     // 1. Limit the number of uploaded files
@@ -42,14 +42,27 @@ const UploadVideo: React.FC = () => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: '16px 0',
+          padding: '48px 0',
         }}
       >
-        <div>
+        <div
+          style={{
+            fontSize: 32,
+            borderRadius: '100%',
+            backgroundColor: '#eee',
+            display: 'flex',
+            justifyContent: 'center',
+            padding: '16px',
+            marginBottom: '12px',
+          }}
+        >
           <UploadOutlined />
         </div>
-        <Text strong>Select a file to upload</Text>
-        <p>Or drag and drop a video file</p>
+        <Title level={5}>Select a video</Title>
+        <Text type="secondary">Or drag & drop to upload</Text>
+        <Text type="secondary" style={{ fontSize: 16, marginTop: '60px' }}>
+          Supported file types: MP4, GIF, WMV
+        </Text>
       </div>
     </Upload.Dragger>
   );

@@ -1,9 +1,19 @@
-import { PlusSquareOutlined } from '@ant-design/icons';
-import { Button, Typography, Dropdown, Avatar, Space, Modal } from 'antd';
+import { LogoutOutlined, PlusSquareOutlined } from '@ant-design/icons';
+import {
+  Button,
+  Typography,
+  Dropdown,
+  Avatar,
+  Space,
+  Modal,
+  Switch,
+} from 'antd';
 import type { MenuProps } from 'antd';
 import { Header } from 'antd/es/layout/layout';
 import { useState } from 'react';
 import UploadVideo from '../UploadVideo';
+
+const { Text } = Typography;
 
 interface TopbarProps {
   userName: string;
@@ -18,10 +28,25 @@ export default function Topbar({ userName }: TopbarProps) {
   const onLogout = () => {
     console.log('logout');
   };
+  const onChangeTheme = () => {
+    console.log('changeTheme');
+  };
+
   const items: MenuProps['items'] = [
     {
       key: 'logout',
-      label: 'Log out',
+      label: (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ marginRight: '12px', fontSize: '16px' }}>Logout</Text>
+          <LogoutOutlined />
+        </div>
+      ),
       onClick: () => onLogout?.(),
     },
   ];
@@ -38,22 +63,25 @@ export default function Topbar({ userName }: TopbarProps) {
     setIsModalOpen(false);
   };
 
+  const handleClickLogo = () => {};
+
   return (
     <>
       <Modal
         centered
-        title="Upload a video"
+        title="Upload videos"
         closable={{ 'aria-label': 'Custom Close Button' }}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
+        width="60%"
       >
         <UploadVideo />
       </Modal>
       <Header>
         <div className="topbar">
-          <div className="">
-            <Typography.Text strong style={{ fontSize: 18 }}>
+          <div className="" onClick={handleClickLogo}>
+            <Typography.Text strong style={{ fontSize: 20, cursor: 'pointer' }}>
               MotionSnap
             </Typography.Text>
           </div>
@@ -90,6 +118,7 @@ export default function Topbar({ userName }: TopbarProps) {
               menu={{ items }}
               trigger={['click']}
               placement="bottomRight"
+              overlayStyle={{ minWidth: '60px' }}
             >
               <Space style={{ cursor: 'pointer' }}>
                 {/* <Typography.Text>{userName}</Typography.Text> */}

@@ -10,8 +10,9 @@ function App() {
         theme={{
           token: {
             colorPrimary: '#222',
+            colorTextSecondary: '726f6f',
             colorBgBase: '#fff',
-            fontSize: 16,
+            fontSize: 18,
           },
           hashed: false,
           components: {

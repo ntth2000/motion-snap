@@ -1,14 +1,19 @@
 import { Button, Divider, Form, Input, Typography } from 'antd';
 import AuthLayout from '../../layout/AuthLayout';
 import GoogleIcon from '../../assets/icons/Google';
+import { login } from '../../services/authApi';
 
 export default function LoginPage() {
   const [form] = Form.useForm();
 
-  const handleFinish = (values: unknown) => {
-    // Replace with real submit
-    // eslint-disable-next-line no-console
-    console.log('Login submit:', values);
+  const handleFinish = ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => {
+    login({ email, password });
   };
 
   return (
