@@ -2,6 +2,7 @@ import jwt
 from datetime import datetime, timedelta
 import bcrypt
 from fastapi import HTTPException, status
+from src.auth.exceptions import InvalidTokenException, TokenExpiredException
 from src.auth.constants import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 def hash_password(password: str) -> str:
@@ -27,6 +28,6 @@ def verify_token(token: str):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
+        raise TokenExpiredException()
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        raise InvalidTokenException()
