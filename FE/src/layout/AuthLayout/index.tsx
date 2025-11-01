@@ -15,12 +15,12 @@ export default function AuthLayout({
   subtitle,
 }: PropsWithChildren<AuthLayoutProps>) {
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ height: '100vh', overflow: 'hidden' }}>
       <Content>
         <Row
           justify="center"
           align="middle"
-          style={{ minHeight: '100vh', padding: 16 }}
+          style={{ height: '100vh', padding: 16 }}
         >
           <Col xs={24} sm={20} md={12} lg={10} xl={8} xxl={6}>
             <Card bordered style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>

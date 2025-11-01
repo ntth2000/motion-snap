@@ -6,8 +6,7 @@ export default function RegisterPage() {
   const [form] = Form.useForm();
 
   const handleFinish = (values: unknown) => {
-    // Replace with real submit
-    // eslint-disable-next-line no-console
+    // Replace with real submit  
     console.log('Register submit:', values);
   };
 

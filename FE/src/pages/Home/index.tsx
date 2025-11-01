@@ -1,10 +1,16 @@
-import React from 'react';
-import UploadVideo from '../../components/UploadVideo';
+import { Button, Typography } from 'antd';
 
 export default function Home() {
   return (
     <div>
-      <UploadVideo />
+      <div>
+        <Typography.Title level={2} style={{ margin: '16px' }}>
+          You have no videos
+        </Typography.Title>
+        <Button type="primary" onClick={() => {}}>
+          Click here to upload your first video
+        </Button>
+      </div>
     </div>
   );
 }

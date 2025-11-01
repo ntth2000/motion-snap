@@ -1,15 +1,22 @@
-import { Typography } from 'antd';
 import AppLayout from '../../layout/AppLayout';
-import UploadVideo from '../../components/UploadVideo';
+import VideoList from '../../components/VideoList';
 
 export default function DashboardPage() {
   const userName = 'Alice';
 
   return (
     <AppLayout userName={userName}>
-      <div style={{ height: '100%' }}>
-        <UploadVideo />
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+        }}
+      >
+        <VideoList />
       </div>
-    </AppLayout>
+    </AppLayout >
   );
 }

@@ -1,0 +1,80 @@
+.custom-table-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  flex: 1 1 0%;
+}
+
+/* HEADER */
+.custom-table-header {
+  flex: 0 0 auto;
+  background-color: #fafafa;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* BODY */
+.custom-table-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* PAGINATION */
+.custom-table-pagination {
+  flex: 0 0 auto;
+  border-top: 1px solid #e5e7eb;
+  background-color: #fafafa;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ROWS & CELLS */
+.custom-table-row {
+  display: flex;
+}
+
+.custom-table-header-row {
+  font-weight: 600;
+  color: #333;
+}
+
+.custom-table-body-row {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+}
+
+.custom-table-body-row:hover {
+  background-color: rgba(22, 119, 255, 0.08);
+  /* antd primary hover tone */
+  cursor: pointer;
+}
+
+.custom-table-cell {
+  display: inline-block;
+  /* hoặc flex-item tùy bố cục */
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eaeaea;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bỏ border dọc */
+.custom-table-cell+.custom-table-cell {
+  border-left: none;
+}
+
+.custom-table-empty {
+  text-align: center;
+  color: #888;
+  padding: 40px 0;
+}

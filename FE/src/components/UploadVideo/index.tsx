@@ -1,70 +1,166 @@
-import { UploadOutlined } from '@ant-design/icons';
-import { Button, UploadFile, UploadProps, Upload, Typography } from 'antd';
-import { useState } from 'react';
+import { UploadOutlined } from "@ant-design/icons";
+import {
+  Upload,
+  Typography,
+  type UploadProps,
+  Input,
+  Form,
+  Row,
+  Col
+} from "antd";
+import { useState } from "react";
+
 const { Text, Title } = Typography;
-const UploadVideo: React.FC = () => {
-  const [fileList, setFileList] = useState<UploadFile[]>([
-    {
-      uid: '-1',
-      name: 'xxx.png',
-      status: 'done',
-      url: 'http://www.baidu.com/xxx.png',
-    },
-  ]);
-  const handleChange: UploadProps['onChange'] = (info) => {
-    let newFileList = [...info.fileList];
+const { Dragger } = Upload;
 
-    // 1. Limit the number of uploaded files
-    // Only to show two recent uploaded files, and old ones will be replaced by the new
-    newFileList = newFileList.slice(-2);
+type UploadVideoProps = {
+  onChangeSteps: (value: number) => void;
+}
 
-    // 2. Read from response and show file link
-    newFileList = newFileList.map((file) => {
-      if (file.response) {
-        // Component will show file.url as link
-        file.url = file.response.url;
-      }
-      return file;
-    });
+const UploadVideo: React.FC<UploadVideoProps> = ({ onChangeSteps }) => {
+  const [file, setFile] = useState<any>(null);
+  const [step, setStep] = useState<"upload" | "form">("upload");
+  const [disabled, setDisabled] = useState(false);
 
-    setFileList(newFileList);
+  const handleBeforeUpload = (file: File) => {
+    setFile(file);
+    setDisabled(true);
+    setStep("form");
+    onChangeSteps(1);
+
+    return false; // Ngăn antd upload tự động
   };
-  const props = {
-    action: 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
-    onChange: handleChange,
-    multiple: true,
+
+  const props: UploadProps = {
+    name: "file",
+    multiple: false,
+    accept: "video/mp4",
+    beforeUpload: handleBeforeUpload,
+    showUploadList: false,
+    disabled,
   };
+
+  const handleBack = () => {
+    setFile(null);
+    setDisabled(false);
+    setStep("upload");
+  };
+
+  const handleSubmit = (values: any) => {
+    console.log("Form data:", values);
+    console.log("Selected file:", file);
+  };
+
   return (
-    <Upload.Dragger {...props}>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: '48px 0',
-        }}
-      >
-        <div
-          style={{
-            fontSize: 32,
-            borderRadius: '100%',
-            backgroundColor: '#eee',
-            display: 'flex',
-            justifyContent: 'center',
-            padding: '16px',
-            marginBottom: '12px',
-          }}
-        >
-          <UploadOutlined />
+    <div style={{ padding: '0 16px' }}>
+      {step === "upload" && (
+        <Dragger {...props}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "48px 0",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 32,
+                borderRadius: "100%",
+                backgroundColor: "#eee",
+                display: "flex",
+                justifyContent: "center",
+                padding: "16px",
+                marginBottom: "12px",
+              }}
+            >
+              <UploadOutlined />
+            </div>
+            <Title level={5}>Select a video</Title>
+            <Text type="secondary">Or drag & drop to upload</Text>
+            <Text type="secondary" style={{ fontSize: 16, marginTop: "60px" }}>
+              Only support MP4 files. Max file size 30MB.
+            </Text>
+          </div>
+        </Dragger>
+      )}
+
+      {step === "form" && file && (
+        <div className="">
+          <Title level={4} style={{ marginBottom: '24px' }}>Details</Title>
+          <Row gutter={24}>
+            <Col span={14}>
+              <Form layout="vertical" onFinish={handleSubmit}>
+                <Form.Item
+                  label="Title"
+                  name="title"
+                  rules={[{ required: true, message: "abc" }]}
+                >
+                  <Input placeholder="Add a title that describe your video" />
+                </Form.Item>
+
+                <Form.Item label="Description" name="description">
+                  <Input.TextArea rows={5} placeholder="Add description" />
+                </Form.Item>
+              </Form></Col>
+            <Col span={10}>
+              <video
+                src={URL.createObjectURL(file)}
+                controls
+                style={{
+                  width: "100%",
+                  borderRadius: 8,
+                  marginBottom: 16,
+                  backgroundColor: "#000",
+                }}
+              />
+              <Typography.Text type="secondary">{file.name}</Typography.Text>
+            </Col>
+          </Row>
         </div>
-        <Title level={5}>Select a video</Title>
-        <Text type="secondary">Or drag & drop to upload</Text>
-        <Text type="secondary" style={{ fontSize: 16, marginTop: '60px' }}>
-          Supported file types: MP4, GIF, WMV
-        </Text>
-      </div>
-    </Upload.Dragger>
+
+        // <div style={{ padding: "24px 0" }}>
+        //   <Title level={4}>Video Information</Title>
+        //   <video
+        //     src={URL.createObjectURL(file)}
+        //     controls
+        //     style={{
+        //       width: "100%",
+        //       borderRadius: 8,
+        //       marginBottom: 16,
+        //       backgroundColor: "#000",
+        //     }}
+        //   />
+        //   <Form layout="vertical" onFinish={handleSubmit}>
+        //     <Form.Item
+        //       label="Video name"
+        //       name="name"
+        //       rules={[{ required: true, message: "Please enter a name" }]}
+        //     >
+        //       <Input placeholder="Enter video name" />
+        //     </Form.Item>
+
+        //     <Form.Item label="Description" name="description">
+        //       <Input.TextArea rows={3} placeholder="Enter video description" />
+        //     </Form.Item>
+
+        //     <div
+        //       style={{
+        //         display: "flex",
+        //         justifyContent: "space-between",
+        //         marginTop: 24,
+        //       }}
+        //     >
+        //       <Button onClick={handleBack}>Back</Button>
+        //       <Button type="primary" htmlType="submit">
+        //         Continue
+        //       </Button>
+        //     </div>
+        //   </Form>
+        // </div>
+      )}
+    </div>
   );
 };
 

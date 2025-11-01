@@ -1,7 +1,6 @@
-import { Breadcrumb, Layout, theme } from 'antd';
+import { Layout, theme } from 'antd';
 import type { PropsWithChildren } from 'react';
 import Topbar from '../../components/Topbar';
-import { HomeOutlined, UserOutlined } from '@ant-design/icons';
 
 interface AppLayoutProps {
   userName: string;
@@ -12,50 +11,33 @@ export default function AppLayout({
   userName,
 }: PropsWithChildren<AppLayoutProps>) {
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { borderRadiusLG },
   } = theme.useToken();
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <Topbar userName={userName} />
       <div
         style={{
-          padding: '0 48px',
+          margin: '0 48px',
           display: 'flex',
           flexDirection: 'column',
           flex: '1 1 auto',
+          position: 'relative',
         }}
       >
-        <Breadcrumb
-          items={[
-            {
-              href: '',
-              title: <HomeOutlined />,
-            },
-            {
-              href: '',
-              title: (
-                <>
-                  <UserOutlined />
-                  <span>Video list</span>
-                </>
-              ),
-            },
-            {
-              title: 'Application',
-            },
-          ]}
-          style={{ margin: '16px 0' }}
-        />
-        <Layout
+        <div
           style={{
-            padding: '24px 0',
-            marginBottom: '24px',
-            background: colorBgContainer,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            margin: '24px 0',
             borderRadius: borderRadiusLG,
           }}
         >
           {children}
-        </Layout>
+        </div>
       </div>
     </Layout>
   );
