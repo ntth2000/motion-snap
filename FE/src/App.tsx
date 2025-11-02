@@ -2,6 +2,7 @@ import './styles/base.css';
 import { Route, Routes } from 'react-router';
 import { routes } from './routes';
 import { ConfigProvider } from 'antd';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
@@ -24,8 +25,10 @@ function App() {
         }}
       >
         <Routes>
-          {routes.map(({ path, Component }) => (
-            <Route path={path} element={<Component />} />
+          {routes.map(({ path, Component, isPrivate }) => (
+            isPrivate ?
+              <Route path={path} element={<PrivateRoute Component={Component} />} />
+              : <Route path={path} element={<Component />} />
           ))}
         </Routes>
       </ConfigProvider>

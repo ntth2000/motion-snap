@@ -12,6 +12,8 @@ import type { MenuProps } from 'antd';
 import { Header } from 'antd/es/layout/layout';
 import { useState } from 'react';
 import UploadVideo from '../UploadVideo';
+import { logout } from '../../services/authService';
+import { useNavigate } from 'react-router';
 const { Text } = Typography;
 
 interface TopbarProps {
@@ -24,6 +26,7 @@ const getInitial = (name: string) =>
 export default function Topbar({ userName }: TopbarProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const nagivate = useNavigate();
 
   const steps = [
     { id: 1, title: 'Select video', disabled: false },
@@ -33,8 +36,13 @@ export default function Topbar({ userName }: TopbarProps) {
     { id: 5, title: 'Draw poses', disabled: currentStep < 4 },
   ]
 
-  const onLogout = () => {
-    console.log('logout');
+  const onLogout = async () => {
+    try {
+      await logout();
+      nagivate('/login', { replace: true });
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   const onChangeSteps = (value: number) => {

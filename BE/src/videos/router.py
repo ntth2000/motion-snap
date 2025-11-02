@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.params import File
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from src import database, models, schemas
-from src.auth.service import verify_token
+from src.auth.utils import verify_token
 from src.videos.video_processor import extract_frames, draw_poses_on_frame
 import os
 from .schemas import VideoUpload
@@ -15,7 +15,7 @@ class DrawPosesResponse(BaseModel):
     message: str
 
 router = APIRouter(
-    prefix="/videos",
+    prefix="/api/videos",
     tags=["videos"],
 )
 

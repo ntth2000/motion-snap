@@ -6,28 +6,33 @@ import {
   Input,
   Form,
   Row,
-  Col
+  Col,
+  Button,
+  Progress,
+  message,
 } from "antd";
 import { useState } from "react";
+import { uploadVideo } from "../../services/videoService";
 
 const { Text, Title } = Typography;
 const { Dragger } = Upload;
 
 type UploadVideoProps = {
   onChangeSteps: (value: number) => void;
-}
+};
 
 const UploadVideo: React.FC<UploadVideoProps> = ({ onChangeSteps }) => {
-  const [file, setFile] = useState<any>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [step, setStep] = useState<"upload" | "form">("upload");
   const [disabled, setDisabled] = useState(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleBeforeUpload = (file: File) => {
     setFile(file);
     setDisabled(true);
     setStep("form");
     onChangeSteps(1);
-
     return false; // Ngăn antd upload tự động
   };
 
@@ -44,15 +49,37 @@ const UploadVideo: React.FC<UploadVideoProps> = ({ onChangeSteps }) => {
     setFile(null);
     setDisabled(false);
     setStep("upload");
+    setProgress(0);
   };
 
-  const handleSubmit = (values: any) => {
-    console.log("Form data:", values);
-    console.log("Selected file:", file);
+  const handleSubmit = async (values: any) => {
+    if (!file) return;
+    setLoading(true);
+    setProgress(0);
+
+    try {
+      await uploadVideo(file, values.title, values.description, (event) => {
+        if (event.total) {
+          const percent = Math.round((event.loaded * 100) / event.total);
+          setProgress(percent);
+        }
+      });
+
+      message.success("🎉 Upload video thành công!");
+      setFile(null);
+      setStep("upload");
+      setDisabled(false);
+      onChangeSteps(0);
+    } catch (err) {
+      console.error(err);
+      message.error("Upload thất bại, vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div style={{ padding: '0 16px' }}>
+    <div style={{ padding: "0 16px" }}>
       {step === "upload" && (
         <Dragger {...props}>
           <div
@@ -87,23 +114,47 @@ const UploadVideo: React.FC<UploadVideoProps> = ({ onChangeSteps }) => {
       )}
 
       {step === "form" && file && (
-        <div className="">
-          <Title level={4} style={{ marginBottom: '24px' }}>Details</Title>
+        <div>
+          <Title level={4} style={{ marginBottom: "24px" }}>
+            Details
+          </Title>
           <Row gutter={24}>
             <Col span={14}>
               <Form layout="vertical" onFinish={handleSubmit}>
                 <Form.Item
                   label="Title"
                   name="title"
-                  rules={[{ required: true, message: "abc" }]}
+                  rules={[{ required: true, message: "Please enter a title" }]}
                 >
-                  <Input placeholder="Add a title that describe your video" />
+                  <Input placeholder="Add a title that describes your video" />
                 </Form.Item>
 
                 <Form.Item label="Description" name="description">
                   <Input.TextArea rows={5} placeholder="Add description" />
                 </Form.Item>
-              </Form></Col>
+
+                {progress > 0 && (
+                  <Progress
+                    percent={progress}
+                    status={progress === 100 ? "success" : "active"}
+                    style={{ marginBottom: 12 }}
+                  />
+                )}
+
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Button onClick={handleBack}>Back</Button>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading}
+                    disabled={loading}
+                  >
+                    Upload
+                  </Button>
+                </div>
+              </Form>
+            </Col>
+
             <Col span={10}>
               <video
                 src={URL.createObjectURL(file)}

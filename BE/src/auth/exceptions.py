@@ -1,11 +1,27 @@
 from fastapi import HTTPException, status
 
 
+class ExistingUserException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This email is already registered."
+        )
+
+
+class InvalidUserInfoException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Your email or password is incorrect."
+        )
+
+
 class TokenExpiredException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token expired"
+            detail="Your session has expired. Please log in again."
         )
 
 
