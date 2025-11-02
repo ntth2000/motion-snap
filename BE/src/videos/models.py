@@ -23,7 +23,8 @@ class Video(Base):
 class JobStatus(enum.Enum):
     PENDING = "PENDING"
     UPLOADING = "UPLOADING"
-    PROCESSING = "PROCESSING"
+    EXTRACTING = "EXTRACTING"
+    DRAWING="DRAWING"
     DONE = "DONE"
     FAILED = "FAILED"
 

@@ -12,3 +12,13 @@ class VideoUpload(BaseModel):
                 "description": "A short video about..."
             }
         }
+
+
+class ExtractFrame(BaseModel):
+    frame_count: int
+    message: str
+
+
+class DrawPosesResponse(BaseModel):
+    frame_count: int
+    message: str

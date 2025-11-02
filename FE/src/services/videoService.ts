@@ -9,18 +9,18 @@ export const uploadVideo = async (
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void
 ) => {
   try {
-    const url = API.VIDEOS + '/upload';
     const formData = new FormData();
     formData.append("video", file);
     formData.append("title", title);
     formData.append("description", description);
     console.log(formData)
 
-    const response = await axiosInstance.post(url, formData, {
+    const response = await axiosInstance.post(API.UPLOAD_VIDEO, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
       onUploadProgress,
+      withCredentials: true,
     });
 
     console.log('Upload response:', response.data);

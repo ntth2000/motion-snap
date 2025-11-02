@@ -1,9 +1,13 @@
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException, status
 from pathlib import Path
 from moviepy import VideoFileClip
+import shutil
 import tempfile
 import os
+from datetime import datetime
 
+from src.models import Video, Job
+from src.videos.models import JobStatus
 from src.videos.exceptions import UnsupportedVideoExtensionException, VideoTooLongException
 from src.videos.constants import ALLOWED_VIDEO_EXTENSIONS, MAX_DURATION_IN_SECONDS, VIDEO_PATH
 
@@ -53,7 +57,7 @@ async def validate_duration(file: UploadFile) -> bool:
     return True
 
 
-def save_upload_file(upload_file: UploadFile, destination: Path) -> Path:
+def save_upload_file(file: UploadFile, user_id: int):
     """
     Save an uploaded file to a destination path
     Args:
@@ -63,12 +67,25 @@ def save_upload_file(upload_file: UploadFile, destination: Path) -> Path:
         null
     """
 
-    folder_path = os.path.join(VIDEO_PATH, destination)
+    folder_path = os.path.join(VIDEO_PATH, user_id)
     os.makedirs(folder_path, exist_ok=True)
-    file_path = os.path.join(folder_path, upload_file.filename)
 
-    with open(file_path, "wb") as buffer:
-        content = upload_file.file.read()
-        buffer.write(content)
-    
-    return file_path
+    current_time = datetime.now()
+    timestamp = current_time.strftime("%Y%m%d_%H%M%S")
+    saved_filename = f"{user_id}_{timestamp}_{file.filename}"
+    file_path = os.path.join(folder_path, saved_filename)
+
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error saving video: {str(e)}"
+        )
+
+    return {
+        "filename": saved_filename,
+        "file_path": file_path,
+        "uploaded_at": current_time,
+    }

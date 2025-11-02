@@ -1,18 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status, Form
 from fastapi.params import File
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from src import database, models, schemas
+import os
+from src import database
+from src.auth import schemas as authSchemas
+from src.videos import service
 from src.auth.utils import verify_token
 from src.videos.video_processor import extract_frames, draw_poses_on_frame
-import os
-from .schemas import VideoUpload
+from src.auth.dependencies import get_current_user
+from .schemas import VideoUpload, ExtractFrame, DrawPosesResponse
 
-from pydantic import BaseModel
 
-class DrawPosesResponse(BaseModel):
-    frame_count: int
-    message: str
 
 router = APIRouter(
     prefix="/api/videos",
@@ -28,22 +27,20 @@ def get_db():
     finally:
         db.close()
 
+
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
 def upload_video(
-    video_data: VideoUpload,
-    file: UploadFile = File(...),
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
+    video: UploadFile = File(...),
+    title: str = Form(...),
+    description: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: authSchemas.UserOut = Depends(get_current_user)
 ):
-    payload = verify_token(token)
-    if payload is None:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    # Here you would handle the upload logic, e.g., save the file, create DB entry, etc.
-    return {"filename": file.filename, "description": video_data.description, "message": "Video uploaded successfully"}
+    print(title, description)
+    return service.upload_video(user_id = current_user.id, file=video, title=title, description=description, db=db)    
 
 
-@router.get("/extract", response_model=schemas.ExtractFrame)
+@router.get("/extract", response_model=ExtractFrame)
 def extract(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     payload = verify_token(token)
     if payload is None:
@@ -56,6 +53,7 @@ def extract(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
         return {"frame_count": len(frames), "message": "Frames extracted successfully"}
     else:
         raise HTTPException(status_code=404, detail="Video file not found")
+
 
 @router.get('/draw_poses', response_model=DrawPosesResponse)
 def draw_poses(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):

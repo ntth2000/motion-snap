@@ -6,6 +6,7 @@ from src import database
 from src.auth import schemas, service
 from src.auth.constants import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from src.auth.exceptions import InvalidUserInfoException
+from src.auth.dependencies import get_current_user
 
 
 router = APIRouter(
@@ -56,7 +57,7 @@ def login(response: Response, form_data: schemas.Login, db: Session = Depends(ge
 @router.post('/refresh')
 def refresh(request: Request, response: Response):
     refresh_token = request.cookies.get("refresh_token")
-    access_token, refresh_token = service.refresh_tokens(response, refresh_token)
+    access_token, refresh_token = service.refresh_tokens(refresh_token)
     response.set_cookie(
         key="access_token",
         value=access_token,
@@ -77,10 +78,8 @@ def refresh(request: Request, response: Response):
     
 
 @router.get("/me")
-def get_me(request: Request, db: Session = Depends(get_db)):
-    user = service.get_me(db, token = request.cookies.get("access_token"))
-
-    return { "username": user.username, "email": user.email }
+def get_me(current_user: schemas.UserOut = Depends(get_current_user)):
+    return { "username": current_user.username, "email": current_user.email }
     
 
 @router.post("/logout")
