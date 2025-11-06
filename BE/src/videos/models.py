@@ -10,7 +10,6 @@ class Video(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     uploaded_at = Column(DateTime, default=datetime.now())
     filename = Column(String, nullable=False)
-    description = Column(String, nullable=True)
     file_path = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     job_id = Column(Integer, ForeignKey('jobs.id'), nullable=True)
@@ -21,10 +20,12 @@ class Video(Base):
 
 
 class JobStatus(enum.Enum):
-    PENDING = "PENDING"
     UPLOADING = "UPLOADING"
-    EXTRACTING = "EXTRACTING"
-    DRAWING="DRAWING"
+    UPLOADED = "UPLOADED"
+    EXTRACTING_POSES = "EXTRACTING_POSES"
+    EXTRACTED_POSES = "EXTRACTED_POSES"
+    DRAWING_3D = "DRAWING_3D"
+    DRAWN_3D = "DRAWN_3D"
     DONE = "DONE"
     FAILED = "FAILED"
 
@@ -33,7 +34,7 @@ class Job(Base):
     __tablename__ = 'jobs'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    status = Column(Enum(JobStatus), default=JobStatus.PENDING)
+    status = Column(Enum(JobStatus), default=JobStatus.UPLOADING)
     result_path = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.now())
 

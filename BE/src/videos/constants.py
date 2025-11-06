@@ -1,6 +1,6 @@
 import os
 
-VIDEO_PATH=os.path.join("storage", "videos")
+VIDEO_PATH=os.path.join("storage", "inputs")
 RESULT_PATH=os.path.join("storage", "results")
 
 MAX_DURATION_IN_SECONDS=30

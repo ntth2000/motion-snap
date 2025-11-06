@@ -46,7 +46,7 @@ async def validate_duration(file: UploadFile) -> bool:
         temp_file.flush()
         
         try:
-            with VideoFileClip(temp_file.file) as video:
+            with VideoFileClip(temp_file.name) as video:
                 duration = video.duration
                 if duration > MAX_DURATION_IN_SECONDS:
                     raise VideoTooLongException(duration)
@@ -57,7 +57,7 @@ async def validate_duration(file: UploadFile) -> bool:
     return True
 
 
-def save_upload_file(file: UploadFile, user_id: int):
+def save_upload_file(file: UploadFile, video_id: int):
     """
     Save an uploaded file to a destination path
     Args:
@@ -67,25 +67,24 @@ def save_upload_file(file: UploadFile, user_id: int):
         null
     """
 
-    folder_path = os.path.join(VIDEO_PATH, user_id)
+    folder_path = os.path.join(VIDEO_PATH, str(video_id), "videos")
     os.makedirs(folder_path, exist_ok=True)
 
     current_time = datetime.now()
-    timestamp = current_time.strftime("%Y%m%d_%H%M%S")
-    saved_filename = f"{user_id}_{timestamp}_{file.filename}"
-    file_path = os.path.join(folder_path, saved_filename)
+    file_path = os.path.join(folder_path, file.filename)
 
     try:
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error saving video: {str(e)}"
         )
 
     return {
-        "filename": saved_filename,
+        "filename": file.filename,
         "file_path": file_path,
         "uploaded_at": current_time,
     }

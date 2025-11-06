@@ -1,6 +1,5 @@
-from fastapi import HTTPException
 from datetime import datetime
-from src.auth.exceptions import ExistingUserException, InvalidUserInfoException, TokenExpiredException, InvalidTokenException
+from src.auth.exceptions import ExistingUserException, InvalidUserInfoException, TokenExpiredException, InvalidTokenException, NotRegisteredEmail
 from src.auth.utils import hash_password, verify_password, create_access_token, create_refresh_token, verify_token
 from src.auth import models
 
@@ -23,7 +22,9 @@ def register_user(db, user):
 def login_user(db, email, password):
     user = db.query(models.User).filter(models.User.email == email).first()
 
-    if not user or not verify_password(password, user.password_hash):
+    if not user:
+        raise NotRegisteredEmail()
+    if not verify_password(password, user.password_hash):
         raise InvalidUserInfoException()
 
     access_token = create_access_token({"sub": user.email})

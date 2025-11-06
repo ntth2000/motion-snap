@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
 from .constants import MAX_DURATION_IN_SECONDS, ALLOWED_VIDEO_EXTENSIONS
 
 class UnsupportedVideoExtensionException(HTTPException):
@@ -13,4 +13,20 @@ class VideoTooLongException(HTTPException):
         super().__init__(
             status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail=f"Video too long ({duration:.1f}s). Maximum allowed: {MAX_DURATION_IN_SECONDS}s",
+        )
+
+
+class UploadFilesFailedException(HTTPException):
+    def __init__(self, file: UploadFile):
+        super().__init__(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to upload {file.filename}."
+        )
+
+
+class SavingFileException(HTTPException):
+    def __init__(self, file: UploadFile):
+        super().__init__(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to upload {file.filename}."
         )

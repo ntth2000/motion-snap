@@ -1,5 +1,8 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, Field
+from datetime import datetime
+from src.videos.models import JobStatus
+
 
 class VideoUpload(BaseModel):
     file_name: Optional[str] = Field(..., description="Name of the video file")
@@ -12,6 +15,21 @@ class VideoUpload(BaseModel):
                 "description": "A short video about..."
             }
         }
+
+
+class VideoResponse(BaseModel):
+    id: int
+    filename: str
+    uploaded_at: datetime
+    thumbnail_url: Optional[str] = None
+    status: str = None
+
+    class Config:
+        orm_mode = True
+
+
+class VideoListResponse(BaseModel):
+    videos: List[VideoResponse]
 
 
 class ExtractFrame(BaseModel):
