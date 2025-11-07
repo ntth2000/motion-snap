@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from src import database
 from src.auth import schemas, service
 from src.auth.constants import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
-from src.auth.exceptions import InvalidUserInfoException
 from src.auth.dependencies import get_current_user
 
 
@@ -55,9 +54,9 @@ def login(response: Response, form_data: schemas.Login, db: Session = Depends(ge
     
 
 @router.post('/refresh')
-def refresh(request: Request, response: Response):
+def refresh(request: Request, response: Response, db: Session = Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
-    access_token, refresh_token = service.refresh_tokens(refresh_token)
+    access_token, refresh_token = service.refresh_tokens(refresh_token, db)
     response.set_cookie(
         key="access_token",
         value=access_token,

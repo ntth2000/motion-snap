@@ -6,125 +6,160 @@
 # 3. api: draw_3d, nhận đầu vào các các file frame ảnh rồi đầu ra là: 
 #     (i) các file frame ảnh có vẽ đường bao 3D
 #     (ii) xâu JSON theo format: { "số_thứ_tự_của_điểm_trên_đường_bao_3D" : [toạ_độ_trục_x, toạ_độ_trục_y, toạ_độ_trục_z] }
-
-import cv2
-import mediapipe as mp
+import subprocess
 import json
 import os
 import numpy as np
+from src.videos.constants import RESULT_PATH
 
-def extract_frames(video_path: str, output_path: str) -> list:
+
+def extract_frames(video_id: int):
+    print(f"Extracting frames for video_id={video_id}...")
+    input_path = f"/workspace/inputs/{video_id}"
+
+    cmd = [
+        "docker", "run",
+        "--name", f"extract_frames_{video_id}",
+        "-v", f"{os.getcwd()}/storage/inputs/{video_id}:{input_path}",
+        "easymocap",
+        "bash", "-c",
+        f"python3 apps/preprocess/extract_image.py ..{input_path} && sync"
+    ]
+
+
+
+    subprocess.run(cmd, check=True)
+    print(f"Frames extracted successfully for video_id={video_id}")
+
+
+def extract_2d(video_id: int):
+    input_path = f"/workspace/inputs/{video_id}"
+    host_path = f"{os.getcwd()}/storage/inputs/{video_id}"
+
+    cmd = [
+        "docker", "run", "--rm",
+        "-v", f"{os.getcwd()}/storage/inputs/{video_id}:{input_path}",
+        "easymocap",
+        "bash", "-c",
+        f"python3 -m apps.preprocess.extract_keypoints ../workspace/inputs/{video_id} --mode yolo-hrnet"
+    ]
+
+    print("👉 Running command:", " ".join(cmd))
+
+    try:
+        result = subprocess.run(
+            cmd,
+            check=True
+        )
+        print("✅ STDOUT:", result.stdout)
+        print("✅ STDERR:", result.stderr)
+        return {"status": "success", "output": result.stdout}
+
+    except subprocess.CalledProcessError as e:
+        print("❌ Docker command failed:")
+        print("Exit code:", e.returncode)
+        print("----- STDOUT -----")
+        print(e.stdout)
+        print("----- STDERR -----")
+        print(e.stderr)
+        raise
+
+
+def draw_2d_vertices(video_id: int):
     """
-    Extract frames from a video file.
-
-    Args:
-        video_path (str): Path to the video file.
-    
-    Returns:
-        list: List of frames extracted from the video.
+    Gọi Docker container để chạy 2D vertices extraction.
+    Input trên host: storage/inputs/{video_id}
+    Mount vào container để chạy run.py.
     """
-    print("loading video...")
-    vid = cv2.VideoCapture(video_path)
-    frames = []
-    
-    count, success = 0, True
-    os.makedirs(output_path, exist_ok=True)
-    while success:
-        success, image = vid.read() # Read frame
-        if success:
-            filename = f"{count:06d}.jpg"
-            filepath = os.path.join(output_path, filename)
-            print(filepath)
-            ok = cv2.imwrite(filepath, image)
-            if not ok:
-                print("❌ Failed to save:", filepath)
-            frames.append(filepath)
-            count += 1
+    # Đường dẫn input thực tế trên máy host
+    input_path = f"/workspace/inputs/{video_id}"
+    output_path = f"/workspace/outputs/{video_id}"
 
-    vid.release()
-    print(f"Extracted {count} frames.")
-    return frames
+    # Đường dẫn trên host
+    host_input_path = os.path.join(os.getcwd(), "storage", "inputs", str(video_id))
+    host_output_path = os.path.join(os.getcwd(), "storage", "outputs", str(video_id))
 
-def draw_poses_on_frame(
-    frame_path: str,
-    output_path: str,
-    json_output_path: str,
-    person_id: int = 0
-):
+    # Đảm bảo thư mục tồn tại
+    os.makedirs(host_output_path, exist_ok=True)
+
+    # Command bên trong container
+    cmd = [
+        "docker", "run", "--name", f"draw_2d_vertices_{video_id}", "--rm",
+        "-v",  f"{host_input_path}:{input_path}",
+        "-v",  f"{host_output_path}:{output_path}",
+        "easymocap", "bash", "-c",
+        (
+            "export PYOPENGL_PLATFORM=egl && "
+            "python3 -m apps.mocap.run "
+            "--data config/datasets/vimage.yml "
+            "--exp config/1v1p/hrnet_pare_finetune.yml "
+            f"--root ..{input_path} "
+            f"--out ..{output_path} "
+            "--skip_vis_final && sync"
+        )
+    ]
+
+
+    print("Running command:", " ".join(cmd))
+
+    # Gọi subprocess
+    process = subprocess.run(cmd, check=True)
+
+    # Kiểm tra lỗi
+    if process.returncode != 0:
+        raise RuntimeError(
+            f"Docker command failed:\n{process.stderr or process.stdout}"
+        )
+
+    print(process.stdout)
+    return f"2D vertices drawn successfully for video_id={video_id}"
+
+
+def draw_3d_vertices(video_id: int):
     """
-    Detect human pose using MediaPipe, draw landmarks, and export annotation JSON 
-    compatible with EasyMocap format.
-
-    Args:
-        frame_path: Path to the image file.
-        output_path: Path to save image with drawn keypoints.
-        json_output_path: Path to save JSON annotation.
-        person_id: ID of detected person (default 0)
+    Gọi Docker container để chạy 2D vertices extraction.
+    Input trên host: storage/inputs/{video_id}
+    Mount vào container để chạy run.py.
     """
-    print(f"Processing {frame_path}...")
+    # Đường dẫn input thực tế trên máy host
+    input_path = f"/workspace/inputs/{video_id}"
+    output_path = f"/workspace/outputs/{video_id}"
 
-    image = cv2.imread(frame_path)
-    if image is None:
-        raise FileNotFoundError(f"Image not found: {frame_path}")
+    # Đường dẫn trên host
+    host_input_path = os.path.join(os.getcwd(), "storage", "inputs", str(video_id))
+    host_output_path = os.path.join(os.getcwd(), "storage", "outputs", str(video_id))
 
-    h, w, _ = image.shape
+    # Đảm bảo thư mục tồn tại
+    os.makedirs(host_output_path, exist_ok=True)
 
-    mp_pose = mp.solutions.pose
-    mp_drawing = mp.solutions.drawing_utils
+    # Command bên trong container
+    cmd = [
+        "docker", "run", "--name", f"draw_3d_vertices_{video_id}", "--rm",
+        "-v",  f"{host_input_path}:{input_path}",
+        "-v",  f"{host_output_path}:{output_path}",
+        "easymocap", "bash", "-c",
+        (
+            "export PYOPENGL_PLATFORM=egl && "
+            "python3 -m apps.mocap.run "
+            "--data config/datasets/svimage.yml "
+            "--exp config/1v1p/hrnet_pare_finetune.yml "
+            f"--root ..{input_path} "
+            f"--out ..{output_path} "
+            "&& sync"
+        )
+    ]
 
-    # Kết quả JSON
-    annotation = {
-        "filename": frame_path,
-        "height": h,
-        "width": w,
-        "annots": []
-    }
 
-    with mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.5) as pose:
-        results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    print("Running command:", " ".join(cmd))
 
-        if results.pose_landmarks:
-            # Vẽ pose lên ảnh
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+    # Gọi subprocess
+    process = subprocess.run(cmd, check=True)
 
-            # Trích xuất keypoints
-            landmarks = results.pose_landmarks.landmark
-            keypoints = []
-            xs, ys = [], []
+    # Kiểm tra lỗi
+    if process.returncode != 0:
+        raise RuntimeError(
+            f"Docker command failed:\n{process.stderr or process.stdout}"
+        )
 
-            for lm in landmarks:
-                x = lm.x * w
-                y = lm.y * h
-                c = lm.visibility  # confidence score từ MediaPipe
-                keypoints.append([x, y, c])
-                xs.append(x)
-                ys.append(y)
-
-            # Bounding box (xmin, ymin, xmax, ymax)
-            l, t, r, b = float(min(xs)), float(min(ys)), float(max(xs)), float(max(ys))
-            area = (r - l) * (b - t)
-            conf = float(np.mean([lm.visibility for lm in landmarks]))
-
-            # Thêm thông tin 1 người
-            annot = {
-                "personID": person_id,
-                "bbox": [l, t, r, b, conf],
-                "keypoints": keypoints,
-                "area": area
-            }
-
-            annotation["annots"].append(annot)
-
-    # Lưu ảnh có vẽ keypoints
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    cv2.imwrite(output_path, image)
-
-    # Lưu annotation JSON
-    os.makedirs(os.path.dirname(json_output_path), exist_ok=True)
-    with open(json_output_path, "w", encoding="utf-8") as f:
-        json.dump(annotation, f, ensure_ascii=False, indent=4)
-
-    print(f"Saved annotated image → {output_path}")
-    print(f"Saved annotation JSON → {json_output_path}")
-
-    return annotation
+    print(process.stdout)
+    return f"2D vertices drawn successfully for video_id={video_id}"

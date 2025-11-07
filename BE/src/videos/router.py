@@ -1,16 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status, Form
+from typing import List
+from fastapi import APIRouter, Depends, UploadFile, status
 from fastapi.params import File
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-import os
 from src import database
 from src.auth import schemas as authSchemas
 from src.videos import service
-from src.auth.utils import verify_token
-from src.videos.video_processor import extract_frames, draw_poses_on_frame
+from src.videos.video_processor import draw_3d_vertices
 from src.auth.dependencies import get_current_user
-from .schemas import VideoUpload, ExtractFrame, DrawPosesResponse
-
+from .schemas import DrawPosesResponse, VideoListResponse
 
 
 router = APIRouter(
@@ -28,74 +26,32 @@ def get_db():
         db.close()
 
 
-@router.post("/upload", status_code=status.HTTP_201_CREATED)
-def upload_video(
-    video: UploadFile = File(...),
-    title: str = Form(...),
-    description: str = Form(...),
+@router.get("/", response_model=VideoListResponse)
+def get_all(
     db: Session = Depends(get_db),
     current_user: authSchemas.UserOut = Depends(get_current_user)
 ):
-    print(title, description)
-    return service.upload_video(user_id = current_user.id, file=video, title=title, description=description, db=db)    
+    return service.get_videos_by_user(current_user.id, db)
 
 
-@router.get("/extract", response_model=ExtractFrame)
-def extract(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    payload = verify_token(token)
-    if payload is None:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    video_path = 'src/videos/video.mp4'
-    output_path = 'src/videos/root/images/1'
-    if os.path.exists(video_path):
-        frames = extract_frames(video_path, output_path)
-        return {"frame_count": len(frames), "message": "Frames extracted successfully"}
-    else:
-        raise HTTPException(status_code=404, detail="Video file not found")
+@router.post("/upload", status_code=status.HTTP_201_CREATED)
+async def upload_video(
+    video: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: authSchemas.UserOut = Depends(get_current_user)
+):
+    return await service.upload_video(user_id = current_user.id, file=video, db=db) 
 
 
-@router.get('/draw_poses', response_model=DrawPosesResponse)
-def draw_poses(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    payload = verify_token(token)
-    if payload is None:
-        raise HTTPException(status_code=401, detail="Invalid token")
+@router.get("/extract/{video_id}")
+def extract(
+    video_id: int,
+    db: Session = Depends(get_db),
+    # current_user: authSchemas.UserOut = Depends(get_current_user)
+):
+    return service.extract_poses(video_id, db)
 
-    input_dir = "src/videos/root/images/1"
-    output_dir = "src/videos/root/vis/1"
-    annots_dir = "src/videos/root/annots/1"
 
-    # Tạo thư mục đầu ra
-    os.makedirs(output_dir, exist_ok=True)
-    os.makedirs(annots_dir, exist_ok=True)
-
-    # Lấy danh sách file ảnh
-    frame_files = sorted([
-        f for f in os.listdir(input_dir)
-        if f.lower().endswith((".jpg", ".png"))
-    ])
-
-    if not frame_files:
-        raise HTTPException(status_code=404, detail="No frames found in input directory")
-
-    processed_count = 0
-
-    for frame_file in frame_files:
-        frame_path = os.path.join(input_dir, frame_file)
-        output_path = os.path.join(output_dir, frame_file)
-        json_filename = os.path.splitext(frame_file)[0] + ".json"
-        json_output_path = os.path.join(annots_dir, json_filename)
-
-        print(f"🔹 Processing {frame_file} ...")
-
-        draw_poses_on_frame(
-            frame_path=frame_path,
-            output_path=output_path,
-            json_output_path=json_output_path
-        )
-        processed_count += 1
-
-    return {
-        "frame_count": processed_count,
-        "message": f"✅ Poses drawn successfully for {processed_count} frames."
-    }
+@router.get('/draw_poses/{video_id}', response_model=DrawPosesResponse)
+def draw_poses(video_id: int, db: Session = Depends(get_db)):
+    return draw_3d_vertices(video_id)

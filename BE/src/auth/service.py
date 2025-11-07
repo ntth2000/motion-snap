@@ -32,7 +32,7 @@ def login_user(db, email, password):
     return { "access_token": access_token, "refresh_token": refresh_token }
 
 
-def refresh_tokens(refresh_token):
+def refresh_tokens(refresh_token, db):
     payload = verify_token(refresh_token)
 
     if payload is None or payload.get("type") != "refresh":

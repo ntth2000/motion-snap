@@ -7,7 +7,7 @@ from src.models import Video, Job
 from src.videos.models import JobStatus
 from src.videos.utils import validate_duration, validate_extension, save_upload_file
 from src.videos.exceptions import UploadFilesFailedException
-from src.videos.video_processor import extract_frames
+from src.videos.video_processor import extract_frames, extract_2d, draw_2d_vertices
 from src.videos.schemas import VideoListResponse, VideoResponse
 from src.videos.constants import VIDEO_PATH
 
@@ -115,3 +115,8 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
         db.rollback()
         raise UploadFilesFailedException(file)
 
+
+
+def extract_poses(video_id: int, db):
+    extract_2d(video_id)
+    draw_2d_vertices(video_id)
