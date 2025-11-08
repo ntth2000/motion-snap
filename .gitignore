@@ -1,6 +1,8 @@
 # Python (BE)
 BE/venv/
 BE/__pycache__/
+BE/EasyMocap
+BE/storage
 *.pyc
 .env
 
