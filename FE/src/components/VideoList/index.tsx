@@ -1,151 +1,237 @@
-import { ExclamationCircleFilled, PlusOutlined } from "@ant-design/icons";
-import { Space, Tag, Typography, Button, Modal, Image, Row, Col } from "antd";
-import { useState } from "react";
+import { ExclamationCircleFilled, PlusSquareOutlined } from "@ant-design/icons";
+import { Space, Tag, Button, Modal, message, Typography } from "antd";
+import { useEffect, useState } from "react";
 import { CustomTable } from "../Table";
 import type { IVideo } from "../../types";
-
-const { Text } = Typography;
-const { confirm } = Modal;
-
-const mockData: IVideo[] = [
-	{
-		key: '1',
-		video: 'Workout Tutorial.mp4',
-		createdAt: '2025-10-25 14:32',
-		status: 'completed',
-		title: 'Morning Workout Routine',
-		description: 'A quick morning workout to start your day.'
-	},
-	{
-		key: '2',
-		video: 'Cooking Show Episode 3.mp4',
-		createdAt: '2025-10-26 09:10',
-		status: 'drawing',
-		title: 'Delicious Pasta Recipe',
-		description: 'Learn how to make delicious pasta from scratch.'
-	},
-	// {
-	// 	key: '3',
-	// 	video: 'Travel Vlog - Japan.mov',
-	// 	createdAt: '2025-10-27 18:45',
-	// 	status: 'extracting',
-	// 	title: 'Exploring Tokyo',
-	// 	description: 'Join me as I explore the vibrant city of Tokyo.'
-	// },
-	// {
-	// 	key: '4',
-	// 	video: 'Interview with CEO.mp4',
-	// 	createdAt: '2025-10-28 11:00',
-	// 	status: 'completed',
-	// 	title: 'Insights from the CEO',
-	// 	description: 'An in-depth interview with the CEO about company vision.'
-	// },
-	// {
-	// 	key: '5',
-	// 	video: 'Dance Performance.mp4',
-	// 	createdAt: '2025-10-29 20:15',
-	// 	status: 'drawing',
-	// 	title: 'Contemporary Dance',
-	// 	description: 'A mesmerizing contemporary dance performance.'
-	// },
-];
+import { deleteVideo, getAllVideos } from "../../services/videoService";
+import { eventEmitter } from "../../utils/eventEmitter";
+import { formatDate } from "../../utils/util";
 
 const VideoList: React.FC = ({ }) => {
 	const [page, setPage] = useState(1);
-	const pageSize = 10;
-	const paginated = mockData.slice((page - 1) * pageSize, page * pageSize);
-	const onUploadClick = () => {
-		console.log("Upload button clicked");
+	const [videos, setVideos] = useState<IVideo[]>([]);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [modal, modalContextHolder] = Modal.useModal();
+	const [messageApi, msgContextHolder] = message.useMessage();
+	const [modalStep, setModalStep] = useState<"detail" | "extract_poses" | "draw_3d">("detail");
+	const [modalTitle, setModalTitle] = useState("Details")
+	const showModal = () => {
+		setIsModalOpen(true);
 	};
-	const showDeleteConfirm = () => {
-		confirm({
-			title: 'Are you sure delete this task?',
+
+	const handleCancel = () => {
+		setIsModalOpen(false);
+	};
+
+	const handleStepChange = (step: "detail" | "extract_poses" | "draw_3d") => {
+		setModalStep(step);
+		if (step === "detail") {
+			setModalTitle("Details")
+		} else if (step === "extract_poses") {
+			setModalTitle("Extract poses")
+		} else if (step === "draw_3d") {
+			setModalTitle("Draw 3D")
+		}
+	};
+
+	const pageSize = 10;
+	const onUploadVideo = () => {
+		eventEmitter.emit("open-upload-video-modal");
+	};
+	const showDeleteConfirm = (key: number) => {
+		modal.confirm({
+			title: 'Are you sure delete this video?',
 			icon: <ExclamationCircleFilled />,
-			content: 'Some descriptions',
 			okText: 'Yes',
 			okType: 'danger',
 			cancelText: 'No',
-			onOk() {
-				console.log('OK');
-			},
-			onCancel() {
-				console.log('Cancel');
-			},
+			onOk: async () => {
+				try {
+					await deleteVideo(key);
+					setVideos(videos.filter(video => video.id !== key));
+					messageApi.destroy('delete-video-success');
+					messageApi.open({
+						type: 'success',
+						content: 'Delete video successfully',
+						key: 'delete-video-success',
+					});
+				} catch (err) {
+					messageApi.destroy('delete-video-error');
+					messageApi.open({
+						content: 'Delete video failed',
+						type: 'error',
+						key: 'delete-video-error',
+					});
+				}
+			}
 		});
 	};
 
-	return <CustomTable
-		columns={[
-			{
-				key: "video",
-				title: "Video",
-				render: (record) => (
-					<div>
-						<Row gutter={24}>
-							<Col>
-								<Image preview={false} src="src/dummyData/image.png" alt="video icon" style={{ borderRadius: '8px' }} width={150} />
-							</Col>
-							<Col>
-								<a style={{ fontWeight: 500 }}>{record.video}</a>
-								<div style={{ fontSize: '14px', fontWeight: 600 }}>{record.title}</div>
-								<Text type="secondary">{record.description}</Text>
-							</Col>
-						</Row>
-					</div>
-				),
-			},
-			{ key: "createdAt", title: "Created At", width: '15%' },
-			{
-				key: "status",
-				title: "Status",
-				width: '12%',
-				render: (record) => {
-					let text = record.status;
-					let color = 'green';
-					if (record.status === 'drawing') {
-						color = 'orange';
-						text = "Drawing 3D"
-					} else if (record.status === 'extracting') {
-						color = 'red';
-						text = "Extracting frames"
-					}
-					return (
-						<Tag color={color} key={record.status} style={{ textTransform: 'capitalize' }}>
-							{text}
-						</Tag>
-					);
-				}
-			},
-			{
-				key: "action",
-				title: "Action",
-				width: '20%',
-				render: () => (<>
-					<Space size="middle">
-						<Button onClick={() => { }}>Edit</Button>
-						<Button danger onClick={showDeleteConfirm}>Delete</Button>
-					</Space>
 
-				</>)
-			},
-		]}
-		data={paginated}
-		total={mockData.length}
-		pageSize={pageSize}
-		current={page}
-		onPageChange={(p) => setPage(p)}
-		noData={
-			<div style={{ textAlign: "center", padding: "40px 0" }}>
-				<Button
-					type="primary"
-					icon={<PlusOutlined />}
-					onClick={onUploadClick}
-					size="large"
-				>
-					Upload your first video
-				</Button>
-			</div>
+	const fetchData = async () => {
+		try {
+			const res = await getAllVideos();
+			setVideos(res.videos.map((video: { id: any; filename: any; status: any; thumbnail_url: string; uploaded_at: string; }) => ({
+				key: video.id,
+				id: video.id,
+				video: video.filename,
+				status: video.status,
+				thumbnailUrl: video.thumbnail_url,
+				createdAt: formatDate(video.uploaded_at),
+			})))
+		} catch (e) {
+
 		}
-	/>
+	}
+
+	useEffect(() => {
+		fetchData()
+	}, [])
+
+	useEffect(() => {
+		eventEmitter.on("reload-video-list", fetchData)
+
+		return () => {
+			eventEmitter.off("reload-video-list", fetchData)
+		}
+	}, [])
+
+	return <>
+		{modalContextHolder}
+		{msgContextHolder}
+		<Modal
+			destroyOnHidden
+			centered
+			title={modalTitle}
+			closable={{ 'aria-label': 'Custom Close Button' }}
+			open={isModalOpen}
+			onCancel={handleCancel}
+			footer={
+				(
+					<>
+						<Button onClick={handleCancel}>Cancel</Button>
+						<Button
+							type="primary"
+						>
+							Next
+						</Button>
+					</>
+				)
+			}
+			width="70%"
+			styles={{
+				body: {
+					height: "70vh",
+					maxHeight: 820,
+					overflowY: "auto",
+				}
+			}}
+		>
+
+		</Modal>
+		<CustomTable
+			columns={[
+				{
+					key: "video",
+					title: "Video",
+					render: (record) => (
+						<div style={{
+							display: "flex",
+							gap: "16px",
+						}}>
+							<img
+								src={record.thumbnailUrl}
+								alt="thumbnail"
+								style={{
+									width: "200px",
+									height: "120px",
+									objectFit: "cover",
+									flexShrink: 0,
+									borderRadius: "8px"
+								}}
+							/>
+							<div style={{
+								flex: 1,
+								overflow: "hidden",
+							}}>
+								<Typography.Text style={{
+									fontWeight: "600",
+									fontSize: "16px",
+									whiteSpace: "nowrap",
+									overflow: "hidden",
+									textOverflow: "ellipsis"
+								}}>
+									{record.video}
+								</Typography.Text>
+							</div>
+						</div>
+
+					),
+				},
+				{ key: "createdAt", title: "Created At", width: '20%' },
+				{
+					key: "status",
+					title: "Status",
+					width: '20%',
+					render: (record) => {
+						let text = record.status;
+						let color = 'green';
+						if (record.status === 'drawing') {
+							color = 'orange';
+							text = "Drawing 3D"
+						} else if (record.status === 'extracting') {
+							color = 'red';
+							text = "Extracting frames"
+						}
+						return (
+							<Tag color={color} key={record.status} style={{ textTransform: 'capitalize' }}>
+								{text}
+							</Tag>
+						);
+					}
+				},
+				{
+					key: "action",
+					title: "Action",
+					width: '10%',
+					render: (record) => (<>
+						<Space size="middle">
+							<Button danger onClick={() => showDeleteConfirm(record.id)}>Delete</Button>
+						</Space>
+
+					</>)
+				},
+			]}
+			data={videos.slice((page - 1) * pageSize, page * pageSize)}
+			total={videos.length}
+			current={page}
+			onPageChange={(p) => setPage(p)}
+			noData={
+				< div style={{ textAlign: "center", padding: "40px 0" }}>
+					<Button
+						color="default"
+						variant="outlined"
+						style={{
+							padding: '16px',
+							marginRight: '16px',
+						}}
+						onClick={onUploadVideo}
+					>
+						<PlusSquareOutlined />
+						<span
+							style={{
+								fontWeight: '500',
+								fontSize: '16px',
+								marginLeft: '2px',
+								marginBottom: '1px',
+							}}
+						>
+							Upload your first video
+						</span>
+					</Button>
+				</div >
+			}
+		/>
+	</>
 }
 export default VideoList;

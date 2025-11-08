@@ -51,7 +51,7 @@ export function CustomTable<T extends { key: React.Key }>({
 					pageSize={pageSize}
 					current={current}
 					onChange={onPageChange}
-					showSizeChanger={true}
+					showSizeChanger={false}
 				/>
 			</div>
 		</div>

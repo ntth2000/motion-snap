@@ -39,7 +39,7 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
-      title={<Typography.Text strong>Create your account</Typography.Text>}
+      title={<Typography.Title level={3}>Create your account</Typography.Title>}
       subtitle="Sign up to get started"
     >
       {contextHolder}
@@ -111,21 +111,17 @@ export default function RegisterPage() {
           />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" block size="large" loading={loading}>
+          <Button
+            size='large'
+            color="default"
+            variant="solid"
+            loading={loading}
+            htmlType="submit"
+            style={{ width: '100%', padding: '16px 0' }}
+          >
             Create account
           </Button>
         </Form.Item>
-        {/* <Divider plain>OR</Divider>
-        <Form.Item>
-          <Button
-            block
-            size="large"
-            icon={<GoogleIcon width="18" height="18" />}
-            disabled={loading}
-          >
-            Sign in with Google
-          </Button>
-        </Form.Item> */}
       </Form>
       <Divider />
 

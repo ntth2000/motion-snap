@@ -5,15 +5,15 @@ import {
   Dropdown,
   Avatar,
   Space,
-  Modal,
-  Steps
+  Modal
 } from 'antd';
 import type { MenuProps } from 'antd';
 import { Header } from 'antd/es/layout/layout';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import UploadVideo from '../UploadVideo';
 import { logout } from '../../services/authService';
 import { useNavigate } from 'react-router';
+import { eventEmitter } from '../../utils/eventEmitter';
 const { Text } = Typography;
 
 interface TopbarProps {
@@ -24,17 +24,7 @@ const getInitial = (name: string) =>
   name?.trim()?.charAt(0)?.toUpperCase() || '?';
 
 export default function Topbar({ userName }: TopbarProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
   const nagivate = useNavigate();
-
-  const steps = [
-    { id: 1, title: 'Select video', disabled: false },
-    { id: 2, title: 'Details', disabled: currentStep < 1 },
-    { id: 3, title: 'Upload', disabled: currentStep < 2 },
-    { id: 4, title: 'Extract', disabled: currentStep < 3 },
-    { id: 5, title: 'Draw poses', disabled: currentStep < 4 },
-  ]
 
   const onLogout = async () => {
     try {
@@ -45,9 +35,9 @@ export default function Topbar({ userName }: TopbarProps) {
     }
   };
 
-  const onChangeSteps = (value: number) => {
-    setCurrentStep(value);
-  }
+  const showModal = () => {
+    eventEmitter.emit('open-upload-video-modal');
+  };
 
   const items: MenuProps['items'] = [
     {
@@ -68,61 +58,12 @@ export default function Topbar({ userName }: TopbarProps) {
     },
   ];
 
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleUploadVideo = () => {
-    console.log('Upload video');
-  };
-
-  const handleClickLogo = () => { };
-
-  const customModalFooter = [
-    <Button key="cancel" onClick={handleCancel}>
-      Cancel
-    </Button>,
-    <Button key="upload" type="primary" onClick={handleUploadVideo}>
-      Upload
-    </Button>,
-  ]
-
   return (
     <>
-      <Modal
-        centered
-        title="Upload new video"
-        closable={{ 'aria-label': 'Custom Close Button' }}
-        open={isModalOpen}
-        onCancel={handleCancel}
-        footer={currentStep > 0 ? customModalFooter : null}
-        width="70%"
-        styles={{
-          body: {
-            height: "70vh",
-            maxHeight: 820,
-            overflowY: "auto",
-          }
-        }}
-      >
-        <div style={{ marginBottom: '32px' }}>
-          <Steps
-            size="small"
-            current={currentStep}
-            onChange={onChangeSteps}
-            items={steps}
-            type="navigation"
-          />
-        </div>
-        <UploadVideo onChangeSteps={onChangeSteps} />
-      </Modal>
+      <UploadVideo />
       <Header>
         <div className="topbar">
-          <div className="" onClick={handleClickLogo}>
+          <div>
             <Typography.Text strong style={{ fontSize: 20, cursor: 'pointer' }}>
               MotionSnap
             </Typography.Text>

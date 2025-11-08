@@ -26,7 +26,7 @@ export default function AuthLayout({
             <Card bordered style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
               {title ? (
                 <Title
-                  level={3}
+                  level={4}
                   style={{ marginBottom: 8, textAlign: 'center' }}
                 >
                   {title}

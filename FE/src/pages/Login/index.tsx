@@ -31,7 +31,7 @@ export default function LoginPage() {
         navigate('/', { replace: true });
       }, 1000);
     } catch (err: any) {
-      message.destroy('login-error');
+      messageApi.destroy('login-error');
       messageApi.open({
         key: 'login-error',
         type: 'error',
@@ -44,7 +44,7 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title={<Typography.Text strong>Welcome back</Typography.Text>}
+      title={<Typography.Title level={3}>Welcome back to MotionSnap</Typography.Title>}
       subtitle="Please sign in to continue"
     >
       {contextHolder}
@@ -82,22 +82,18 @@ export default function LoginPage() {
           />
         </Form.Item>
         <Form.Item className="px-2">
-          <Button type="primary" htmlType="submit" block size="large" loading={loading}>
+          <Button
+            color="default"
+            variant="solid"
+            loading={loading}
+            htmlType="submit"
+            size='large'
+            style={{ width: '100%' }}
+          >
             Sign in
           </Button>
         </Form.Item>
-        {/* <Divider plain>OR</Divider>
-        <Form.Item>
-          <Button
-            block
-            size="large"
-            icon={<GoogleIcon width="18" height="18" />}
-          >
-            Sign in with Google
-          </Button>
-        </Form.Item> */}
       </Form>
-
       <Divider />
 
       <div style={{ textAlign: 'center' }}>
