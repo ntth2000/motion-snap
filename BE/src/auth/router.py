@@ -45,7 +45,7 @@ def login(response: Response, form_data: schemas.Login, db: Session = Depends(ge
         value=tokens["refresh_token"],
         httponly=True,
         samesite="lax",
-        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 7 * 24 * 60,  # 7 days
+        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
     )
 
     return {

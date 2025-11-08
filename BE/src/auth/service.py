@@ -29,6 +29,11 @@ def login_user(db, email, password):
 
     access_token = create_access_token({"sub": user.email})
     refresh_token = create_refresh_token({"sub": user.email})
+
+    new_refresh_token = models.RefreshToken(token=refresh_token, user_id=user.id, created_at=datetime.utcnow())
+    db.add(new_refresh_token)
+    db.commit()
+
     return { "access_token": access_token, "refresh_token": refresh_token }
 
 
@@ -46,6 +51,7 @@ def refresh_tokens(refresh_token, db):
     current_token.update({
         "token": new_refresh_token,
     })
+    db.commit()
 
     return {
         "access_token": access_token,

@@ -1,15 +1,13 @@
 import os, base64
-from typing import List
 from fastapi import UploadFile
 from sqlalchemy.orm import Session, joinedload
-from datetime import datetime
 from src.models import Video, Job
 from src.videos.models import JobStatus
 from src.videos.utils import validate_duration, validate_extension, save_upload_file
 from src.videos.exceptions import UploadFilesFailedException
 from src.videos.video_processor import extract_frames, extract_2d, draw_2d_vertices
 from src.videos.schemas import VideoListResponse, VideoResponse
-from src.videos.constants import VIDEO_PATH
+from src.videos.constants import VIDEO_PATH, RESULT_PATH
 
 
 def get_videos_by_user(user_id: int, db: Session):
@@ -115,6 +113,35 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
         db.rollback()
         raise UploadFilesFailedException(file)
 
+
+def delete_video(video_id: int, user_id: int, db: Session):
+    """
+    Delete a video by its ID and user ID
+    """
+    video = db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    if not video:
+        return
+
+    video_dir = os.path.join(VIDEO_PATH, str(video.id))
+    output_dir = os.path.join(RESULT_PATH, str(video.id))
+    if os.path.exists(video_dir):
+        for root, dirs, files in os.walk(video_dir, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+            for name in dirs:
+                os.rmdir(os.path.join(root, name))
+        os.rmdir(video_dir)
+    
+    if os.path.exists(output_dir):
+        for root, dirs, files in os.walk(output_dir, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+            for name in dirs:
+                os.rmdir(os.path.join(root, name))
+        os.rmdir(output_dir)
+
+    db.delete(video)
+    db.commit()
 
 
 def extract_poses(video_id: int, db):

@@ -55,3 +55,13 @@ def extract(
 @router.get('/draw_poses/{video_id}', response_model=DrawPosesResponse)
 def draw_poses(video_id: int, db: Session = Depends(get_db)):
     return draw_3d_vertices(video_id)
+
+
+@router.delete("/{video_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_video(
+    video_id: int,
+    db: Session = Depends(get_db),
+    current_user: authSchemas.UserOut = Depends(get_current_user)
+):
+    service.delete_video(video_id, current_user.id, db)
+    return None
