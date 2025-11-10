@@ -6,5 +6,5 @@ export const API = {
   REFRESH: 'auth/refresh',
   ME: 'auth/me',
   VIDEOS: '/videos',
-  UPLOAD_VIDEO: '/videos/upload',
+  UPLOAD_VIDEO: '/videos/upload'
 };

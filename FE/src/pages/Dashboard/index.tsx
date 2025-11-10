@@ -2,10 +2,9 @@ import AppLayout from '../../layout/AppLayout';
 import VideoList from '../../components/VideoList';
 
 export default function DashboardPage() {
-  const userName = 'Alice';
 
   return (
-    <AppLayout userName={userName}>
+    <AppLayout>
       <div
         style={{
           position: 'absolute',

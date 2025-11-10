@@ -253,7 +253,8 @@ const UploadVideo: React.FC = () => {
           </div>
         )
         }
-      </div ></Modal>
+      </div >
+    </Modal>
   );
 };
 

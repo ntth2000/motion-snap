@@ -6,33 +6,14 @@ import type { IVideo } from "../../types";
 import { deleteVideo, getAllVideos } from "../../services/videoService";
 import { eventEmitter } from "../../utils/eventEmitter";
 import { formatDate } from "../../utils/util";
+import { useNavigate } from "react-router";
 
 const VideoList: React.FC = ({ }) => {
 	const [page, setPage] = useState(1);
 	const [videos, setVideos] = useState<IVideo[]>([]);
-	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [modal, modalContextHolder] = Modal.useModal();
 	const [messageApi, msgContextHolder] = message.useMessage();
-	const [modalStep, setModalStep] = useState<"detail" | "extract_poses" | "draw_3d">("detail");
-	const [modalTitle, setModalTitle] = useState("Details")
-	const showModal = () => {
-		setIsModalOpen(true);
-	};
-
-	const handleCancel = () => {
-		setIsModalOpen(false);
-	};
-
-	const handleStepChange = (step: "detail" | "extract_poses" | "draw_3d") => {
-		setModalStep(step);
-		if (step === "detail") {
-			setModalTitle("Details")
-		} else if (step === "extract_poses") {
-			setModalTitle("Extract poses")
-		} else if (step === "draw_3d") {
-			setModalTitle("Draw 3D")
-		}
-	};
+	const navigate = useNavigate();
 
 	const pageSize = 10;
 	const onUploadVideo = () => {
@@ -99,36 +80,6 @@ const VideoList: React.FC = ({ }) => {
 	return <>
 		{modalContextHolder}
 		{msgContextHolder}
-		<Modal
-			destroyOnHidden
-			centered
-			title={modalTitle}
-			closable={{ 'aria-label': 'Custom Close Button' }}
-			open={isModalOpen}
-			onCancel={handleCancel}
-			footer={
-				(
-					<>
-						<Button onClick={handleCancel}>Cancel</Button>
-						<Button
-							type="primary"
-						>
-							Next
-						</Button>
-					</>
-				)
-			}
-			width="70%"
-			styles={{
-				body: {
-					height: "70vh",
-					maxHeight: 820,
-					overflowY: "auto",
-				}
-			}}
-		>
-
-		</Modal>
 		<CustomTable
 			columns={[
 				{
@@ -154,15 +105,19 @@ const VideoList: React.FC = ({ }) => {
 								flex: 1,
 								overflow: "hidden",
 							}}>
-								<Typography.Text style={{
-									fontWeight: "600",
-									fontSize: "16px",
-									whiteSpace: "nowrap",
-									overflow: "hidden",
-									textOverflow: "ellipsis"
-								}}>
+								<Typography.Link
+									style={{
+										fontWeight: "600",
+										fontSize: "16px",
+										whiteSpace: "nowrap",
+										overflow: "hidden",
+										textOverflow: "ellipsis",
+										cursor: "pointer",
+									}}
+									onClick={() => { navigate(`/video/${record.id}`); }}
+								>
 									{record.video}
-								</Typography.Text>
+								</Typography.Link>
 							</div>
 						</div>
 

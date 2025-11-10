@@ -7,6 +7,7 @@ interface IVideo {
     createdAt: string;
     status: string;
     thumbnailUrl: string;
+    videoUrl?: string;
 }
 
 export type { IVideo };

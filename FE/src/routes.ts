@@ -15,5 +15,5 @@ export const routes: readonly AppRoute[] = [
   { path: '*', name: 'dashboard', Component: DashboardPage, isPrivate: true },
   { path: '/login', name: 'login', Component: LoginPage },
   { path: '/register', name: 'register', Component: RegisterPage },
-  { path: '/video/:id', name: 'video', Component: VideoPage, isPrivate: true },
+  { path: '/video/:videoId', name: 'video', Component: VideoPage, isPrivate: true },
 ] as const;

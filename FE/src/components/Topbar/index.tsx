@@ -64,7 +64,7 @@ export default function Topbar({ userName }: TopbarProps) {
       <Header>
         <div className="topbar">
           <div>
-            <Typography.Text strong style={{ fontSize: 20, cursor: 'pointer' }}>
+            <Typography.Text strong style={{ fontSize: 20, cursor: 'pointer' }} onClick={() => nagivate('/')}>
               MotionSnap
             </Typography.Text>
           </div>

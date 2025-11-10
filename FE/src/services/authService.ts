@@ -11,6 +11,15 @@ interface LoginParams {
   password: string;
 }
 
+export const getMe = async () => {
+  try {
+    const res = await axiosInstance.get(API.ME, { withCredentials: true });
+    return res.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
 export const login = async ({ email, password }: LoginParams) => {
   try {
     const res = await axiosInstance.post(API.LOGIN, {
