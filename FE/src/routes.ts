@@ -11,9 +11,12 @@ export type AppRoute = {
   isPrivate?: boolean;
 };
 
-export const routes: readonly AppRoute[] = [
-  { path: '*', name: 'dashboard', Component: DashboardPage, isPrivate: true },
+export const publicRoutes: readonly AppRoute[] = [
   { path: '/login', name: 'login', Component: LoginPage },
   { path: '/register', name: 'register', Component: RegisterPage },
-  { path: '/video/:videoId', name: 'video', Component: VideoPage, isPrivate: true },
+] as const;
+
+export const privateRoutes: readonly AppRoute[] = [
+  { path: '/', name: 'dashboard', Component: DashboardPage },
+  { path: '/video/:videoId', name: 'video', Component: VideoPage },
 ] as const;

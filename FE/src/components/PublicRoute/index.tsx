@@ -1,14 +1,15 @@
-// src/components/PrivateRoute.tsx
 import { Outlet, Navigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import { Spin } from "antd";
 
-const PrivateRoute = () => {
+const PublicRoute = () => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) return <div><Spin /></div>;
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  if (isAuthenticated) return <Navigate to="/" replace />;
+
+  return <Outlet />;
 };
 
-export default PrivateRoute;
+export default PublicRoute;

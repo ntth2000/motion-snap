@@ -5,15 +5,13 @@ import {
   Dropdown,
   Avatar,
   Space,
-  Modal
 } from 'antd';
 import type { MenuProps } from 'antd';
 import { Header } from 'antd/es/layout/layout';
-import { useEffect, useState } from 'react';
 import UploadVideo from '../UploadVideo';
-import { logout } from '../../services/authService';
 import { useNavigate } from 'react-router';
 import { eventEmitter } from '../../utils/eventEmitter';
+import useAuth from '../../hooks/useAuth';
 const { Text } = Typography;
 
 interface TopbarProps {
@@ -24,6 +22,7 @@ const getInitial = (name: string) =>
   name?.trim()?.charAt(0)?.toUpperCase() || '?';
 
 export default function Topbar({ userName }: TopbarProps) {
+  const { logout } = useAuth();
   const nagivate = useNavigate();
 
   const onLogout = async () => {

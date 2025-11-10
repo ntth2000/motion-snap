@@ -1,25 +1,18 @@
 import { Layout, theme } from 'antd';
-import { useEffect, useState, type PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import Topbar from '../../components/Topbar';
-import { getMe } from '../../services/authService';
+import useAuth from '../../hooks/useAuth';
 
 export default function AppLayout({ children }: PropsWithChildren) {
   const {
     token: { borderRadiusLG },
   } = theme.useToken();
 
-  const [userName, setUserName] = useState("");
-  useEffect(() => {
-    const getUserName = async () => {
-      const res = await getMe();
-      setUserName(res.username);
-    }
-    getUserName();
-  }, []);
+  const { user } = useAuth();
 
   return (
     <Layout style={{ height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <Topbar userName={userName} />
+      <Topbar userName={user?.username || ""} />
       <div
         style={{
           margin: '16px 48px',

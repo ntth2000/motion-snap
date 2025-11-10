@@ -1,15 +1,15 @@
 import { Button, Divider, Form, Input, message, Typography } from 'antd';
 import AuthLayout from '../../layout/AuthLayout';
-// import GoogleIcon from '../../assets/icons/Google';
-import { login } from '../../services/authService';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import useAuth from '../../hooks/useAuth';
 
 export default function LoginPage() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleFinish = async ({
     email,

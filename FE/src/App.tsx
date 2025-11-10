@@ -1,8 +1,9 @@
 import './styles/base.css';
-import { Route, Routes } from 'react-router';
-import { routes } from './routes';
+import { Navigate, Route, Routes } from 'react-router';
+import { privateRoutes, publicRoutes } from './routes';
 import { ConfigProvider } from 'antd';
 import PrivateRoute from './components/PrivateRoute';
+import PublicRoute from './components/PublicRoute';
 
 function App() {
   return (
@@ -25,11 +26,17 @@ function App() {
         }}
       >
         <Routes>
-          {routes.map(({ path, Component, isPrivate }) => (
-            isPrivate ?
-              <Route path={path} element={<PrivateRoute Component={Component} />} />
-              : <Route path={path} element={<Component />} />
-          ))}
+          <Route element={<PublicRoute />}>
+            {publicRoutes.map(({ path, Component }) => (
+              <Route key={path} path={path} element={<Component />} />
+            ))}
+          </Route>
+          <Route element={<PrivateRoute />}>
+            {privateRoutes.map(({ path, Component }) => (
+              <Route key={path} path={path} element={<Component />} />
+            ))}
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </ConfigProvider>
     </div>
