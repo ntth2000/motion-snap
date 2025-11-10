@@ -152,3 +152,17 @@ export const getExportedData = async (videoId: string, type: string = "extracted
     throw error;
   }
 }
+
+
+export const getJobStatus = async (videoId: string) => {
+  console.log("cal getJobStatus")
+  try {
+    const response = await axiosInstance.get(`${API.STATUS}/${videoId}`, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.log("Error getJobStatus: ", error);
+    throw error;
+  }
+}

@@ -1,8 +1,8 @@
-import { Button, Steps } from 'antd';
+import { Button, message, Steps } from 'antd';
 import AppLayout from '../../layout/AppLayout';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
-import { getExportedData, getVideoById } from '../../services/videoService';
+import { getExportedData, getJobStatus, getVideoById } from '../../services/videoService';
 import ExtractedFrames from '../../components/VideoDetail/UploadedVideo';
 import ExtractedPoses from '../../components/VideoDetail/ExtractedPoses';
 import type { IVideo } from '../../types';
@@ -22,34 +22,99 @@ export default function VideoPage() {
     },
   ]);
   const onChangeStep = (value: number) => {
-    console.log('onChange:', value);
     setVideoStep(value);
   };
   const [videoStep, setVideoStep] = useState<number>(0);
   const [videoDetail, setVideoDetails] = useState<IVideo>();
+  const [jobStatus, setJobstatus] = useState<string>("")
+  const [messageApi, msgContextHolder] = message.useMessage();
+  const intervalRef = useRef<number | null>(null);
+
+  const startPolling = () => {
+    if (!videoId) return;
+    if (intervalRef.current) return;
+
+    intervalRef.current = window.setInterval(async () => {
+      try {
+        const res = await getJobStatus(videoId);
+        const currentStatus = res.status.toLowerCase()
+        if (jobStatus === "extracting_poses" && currentStatus === "extracted_poses") {
+          setJobstatus(currentStatus)
+          clearInterval(intervalRef.current!);
+          intervalRef.current = null;
+        }
+        if (jobStatus === "drawing_3d" && currentStatus === "drawn_3d") {
+          setJobstatus(currentStatus)
+          clearInterval(intervalRef.current!);
+          intervalRef.current = null;
+        }
+      } catch (error) {
+        clearInterval(intervalRef.current!);
+        intervalRef.current = null;
+        console.error("Error checking job status:", error);
+        message.error("Pose extraction failed");
+        setJobstatus(prev => {
+          if (prev === "extracting_poses") return "uploaded"
+          if (prev === "drawing_3d") return "extracted_poses"
+          return prev
+        })
+      }
+    }, 3000);
+  };
+
+  useEffect(() => {
+    if (jobStatus === "extracting_poses" || jobStatus === "drawing_3d") {
+      startPolling();
+    }
+
+    // return () => {
+    //   if (intervalRef.current) clearInterval(intervalRef.current);
+    // };
+  }, [jobStatus, videoId]);
 
   const getVideoDetails = async () => {
     try {
       const res = await getVideoById(videoId as string);
       setVideoDetails(res);
       const status = res.status.toLowerCase()
-      if (status === 'uploaded') {
+      setJobstatus(status)
+      if (status === "extracted_poses" || status === "drawing_3d" || status === "drawn_3d") {
+        setVideoSteps([
+          { title: 'Uploaded' },
+          { title: 'Extract Poses', },
+          { title: 'Draw 3D' },
+        ]);
+      } else {
         setVideoSteps([
           { title: 'Uploaded' },
           { title: 'Extract Poses', },
           { title: 'Draw 3D', disabled: true },
         ]);
-      } else {
-        setVideoSteps([
-          { title: 'Uploaded' },
-          { title: 'Extract Poses' },
-          { title: 'Draw 3D' },
-        ]);
       }
     } catch (error) {
       console.error('Error fetching video details:', error);
+      messageApi.open({
+        content: "There is an error fetching video details. Please try again",
+        type: "error"
+      })
     }
   };
+
+  useEffect(() => {
+    if (jobStatus === "extracted_poses" || jobStatus === "drawing_3d" || jobStatus === "drawn_3d") {
+      setVideoSteps([
+        { title: 'Uploaded' },
+        { title: 'Extract Poses', },
+        { title: 'Draw 3D' },
+      ]);
+    } else {
+      setVideoSteps([
+        { title: 'Uploaded' },
+        { title: 'Extract Poses', },
+        { title: 'Draw 3D', disabled: true },
+      ]);
+    }
+  }, [jobStatus])
 
   useEffect(() => {
     videoId && getVideoDetails();
@@ -76,6 +141,7 @@ export default function VideoPage() {
 
   return (
     <AppLayout>
+      {msgContextHolder}
       <div style={{
         position: 'absolute',
         top: 0,
@@ -106,17 +172,24 @@ export default function VideoPage() {
             <ExtractedFrames videoDetail={videoDetail} />
           )}
           {videoStep === 1 && (
-            <ExtractedPoses videoId={videoId} status={videoDetail?.status} />
+            <ExtractedPoses videoId={videoId} status={jobStatus || "uploaded"} setStatus={setJobstatus} />
           )}
 
           {videoStep === 2 && (
-            <Draw3D videoId={videoId} status={videoDetail?.status} />
+            <Draw3D videoId={videoId} status={jobStatus || "uploaded"} setStatus={setJobstatus} />
           )}
         </div>
 
         {videoStep !== 0 &&
           <div style={{ marginLeft: 'auto' }}>
-            <Button variant="solid" color="default" onClick={handleExport}>Export</Button>
+            <Button
+              variant="solid"
+              color="default"
+              onClick={handleExport}
+              disabled={(jobStatus === "extracting_poses" && videoStep === 1) || (jobStatus === 'drawing_3d' && videoStep == 2)}
+            >
+              Export
+            </Button>
           </div>
         }
       </div>
