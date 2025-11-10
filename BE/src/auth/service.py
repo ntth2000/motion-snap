@@ -45,9 +45,10 @@ def refresh_tokens(refresh_token, db):
     
     email = payload.get("sub")
     access_token = create_access_token({"sub": email})
-    new_refresh_token = create_refresh_token({"sub": email})
 
     current_token = db.query(models.RefreshToken).filter(models.RefreshToken.token == refresh_token)
+
+    new_refresh_token = create_refresh_token({"sub": email})
     current_token.update({
         "token": new_refresh_token,
     })

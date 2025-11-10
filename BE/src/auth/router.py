@@ -56,10 +56,10 @@ def login(response: Response, form_data: schemas.Login, db: Session = Depends(ge
 @router.post('/refresh')
 def refresh(request: Request, response: Response, db: Session = Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
-    access_token, refresh_token = service.refresh_tokens(refresh_token, db)
+    tokens = service.refresh_tokens(refresh_token, db)
     response.set_cookie(
         key="access_token",
-        value=access_token,
+        value=tokens["access_token"],
         httponly=True,
         samesite="lax",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
@@ -67,7 +67,7 @@ def refresh(request: Request, response: Response, db: Session = Depends(get_db))
 
     response.set_cookie(
         key="refresh_token",
-        value=refresh_token,
+        value=tokens["refresh_token"],
         httponly=True,
         samesite="lax",
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
