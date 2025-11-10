@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, UploadFile, status, Query
+from fastapi import APIRouter, Depends, UploadFile, status, Query, BackgroundTasks
 from fastapi.params import File
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -7,7 +7,7 @@ from src import database
 from src.auth import schemas as authSchemas
 from src.videos import service
 from src.auth.dependencies import get_current_user
-from .schemas import DrawPosesResponse, VideoListResponse, VideoResponse
+from .schemas import VideoListResponse, VideoResponse
 
 
 router = APIRouter(
@@ -55,14 +55,20 @@ async def upload_video(
 def extract(
     video_id: int,
     db: Session = Depends(get_db),
-    # current_user: authSchemas.UserOut = Depends(get_current_user)
+    background_tasks: BackgroundTasks = None
 ):
-    return service.extract_poses(video_id, db)
+    background_tasks.add_task(service.extract_poses, video_id, db)
+    return {"message": "Start to extract poses from the video."}
 
 
-@router.post('/draw_3d/{video_id}', response_model=DrawPosesResponse)
-def draw_poses(video_id: int, db: Session = Depends(get_db)):
-    return service.draw_3d(video_id, db)
+@router.post('/draw_3d/{video_id}')
+def draw_poses(
+    video_id: int,
+    db: Session = Depends(get_db),
+    background_tasks: BackgroundTasks = None
+):
+    background_tasks.add_task(service.draw_3d, video_id, db)
+    return {"message": "Start to draw 3d."}
 
 
 @router.delete("/{video_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -74,19 +80,8 @@ def delete_video(
     service.delete_video(video_id, current_user.id, db)
     return None
 
-
-@router.get("/{video_id}/extracted_frames")
-def get_extracted_frames(
-    video_id: int,
-    db: Session = Depends(get_db),
-    current_user: authSchemas.UserOut = Depends(get_current_user)
-):
-    print(video_id)
-    return service.get_extracted_frames(video_id, current_user.id, db)
-
-
 @router.get("/{video_id}/extracted_poses")
-def get_extracted_frames(
+async def get_extracted_frames(
     video_id: int,
     db: Session = Depends(get_db),
     current_user: authSchemas.UserOut = Depends(get_current_user)
@@ -100,8 +95,16 @@ def get_draw_3d_frames(
     db: Session = Depends(get_db),
     current_user: authSchemas.UserOut = Depends(get_current_user)
 ):
-    print(video_id)
-    return service.get_draw_3d_frames(video_id, current_user.id, db)
+    return service.get_3d(video_id, current_user.id, db)
+
+
+@router.get("/status/{video_id}")
+def get_job_status(
+    video_id: int,
+    db: Session = Depends(get_db),
+    current_user: authSchemas.UserOut = Depends(get_current_user)
+):
+    return service.get_job_status(video_id, current_user.id, db)
 
 
 @router.get("/{video_id}/export")
@@ -109,6 +112,7 @@ def export(
     video_id: int,
     export_type: str = Query(..., regex="^(extracted_poses|3d)$"),
     db: Session = Depends(get_db),
-    current_user: authSchemas.UserOut = Depends(get_current_user)
+    current_user: authSchemas.UserOut = Depends(get_current_user),
+    background_tasks: BackgroundTasks = None
 ):
-    return service.export_video_data(video_id, export_type, current_user.id, db)
+    return service.export_video_data(video_id, export_type, current_user.id, db, background_tasks)

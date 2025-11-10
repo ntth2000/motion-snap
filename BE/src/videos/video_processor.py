@@ -82,7 +82,7 @@ def draw_2d_vertices(video_id: int):
 
     # Command bên trong container
     cmd = [
-        "docker", "run", "--name", f"draw_2d_vertices_{video_id}", "--rm",
+        "docker", "run", "--rm",
         "-v",  f"{host_input_path}:{input_path}",
         "-v",  f"{host_output_path}:{output_path}",
         "easymocap", "bash", "-c",
@@ -129,7 +129,7 @@ def draw_3d_vertices(video_id: int):
 
     # Command bên trong container
     cmd = [
-        "docker", "run", "--name", f"draw_3d_vertices_{video_id}", "--rm",
+        "docker", "run", "--rm",
         "-v",  f"{host_input_path}:{input_path}",
         "-v",  f"{host_output_path}:{output_path}",
         "easymocap", "bash", "-c",

@@ -2,17 +2,35 @@ import os, base64
 
 from pathlib import Path
 import shutil
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload
 import zipfile
 from src.models import Video, Job
 from src.videos.models import JobStatus
-from src.videos.utils import validate_duration, validate_extension, save_upload_file
+from src.videos.utils import validate_duration, get_video_size, validate_extension,convert_3d_keypoints_format, save_upload_file, remove_file, convert_2d_poses_format
 from src.videos.exceptions import UploadFilesFailedException
 from src.videos.video_processor import extract_frames, extract_2d, draw_2d_vertices, draw_3d_vertices, render_frames_to_video, get_video_fps
 from src.videos.schemas import VideoListResponse, VideoResponse
 from src.videos.constants import VIDEO_PATH, RESULT_PATH
+
+
+def get_job_status(video_id: int, user_id: int, db: Session):
+    """
+    Get job status by video_id
+    """
+    video = db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    if not video:
+        raise HTTPException(status_code=500, detail="Can't find the video. Please try again.")
+    
+    job = db.query(Job).filter(Job.id == video.job_id).first()
+
+    if not job:
+        raise HTTPException(status_code=500, detail="Can't find the job. Please try again.")
+
+    return {
+        "status": job.status
+    }
 
 
 def get_video_by_id(video_id: int, user_id: int, db: Session):
@@ -38,7 +56,7 @@ def get_video_by_id(video_id: int, user_id: int, db: Session):
     thumbnail_path = os.path.join(
         "storage", "inputs", video_id_str, "images", video.filename.split('.')[0], "000000.jpg"
     )
-
+    width, height = get_video_size(video_file_path = os.path.join(video_dir, "videos", video.filename))
     thumbnail_b64 = None
     if os.path.exists(thumbnail_path):
         with open(thumbnail_path, "rb") as f:
@@ -54,7 +72,9 @@ def get_video_by_id(video_id: int, user_id: int, db: Session):
         uploaded_at=video.uploaded_at,
         thumbnail_url=thumbnail_b64,
         status=status,
-        video_url=video_url
+        video_url=video_url,
+        width=width,
+        height=height
     )
 
 
@@ -114,6 +134,7 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
     3. Save file to server
     4. Create Video record in database
     """
+    new_video = None
     try:
         new_job = Job(status=JobStatus.UPLOADING)
         db.add(new_job)
@@ -159,6 +180,15 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
     except Exception as e:
         print(e)
         db.rollback()
+        folder = Path(VIDEO_PATH)/str(new_video.id)
+        if folder and os.path.exists(folder):
+            shutil.rmtree(folder)
+        if new_video:
+            try:
+                db.delete(new_video)
+                db.commit()
+            except:
+                db.rollback()
         raise UploadFilesFailedException(file)
 
 
@@ -193,30 +223,42 @@ def delete_video(video_id: int, user_id: int, db: Session):
 
 
 def extract_poses(video_id: int, db):
-    video=db.query(Video).filter(Video.id == video_id).first()
+    video = db.query(Video).filter(Video.id == video_id).first()
     if not video:
-        return None
+        raise HTTPException(status_code=404, detail="Video not found")
     
-    job= db.query(Job).filter(Job.id == video.job_id).first()
+    job = db.query(Job).filter(Job.id == video.job_id).first()
     if not job:
-        return None
-    
-    job.status= JobStatus.EXTRACTING_POSES
-    db.commit()
-    extract_2d(video_id)
-    draw_2d_vertices(video_id)
-    job.status= JobStatus.EXTRACTED_POSES
-    db.commit()
+        raise HTTPException(status_code=404, detail="Job not found")
 
-    fps = get_video_fps(Path(VIDEO_PATH) / str(video_id) / "videos"/ video.filename)
+    try:
+        job.status = JobStatus.EXTRACTING_POSES
+        db.commit()
 
-    render_frames_to_video(
-        frames_dir=Path(RESULT_PATH) / str(video_id) / "vis_keypoints2d",
-        output_path=Path(RESULT_PATH) / str(video_id) / "vis_2d.mp4",
-        fps=fps
-    )
+        extract_2d(video_id)
 
-    return {"message": "Pose extraction completed"}
+        # import random
+        # if random.randint(0) == 0: raise HTTPException()
+
+        draw_2d_vertices(video_id)
+
+        job.status = JobStatus.EXTRACTED_POSES
+        db.commit()
+
+        fps = get_video_fps(Path(VIDEO_PATH) / str(video_id) / "videos" / video.filename)
+        render_frames_to_video(
+            frames_dir=Path(RESULT_PATH) / str(video_id) / "vis_keypoints2d",
+            output_path=Path(RESULT_PATH) / str(video_id) / "vis_2d.mp4",
+            fps=fps
+        )
+        return {"message": "Pose extraction completed"}
+
+    except Exception as e:
+        # Nếu có lỗi, revert trạng thái về uploaded
+        job.status = JobStatus.UPLOADED
+        db.commit()
+        # Raise HTTP error để client biết
+        raise HTTPException(status_code=500, detail="Pose extraction failed")
 
 
 def get_extracted_poses(video_id: int, user_id: int, db: Session):
@@ -226,24 +268,27 @@ def get_extracted_poses(video_id: int, user_id: int, db: Session):
     video = db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
     if not video:
         return None
+
     base_url = "http://localhost:8000"
-
-    annot_path = Path(VIDEO_PATH) / str(video_id) / "annots" / f"{video.filename.split('.')[0]}"
-    if not annot_path.exists():
-        return None
-    
-    poses_folder_path = Path(RESULT_PATH) / str(video_id) / "vis_keypoints2d"
-    if not poses_folder_path.exists():
-        return None
-
-    poses = []
-    for file in sorted(poses_folder_path.iterdir()):
-        if file.suffix.lower() in [".jpg", ".png"]:
-            poses.append(f"{base_url}/{poses_folder_path}/{file.name}")
     
     video_url =  f"{base_url}/storage/outputs/{video_id}/vis_2d.mp4"
 
-    return {"video_id": video_id, "video_url": video_url, "pose_frames": poses}
+    return {"video_id": video_id, "video_url": video_url}
+
+
+def get_3d(video_id: int, user_id: int, db: Session):
+    """
+    Get extracted poses for a video by its ID and user ID
+    """
+    video = db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    if not video:
+        return None
+
+    base_url = "http://localhost:8000"
+    
+    video_url =  f"{base_url}/storage/outputs/{video_id}/vis_3d.mp4"
+
+    return {"video_id": video_id, "video_url": video_url}
 
 
 def get_extracted_frames(video_id: int, user_id: int, db: Session):
@@ -285,9 +330,6 @@ def draw_3d(video_id: int, db: Session):
     db.commit()
     draw_3d_vertices(video_id)
 
-    job.status = JobStatus.DRAWN_3D
-    db.commit()
-
     fps = get_video_fps(Path(VIDEO_PATH) / str(video_id) / "videos"/ video.filename)
 
     render_frames_to_video(
@@ -296,40 +338,13 @@ def draw_3d(video_id: int, db: Session):
         fps=fps
     )
 
+    job.status = JobStatus.DRAWN_3D
+    db.commit()
+
     return {"frame_count": 0, "message": "3D drawing completed"}
 
 
-def get_draw_3d_frames(video_id: int, user_id: int, db: Session):
-    """
-    Get 3D drawn frames for a video by its ID and user ID
-    """
-    video = db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
-    if not video:
-        return None
-    
-    video_output_dir = Path(RESULT_PATH) / str(video_id)
-
-    subdirs = [d for d in video_output_dir.iterdir() if d.is_dir()]
-    if not subdirs:
-        raise HTTPException(status_code=404, detail="No 3D drawn frames directory found")
-
-    frames_dir = video_output_dir / "smpl"
-    frames_dir = subdirs
-
-    # frame_files = sorted([f for f in frames_dir.iterdir() if f.is_file() and f.suffix.lower() in [".jpg", ".png"]])
-
-    # base_url = "http://localhost:8000"  # có thể lấy dynamic qua request.base_url nếu cần
-    # frame_urls = [
-    #     f"{base_url}/storage/outputs/{video_id}/render/{f.name}"
-    #     for f in frame_files
-    # ]
-    base_url = "http://localhost:8000"
-    video_url =  f"{base_url}/storage/outputs/{video_id}/vis_3d.mp4"
-
-    return {"video_id": video_id, "video_url": video_url}
-
-
-def export_video_data(video_id: int, export_type: str, user_id: int, db: Session):
+def export_video_data(video_id: int, export_type: str, user_id: int, db: Session, background_tasks: BackgroundTasks):
     output_base_dir = Path(RESULT_PATH) / str(video_id)
     input_base_dir = Path(VIDEO_PATH) / str(video_id)
     export_dir = output_base_dir/"export_data"
@@ -354,7 +369,11 @@ def export_video_data(video_id: int, export_type: str, user_id: int, db: Session
     if frames_dir.exists():
         shutil.copytree(frames_dir, temp_export / "frames")
     if jsons_dir.exists():
-        shutil.copytree(jsons_dir, temp_export / "jsons")
+        copied_jsons_path = shutil.copytree(jsons_dir, temp_export / "jsons")
+        if export_type == "extracted_poses":
+            convert_2d_poses_format(copied_jsons_path)
+        if export_type == "3d":
+            convert_3d_keypoints_format(copied_jsons_path)
     if video_file.exists():
         shutil.copy(video_file, temp_export / "video.mp4")
     
@@ -371,10 +390,9 @@ def export_video_data(video_id: int, export_type: str, user_id: int, db: Session
                         zipf.write(file, file.relative_to(temp_export))
                 else:
                     zipf.write(path_to_add, path_to_add.name)
-    file_size = os.path.getsize(zip_path)
-    print(f"[DEBUG] Zip file path: {zip_path}, size: {file_size} bytes")
     
-    # Trả về FileResponse để download
+    background_tasks.add_task(remove_file, str(export_dir))
+
     return FileResponse(
         path=str(zip_path),
         filename=f"video_{video_id}_{export_type}_export.zip",

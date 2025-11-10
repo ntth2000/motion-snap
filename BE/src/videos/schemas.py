@@ -24,6 +24,8 @@ class VideoResponse(BaseModel):
     thumbnail_url: Optional[str] = None
     status: str = None
     video_url: Optional[str] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
 
     class Config:
         orm_mode = True
