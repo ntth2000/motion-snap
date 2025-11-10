@@ -1,14 +1,13 @@
 from typing import List
-from fastapi import APIRouter, Depends, UploadFile, status
+from fastapi import APIRouter, Depends, UploadFile, status, Query
 from fastapi.params import File
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from src import database
 from src.auth import schemas as authSchemas
 from src.videos import service
-from src.videos.video_processor import draw_3d_vertices
 from src.auth.dependencies import get_current_user
-from .schemas import DrawPosesResponse, VideoListResponse
+from .schemas import DrawPosesResponse, VideoListResponse, VideoResponse
 
 
 router = APIRouter(
@@ -34,6 +33,15 @@ def get_all(
     return service.get_videos_by_user(current_user.id, db)
 
 
+@router.get("/{video_id}", response_model=VideoResponse)
+def get_video(
+    video_id: int,
+    db: Session = Depends(get_db),
+    current_user: authSchemas.UserOut = Depends(get_current_user)
+):
+    return service.get_video_by_id(video_id, current_user.id, db)
+
+
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
 async def upload_video(
     video: UploadFile = File(...),
@@ -43,7 +51,7 @@ async def upload_video(
     return await service.upload_video(user_id = current_user.id, file=video, db=db) 
 
 
-@router.get("/extract/{video_id}")
+@router.post("/extract_poses/{video_id}")
 def extract(
     video_id: int,
     db: Session = Depends(get_db),
@@ -52,9 +60,9 @@ def extract(
     return service.extract_poses(video_id, db)
 
 
-@router.get('/draw_poses/{video_id}', response_model=DrawPosesResponse)
+@router.post('/draw_3d/{video_id}', response_model=DrawPosesResponse)
 def draw_poses(video_id: int, db: Session = Depends(get_db)):
-    return draw_3d_vertices(video_id)
+    return service.draw_3d(video_id, db)
 
 
 @router.delete("/{video_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -65,3 +73,42 @@ def delete_video(
 ):
     service.delete_video(video_id, current_user.id, db)
     return None
+
+
+@router.get("/{video_id}/extracted_frames")
+def get_extracted_frames(
+    video_id: int,
+    db: Session = Depends(get_db),
+    current_user: authSchemas.UserOut = Depends(get_current_user)
+):
+    print(video_id)
+    return service.get_extracted_frames(video_id, current_user.id, db)
+
+
+@router.get("/{video_id}/extracted_poses")
+def get_extracted_frames(
+    video_id: int,
+    db: Session = Depends(get_db),
+    current_user: authSchemas.UserOut = Depends(get_current_user)
+):
+    return service.get_extracted_poses(video_id, current_user.id, db)    
+
+
+@router.get("/{video_id}/drawn_3d")
+def get_draw_3d_frames(
+    video_id: int,
+    db: Session = Depends(get_db),
+    current_user: authSchemas.UserOut = Depends(get_current_user)
+):
+    print(video_id)
+    return service.get_draw_3d_frames(video_id, current_user.id, db)
+
+
+@router.get("/{video_id}/export")
+def export(
+    video_id: int,
+    export_type: str = Query(..., regex="^(extracted_poses|3d)$"),
+    db: Session = Depends(get_db),
+    current_user: authSchemas.UserOut = Depends(get_current_user)
+):
+    return service.export_video_data(video_id, export_type, current_user.id, db)

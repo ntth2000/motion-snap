@@ -23,6 +23,7 @@ class VideoResponse(BaseModel):
     uploaded_at: datetime
     thumbnail_url: Optional[str] = None
     status: str = None
+    video_url: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -30,7 +31,6 @@ class VideoResponse(BaseModel):
 
 class VideoListResponse(BaseModel):
     videos: List[VideoResponse]
-
 
 class ExtractFrame(BaseModel):
     frame_count: int

@@ -6,11 +6,11 @@
 # 3. api: draw_3d, nhận đầu vào các các file frame ảnh rồi đầu ra là: 
 #     (i) các file frame ảnh có vẽ đường bao 3D
 #     (ii) xâu JSON theo format: { "số_thứ_tự_của_điểm_trên_đường_bao_3D" : [toạ_độ_trục_x, toạ_độ_trục_y, toạ_độ_trục_z] }
+from pathlib import Path
 import subprocess
-import json
 import os
-import numpy as np
-from src.videos.constants import RESULT_PATH
+import cv2
+from moviepy import ImageSequenceClip
 
 
 def extract_frames(video_id: int):
@@ -44,19 +44,17 @@ def extract_2d(video_id: int):
         f"python3 -m apps.preprocess.extract_keypoints ../workspace/inputs/{video_id} --mode yolo-hrnet"
     ]
 
-    print("👉 Running command:", " ".join(cmd))
+    print("Running command:", " ".join(cmd))
 
     try:
         result = subprocess.run(
             cmd,
             check=True
         )
-        print("✅ STDOUT:", result.stdout)
-        print("✅ STDERR:", result.stderr)
         return {"status": "success", "output": result.stdout}
 
     except subprocess.CalledProcessError as e:
-        print("❌ Docker command failed:")
+        print("Docker command failed:")
         print("Exit code:", e.returncode)
         print("----- STDOUT -----")
         print(e.stdout)
@@ -91,16 +89,13 @@ def draw_2d_vertices(video_id: int):
         (
             "export PYOPENGL_PLATFORM=egl && "
             "python3 -m apps.mocap.run "
-            "--data config/datasets/vimage.yml "
+            "--data config/datasets/svimage.yml "
             "--exp config/1v1p/hrnet_pare_finetune.yml "
             f"--root ..{input_path} "
             f"--out ..{output_path} "
-            "--skip_vis_final && sync"
+            "--skip_vis_final --skip_final && sync"
         )
     ]
-
-
-    print("Running command:", " ".join(cmd))
 
     # Gọi subprocess
     process = subprocess.run(cmd, check=True)
@@ -145,7 +140,7 @@ def draw_3d_vertices(video_id: int):
             "--exp config/1v1p/hrnet_pare_finetune.yml "
             f"--root ..{input_path} "
             f"--out ..{output_path} "
-            "&& sync"
+            "--skip_vis_final && sync"
         )
     ]
 
@@ -161,5 +156,54 @@ def draw_3d_vertices(video_id: int):
             f"Docker command failed:\n{process.stderr or process.stdout}"
         )
 
-    print(process.stdout)
     return f"2D vertices drawn successfully for video_id={video_id}"
+
+
+def render_frames_to_video(frames_dir, output_path, fps=30):
+    """
+    Render frames in a directory to a video file using ffmpeg.
+    Args:
+        frame_path (str): Path to the directory containing frame images.
+    Returns:
+        str: Path to the output video file.
+    """
+    frames_dir = Path(frames_dir)
+    images = sorted(
+        [str(frames_dir / f) for f in os.listdir(frames_dir) if f.endswith((".jpg", ".png"))]
+    )
+
+    if not images:
+        raise ValueError("Không có ảnh nào trong thư mục frames!")
+
+    # Tạo video clip từ danh sách ảnh
+    clip = ImageSequenceClip(images, fps=fps)
+
+    # Xuất ra video (codec libx264 = mp4)
+    clip.write_videofile(str(output_path), codec='libx264', audio=False)
+
+
+def get_video_fps(video_path: str) -> float:
+    """
+    Lấy fps của video sử dụng ffprobe
+    Args:
+        video_path (str): Đường dẫn đến file video
+    Returns:
+        float: fps của video
+    """
+    """
+    Lấy FPS (frame per second) của video gốc.
+
+    Args:
+        video_path (str): Đường dẫn tới file video.
+
+    Returns:
+        float: Giá trị FPS của video.
+    """
+    print(video_path)
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        raise ValueError(f"Không mở được video: {video_path}")
+
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    cap.release()
+    return fps
