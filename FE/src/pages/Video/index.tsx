@@ -172,11 +172,11 @@ export default function VideoPage() {
             <ExtractedFrames videoDetail={videoDetail} />
           )}
           {videoStep === 1 && (
-            <ExtractedPoses videoId={videoId} status={jobStatus || "uploaded"} setStatus={setJobstatus} />
+            <ExtractedPoses videoDetail={videoDetail} videoId={videoId} status={jobStatus || "uploaded"} setStatus={setJobstatus} />
           )}
 
           {videoStep === 2 && (
-            <Draw3D videoId={videoId} status={jobStatus || "uploaded"} setStatus={setJobstatus} />
+            <Draw3D videoDetail={videoDetail} videoId={videoId} status={jobStatus || "uploaded"} setStatus={setJobstatus} />
           )}
         </div>
 

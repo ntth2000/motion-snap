@@ -2,12 +2,21 @@ import { Button, message, Typography } from "antd";
 import { extractPoses, getExtractedPosesById } from "../../services/videoService";
 import { useEffect, useState } from "react";
 
-const ExtractedPoses = ({ videoId, status, setStatus }: {
+const ExtractedPoses = ({ videoId, status, setStatus, videoDetail }: {
   videoId: string | undefined,
   status: string | undefined,
-  setStatus: (status: string) => void
+  setStatus: (status: string) => void,
+  videoDetail: any
 }
 ) => {
+  const [videoStyle, setVideoStyle] = useState<{ width?: string, height?: string }>({ width: '100%' })
+  useEffect(() => {
+    if (videoDetail?.width && videoDetail?.height) {
+      const { width, height } = videoDetail;
+      if (width < height)
+        setVideoStyle({ height: '100%' })
+    }
+  }, [videoDetail])
   const [loading, setLoading] = useState(false);
   const [videoPoseDetails, setVideoPoseDetails] = useState<any>(null);
 
@@ -65,11 +74,11 @@ const ExtractedPoses = ({ videoId, status, setStatus }: {
                 src={videoPoseDetails?.video_url}
                 controls
                 style={{
-                  width: "100%",
                   objectFit: "contain",
                   objectPosition: "center",
                   backgroundColor: "#000",
-                  margin: 'auto'
+                  margin: 'auto',
+                  ...videoStyle
                 }}
               />
             </div>

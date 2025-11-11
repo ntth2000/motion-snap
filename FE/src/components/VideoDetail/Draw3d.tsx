@@ -2,14 +2,23 @@ import { Button, message, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { draw3D, getDrawn3DById } from "../../services/videoService";
 
-const Draw3D = ({ videoId, status, setStatus }: {
+const Draw3D = ({ videoId, status, setStatus, videoDetail }: {
   videoId: string | undefined,
   status: string | undefined,
-  setStatus: (status: string) => void
+  setStatus: (status: string) => void,
+  videoDetail: any
 }) => {
   const [loading, setLoading] = useState(false);
   const [videoDetails, setVideoDetails] = useState<any>(null);
   const [messageApi, msgContextHolder] = message.useMessage();
+  const [videoStyle, setVideoStyle] = useState<{ width?: string, height?: string }>({ width: '100%' })
+  useEffect(() => {
+    if (videoDetail?.width && videoDetail?.height) {
+      const { width, height } = videoDetail;
+      if (width < height)
+        setVideoStyle({ height: '100%' })
+    }
+  }, [videoDetail])
 
   const handleDraw3D = async () => {
     if (!videoId) return;
@@ -68,11 +77,11 @@ const Draw3D = ({ videoId, status, setStatus }: {
             <video src={videoDetails?.video_url}
               controls
               style={{
-                width: "100%",
                 objectFit: "contain",
                 objectPosition: "center",
                 backgroundColor: "#000",
-                margin: 'auto'
+                margin: 'auto',
+                ...videoStyle
               }} />
           </div>
         </div>
