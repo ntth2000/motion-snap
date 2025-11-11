@@ -1,7 +1,7 @@
 # MotionSnap
 
-**MotionSnap** is a full-stack web application for managing and processing videos.  
-It allows users to upload videos, view them in a paginated list, and organize or process video data through a FastAPI backend and a modern Next.js frontend.
+**MotionSnap** is a full-stack web application for managing and processing videos using [EasyMocap librabry](https://chingswy.github.io/easymocap-public-doc/quickstart/quickstart.html).  
+It allows users to upload videos, view them in a paginated list, and organize or process video data through a FastAPI backend and a modern ReactJS frontend.
 
 ## Pose Extraction Visualization
 
@@ -17,6 +17,8 @@ It allows users to upload videos, view them in a paginated list, and organize or
 <p align="center">
   <em>Original → 2D Pose Estimation → 3D Pose Visualization</em>
 </p>
+
+> **Note:** Only support 1view-1person video.
 
 ---
 
@@ -65,6 +67,11 @@ motion-snap/
 │   │   ├── router.py
 │   │   ├── utils.py
 │   │   ...
+│   ├── storage/
+│   │   ├──inputs
+│   │       └──{video_id}
+│   │   ├──outputs
+│   │       └──{video_id}
 │   └── requirements.txt
 │
 ├── frontend/
@@ -76,6 +83,7 @@ motion-snap/
 │   │   ...
 │   └── package.json
 │
+├── installation.md
 └── README.md
 ```
 ## Setup instruction
