@@ -102,7 +102,7 @@ def get_videos_by_user(user_id: int, db: Session):
             continue
 
         thumbnail_path = os.path.join(
-            "storage", "inputs", video_id, "images", video.filename.split('.')[0], "000000.jpg"
+            "storage", "inputs", video_id, "images", "video", "000000.jpg"
         )
 
         thumbnail_b64 = None
@@ -168,6 +168,24 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
         db.refresh(new_job)
 
         extract_frames(new_video.id)
+
+
+        images_path = os.path.join(Path(VIDEO_PATH)/str(new_video.id)/"images")
+
+        subdirs = [d for d in os.listdir(images_path) if os.path.isdir(os.path.join(images_path, d))]
+        print(subdirs)
+        if len(subdirs) == 1:
+            old_subdir_path = os.path.join(images_path, subdirs[0])
+            new_subdir_path = os.path.join(images_path, "video")
+            os.rename(old_subdir_path, new_subdir_path)
+        else:
+            print("not found subfolder")
+        
+        if os.path.exists( os.path.dirname(Path(images_path)/"video")):
+            print('existed video folder')
+        else:
+            print("not existed")
+
         new_job.status = JobStatus.UPLOADED
 
         return {

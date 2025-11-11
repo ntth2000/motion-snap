@@ -26,8 +26,6 @@ def extract_frames(video_id: int):
         f"python3 apps/preprocess/extract_image.py ..{input_path} && sync"
     ]
 
-
-
     subprocess.run(cmd, check=True)
     print(f"Frames extracted successfully for video_id={video_id}")
 
