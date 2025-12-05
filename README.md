@@ -121,6 +121,12 @@ uvicorn app.main:app --reload
 Access the API at: http://localhost:8000
 
 ### Frontend
+Create a .env file in FE/ with the following content:
+```bash
+VITE_API_URL=http://localhost:8000/api
+```
+
+Start FE:
 ```bash
 cd FE
 npm install
