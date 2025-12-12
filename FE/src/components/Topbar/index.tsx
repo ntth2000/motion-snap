@@ -1,17 +1,18 @@
 import { LogoutOutlined, PlusSquareOutlined } from '@ant-design/icons';
-import {
-  Button,
-  Typography,
-  Dropdown,
-  Avatar,
-  Space,
-} from 'antd';
 import type { MenuProps } from 'antd';
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  Space,
+  Typography,
+} from 'antd';
 import { Header } from 'antd/es/layout/layout';
-import UploadVideo from '../UploadVideo';
 import { useNavigate } from 'react-router';
-import { eventEmitter } from '../../utils/eventEmitter';
+
 import useAuth from '../../hooks/useAuth';
+import { eventEmitter } from '../../utils/eventEmitter';
+import UploadVideo from '../UploadVideo';
 const { Text } = Typography;
 
 interface TopbarProps {

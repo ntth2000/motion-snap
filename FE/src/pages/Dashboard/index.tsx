@@ -1,5 +1,5 @@
-import AppLayout from '../../layout/AppLayout';
 import VideoList from '../../components/VideoList';
+import AppLayout from '../../layout/AppLayout';
 
 export default function DashboardPage() {
 

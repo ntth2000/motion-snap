@@ -1,4 +1,5 @@
 import axios from "axios";
+
 import { API_ENDPOINT } from "../constants";
 
 const axiosInstance = axios.create({

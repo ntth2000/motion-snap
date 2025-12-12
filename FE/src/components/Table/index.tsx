@@ -1,5 +1,6 @@
-import React from "react";
 import { Pagination } from "antd";
+import React from "react";
+
 import type { CustomTableProps } from "./Table.types";
 
 export function CustomTable<T extends { key: React.Key }>({

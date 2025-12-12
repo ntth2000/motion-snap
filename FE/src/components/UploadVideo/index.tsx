@@ -1,16 +1,17 @@
 import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import {
-  Upload,
-  Typography,
   Button,
-  Progress,
-  message,
   Card,
-  Row,
   Col,
+  message,
   Modal,
+  Progress,
+  Row,
+  Typography,
+  Upload,
 } from "antd";
 import { useEffect, useState } from "react";
+
 import { uploadVideo } from "../../services/videoService";
 import { eventEmitter } from "../../utils/eventEmitter";
 

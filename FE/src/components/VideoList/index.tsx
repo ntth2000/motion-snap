@@ -1,14 +1,15 @@
 import { ExclamationCircleFilled, PlusSquareOutlined } from "@ant-design/icons";
-import { Space, Tag, Button, Modal, message, Typography } from "antd";
+import { Button, message, Modal, Space, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
-import { CustomTable } from "../Table";
-import type { IVideo } from "../../types";
-import { deleteVideo, getAllVideos } from "../../services/videoService";
-import { eventEmitter } from "../../utils/eventEmitter";
-import { formatDate } from "../../utils/util";
 import { useNavigate } from "react-router";
 
-const VideoList: React.FC = ({ }) => {
+import { deleteVideo, getAllVideos } from "../../services/videoService";
+import type { IVideo } from "../../types";
+import { eventEmitter } from "../../utils/eventEmitter";
+import { formatDate } from "../../utils/util";
+import { CustomTable } from "../Table";
+
+const VideoList: React.FC = () => {
 	const [page, setPage] = useState(1);
 	const [videos, setVideos] = useState<IVideo[]>([]);
 	const [modal, modalContextHolder] = Modal.useModal();

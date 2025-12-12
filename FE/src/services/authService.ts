@@ -12,27 +12,19 @@ interface LoginParams {
 }
 
 export const getMe = async () => {
-  try {
-    const res = await axiosInstance.get(API.ME, { withCredentials: true });
-    return res.data;
-  } catch (error: any) {
-    throw error;
-  }
+  const res = await axiosInstance.get(API.ME, { withCredentials: true });
+  return res.data;
 };
 
 export const login = async ({ email, password }: LoginParams) => {
-  try {
-    const res = await axiosInstance.post(API.LOGIN, {
-      email,
-      password,
-    }, {
-      withCredentials: true
-    });
+  const res = await axiosInstance.post(API.LOGIN, {
+    email,
+    password,
+  }, {
+    withCredentials: true
+  });
 
-    return res.data;
-  } catch (error: any) {
-    throw error;
-  }
+  return res.data;
 };
 
 export const register = async ({ email, password, username }: RegisterParams) => {

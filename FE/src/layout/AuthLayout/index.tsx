@@ -1,4 +1,4 @@
-import { Layout, Row, Col, Card, Typography } from 'antd';
+import { Card, Col, Layout, Row, Typography } from 'antd';
 import type { PropsWithChildren, ReactNode } from 'react';
 
 const { Content } = Layout;

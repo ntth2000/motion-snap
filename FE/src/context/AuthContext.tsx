@@ -1,10 +1,11 @@
 import React, {
   createContext,
-  useState,
-  useEffect,
   useCallback,
+  useEffect,
+  useState,
 } from "react";
-import { getMe, logout as logoutAxios, login as loginAxios } from '../services/authService'
+
+import { getMe, login as loginAxios, logout as logoutAxios } from '../services/authService'
 
 interface User {
   id: string;
@@ -34,13 +35,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Gọi API backend để logout (nếu có)
       await logoutAxios()
     } catch (err) {
       console.error("Logout failed", err);
     }
 
-    // Reset toàn bộ auth state
     setUser(null);
     setLoading(false);
   };
@@ -58,18 +57,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    console.log("fetch user:")
     fetchUser();
   }, []);
 
   const login = async ({ email, password }: { email: string; password: string }) => {
-    try {
-      await loginAxios({ email, password })
-      const res = await getMe()
-      setUser(res)
-    } catch (err) {
-      throw (err)
-    }
+    await loginAxios({ email, password })
+    const res = await getMe()
+    setUser(res)
 
     setLoading(false);
   };

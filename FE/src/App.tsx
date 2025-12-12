@@ -1,9 +1,11 @@
 import './styles/base.css';
-import { Navigate, Route, Routes } from 'react-router';
-import { privateRoutes, publicRoutes } from './routes';
+
 import { ConfigProvider } from 'antd';
+import { Navigate, Route, Routes } from 'react-router';
+
 import PrivateRoute from './components/PrivateRoute';
 import PublicRoute from './components/PublicRoute';
+import { privateRoutes, publicRoutes } from './routes';
 
 function App() {
   return (

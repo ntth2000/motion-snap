@@ -1,8 +1,9 @@
 import { Button, Divider, Form, Input, message, Typography } from 'antd';
-import AuthLayout from '../../layout/AuthLayout';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+
 import useAuth from '../../hooks/useAuth';
+import AuthLayout from '../../layout/AuthLayout';
 
 export default function LoginPage() {
   const [form] = Form.useForm();

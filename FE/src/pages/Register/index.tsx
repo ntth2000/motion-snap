@@ -1,8 +1,9 @@
 import { Button, Divider, Form, Input, message, Typography } from 'antd';
-import AuthLayout from '../../layout/AuthLayout';
 import { useState } from 'react';
-import { register } from '../../services/authService';
 import { useNavigate } from 'react-router';
+
+import AuthLayout from '../../layout/AuthLayout';
+import { register } from '../../services/authService';
 
 export default function RegisterPage() {
   const [form] = Form.useForm();

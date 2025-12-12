@@ -1,8 +1,9 @@
+import type { ComponentType } from 'react';
+
+import DashboardPage from './pages/Dashboard';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
-import DashboardPage from './pages/Dashboard';
 import VideoPage from './pages/Video';
-import type { ComponentType } from 'react';
 
 export type AppRoute = {
   path: string;

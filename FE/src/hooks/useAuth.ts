@@ -1,5 +1,6 @@
 import { useContext, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation,useNavigate } from "react-router-dom";
+
 import { AuthContext } from "../context/AuthContext";
 const useAuth = (requireAuth = false, restrictWhenAuth = false) => {
   const { user, isAuthenticated, loading, logout, login } = useContext(AuthContext)!;

@@ -1,12 +1,13 @@
 import { Button, message, Steps } from 'antd';
-import AppLayout from '../../layout/AppLayout';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
-import { getExportedData, getJobStatus, getVideoById } from '../../services/videoService';
-import ExtractedFrames from '../../components/VideoDetail/UploadedVideo';
-import ExtractedPoses from '../../components/VideoDetail/ExtractedPoses';
-import type { IVideo } from '../../types';
+
 import Draw3D from '../../components/VideoDetail/Draw3d';
+import ExtractedPoses from '../../components/VideoDetail/ExtractedPoses';
+import ExtractedFrames from '../../components/VideoDetail/UploadedVideo';
+import AppLayout from '../../layout/AppLayout';
+import { getExportedData, getJobStatus, getVideoById } from '../../services/videoService';
+import type { IVideo } from '../../types';
 
 export default function VideoPage() {
   const { videoId } = useParams();
@@ -66,10 +67,6 @@ export default function VideoPage() {
     if (jobStatus === "extracting_poses" || jobStatus === "drawing_3d") {
       startPolling();
     }
-
-    // return () => {
-    //   if (intervalRef.current) clearInterval(intervalRef.current);
-    // };
   }, [jobStatus, videoId]);
 
   const getVideoDetails = async () => {
@@ -186,7 +183,10 @@ export default function VideoPage() {
               variant="solid"
               color="default"
               onClick={handleExport}
-              disabled={(jobStatus === "extracting_poses" && videoStep === 1) || (jobStatus === 'drawing_3d' && videoStep == 2)}
+              disabled={
+                ((jobStatus === "extracting_poses" || jobStatus === "uploaded") && videoStep === 1) || 
+                ((jobStatus === 'drawing_3d' || jobStatus === "extracted_poses") && videoStep == 2)
+              }
             >
               Export
             </Button>

@@ -15,4 +15,4 @@ interface ICustomTableProps<T> {
     noData: React.ReactElement | null;
 }
 
-export type { IColumn, ICustomTableProps as CustomTableProps };
+export type { ICustomTableProps as CustomTableProps,IColumn };

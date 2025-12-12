@@ -1,6 +1,7 @@
 import { Button, message, Typography } from "antd";
-import { extractPoses, getExtractedPosesById } from "../../services/videoService";
 import { useEffect, useState } from "react";
+
+import { extractPoses, getExtractedPosesById } from "../../services/videoService";
 
 const ExtractedPoses = ({ videoId, status, setStatus, videoDetail }: {
   videoId: string | undefined,
