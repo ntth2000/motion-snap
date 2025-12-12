@@ -133,3 +133,25 @@ npm install
 npm run dev
 ```
 Then open http://localhost:5173/
+
+## Key API endpoints
+```bash
+POST /upload
+```
+Upload a video and automatically extract frames.
+```bash
+POST /extract_poses/{video_id}
+```
+Extract 2D and 3D poses using EasyMocap.
+```bash
+POST /draw_3d/{video_id}
+```
+Generate and save 3D pose visualization.
+```bash
+GET /{video_id}/extracted_poses
+```
+Retrieve 2D pose data, frames, and original video info.
+```bash
+GET /{video_id}/drawn_3d
+```
+Retrieve 3D pose data, 3D visualizations, and related outputs.
