@@ -1,4 +1,4 @@
-import { LogoutOutlined, PlusSquareOutlined } from '@ant-design/icons';
+import { LogoutOutlined, PlusSquareOutlined, SettingOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import {
   Avatar,
@@ -24,12 +24,12 @@ const getInitial = (name: string) =>
 
 export default function Topbar({ userName }: TopbarProps) {
   const { logout } = useAuth();
-  const nagivate = useNavigate();
+  const navigate = useNavigate();
 
   const onLogout = async () => {
     try {
       await logout();
-      nagivate('/login', { replace: true });
+      navigate('/login', { replace: true });
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -40,6 +40,16 @@ export default function Topbar({ userName }: TopbarProps) {
   };
 
   const items: MenuProps['items'] = [
+    {
+      key: 'api-key',
+      label: (
+        <Text style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '16px' }}>Settings</span>
+          <SettingOutlined />
+        </Text>
+      ),
+      onClick: () => navigate('/settings'),
+    },
     {
       key: 'logout',
       label: (
@@ -64,7 +74,7 @@ export default function Topbar({ userName }: TopbarProps) {
       <Header>
         <div className="topbar">
           <div>
-            <Typography.Text strong style={{ fontSize: 20, cursor: 'pointer' }} onClick={() => nagivate('/')}>
+            <Typography.Text strong style={{ fontSize: 20, cursor: 'pointer' }} onClick={() => navigate('/')}>
               MotionSnap
             </Typography.Text>
           </div>

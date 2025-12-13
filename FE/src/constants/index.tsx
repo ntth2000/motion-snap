@@ -7,5 +7,6 @@ export const API = {
   ME: 'auth/me',
   VIDEOS: '/videos',
   UPLOAD_VIDEO: '/videos/upload',
-  STATUS: '/videos/status'
+  STATUS: '/videos/status',
+  API_KEY: '/api-keys',
 };

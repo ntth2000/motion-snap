@@ -5,7 +5,13 @@ import { Navigate, Route, Routes } from 'react-router';
 
 import PrivateRoute from './components/PrivateRoute';
 import PublicRoute from './components/PublicRoute';
-import { privateRoutes, publicRoutes } from './routes';
+import DashboardPage from './pages/Dashboard';
+import LoginPage from './pages/Login';
+import RegisterPage from './pages/Register';
+import SettingPage from './pages/Settings';
+import ApiKeySettingPage from './pages/Settings/ApiKeySetting';
+import ProfileSettingPage from './pages/Settings/ProfileSetting';
+import VideoPage from './pages/Video';
 
 function App() {
   return (
@@ -29,15 +35,18 @@ function App() {
       >
         <Routes>
           <Route element={<PublicRoute />}>
-            {publicRoutes.map(({ path, Component }) => (
-              <Route key={path} path={path} element={<Component />} />
-            ))}
+            <Route key='login' path='/login' element={<LoginPage />} />
+            <Route key='register' path='/register' element={<RegisterPage />} />
           </Route>
           <Route element={<PrivateRoute />}>
-            {privateRoutes.map(({ path, Component }) => (
-              <Route key={path} path={path} element={<Component />} />
-            ))}
+            <Route key='video/:videoId' path='/video/:videoId' element={<VideoPage />} />
+            <Route key='settings' path='/settings' element={<SettingPage />}>
+              <Route index element={<Navigate to="profile" replace />} />
+              <Route path="profile" element={<ProfileSettingPage />} />
+              <Route path="key" element={<ApiKeySettingPage />} />
+            </Route>
           </Route>
+          <Route key='home' path='/' element={<DashboardPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </ConfigProvider>
