@@ -1,5 +1,5 @@
-# src/models.py
 from src.videos.models import Video, Job
 from src.auth.models import User
+from src.api_keys.models import APIKey
 
-__all__ = ["User", "Video", "Job"]
+__all__ = ["User", "Video", "Job", "APIKey"]

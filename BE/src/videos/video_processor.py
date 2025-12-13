@@ -32,7 +32,6 @@ def extract_frames(video_id: int):
 
 def extract_2d(video_id: int):
     input_path = f"/workspace/inputs/{video_id}"
-    host_path = f"{os.getcwd()}/storage/inputs/{video_id}"
 
     cmd = [
         "docker", "run", "--rm",

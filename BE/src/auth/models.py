@@ -15,7 +15,7 @@ class User(Base):
 
     videos = relationship("Video", back_populates="user", cascade="all, delete-orphan")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
-
+    api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan")
 
 class RefreshToken(Base):
     __tablename__ = 'refresh_tokens'
