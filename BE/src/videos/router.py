@@ -4,7 +4,8 @@ from fastapi.params import File
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from src import database
-from src.auth import schemas as authSchemas
+from src.auth import schemas as auth_schemas
+from src.users import schemas as user_schemas
 from src.videos import service
 from src.auth.dependencies import get_current_user
 from .schemas import VideoListResponse, VideoResponse
@@ -28,7 +29,7 @@ def get_db():
 @router.get("/", response_model=VideoListResponse)
 def get_all(
     db: Session = Depends(get_db),
-    current_user: authSchemas.UserOut = Depends(get_current_user)
+    current_user: user_schemas.UserDetailResponse = Depends(get_current_user)
 ):
     return service.get_videos_by_user(current_user.id, db)
 
@@ -37,7 +38,7 @@ def get_all(
 def get_video(
     video_id: int,
     db: Session = Depends(get_db),
-    current_user: authSchemas.UserOut = Depends(get_current_user)
+    current_user: user_schemas.UserDetailResponse = Depends(get_current_user)
 ):
     return service.get_video_by_id(video_id, current_user.id, db)
 
@@ -46,7 +47,7 @@ def get_video(
 async def upload_video(
     video: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: authSchemas.UserOut = Depends(get_current_user)
+    current_user: user_schemas.UserDetailResponse = Depends(get_current_user)
 ):
     return await service.upload_video(user_id = current_user.id, file=video, db=db) 
 
@@ -75,7 +76,7 @@ def draw_poses(
 def delete_video(
     video_id: int,
     db: Session = Depends(get_db),
-    current_user: authSchemas.UserOut = Depends(get_current_user)
+    current_user: user_schemas.UserDetailResponse = Depends(get_current_user)
 ):
     service.delete_video(video_id, current_user.id, db)
     return None
@@ -84,7 +85,7 @@ def delete_video(
 async def get_extracted_frames(
     video_id: int,
     db: Session = Depends(get_db),
-    current_user: authSchemas.UserOut = Depends(get_current_user)
+    current_user: user_schemas.UserDetailResponse = Depends(get_current_user)
 ):
     return service.get_extracted_poses(video_id, current_user.id, db)    
 
@@ -93,7 +94,7 @@ async def get_extracted_frames(
 def get_draw_3d_frames(
     video_id: int,
     db: Session = Depends(get_db),
-    current_user: authSchemas.UserOut = Depends(get_current_user)
+    current_user: user_schemas.UserDetailResponse = Depends(get_current_user)
 ):
     return service.get_3d(video_id, current_user.id, db)
 
@@ -102,7 +103,7 @@ def get_draw_3d_frames(
 def get_job_status(
     video_id: int,
     db: Session = Depends(get_db),
-    current_user: authSchemas.UserOut = Depends(get_current_user)
+    current_user: user_schemas.UserDetailResponse = Depends(get_current_user)
 ):
     return service.get_job_status(video_id, current_user.id, db)
 
@@ -112,7 +113,7 @@ def export(
     video_id: int,
     export_type: str = Query(..., regex="^(extracted_poses|3d)$"),
     db: Session = Depends(get_db),
-    current_user: authSchemas.UserOut = Depends(get_current_user),
+    current_user: user_schemas.UserDetailResponse = Depends(get_current_user),
     background_tasks: BackgroundTasks = None
 ):
     return service.export_video_data(video_id, export_type, current_user.id, db, background_tasks)

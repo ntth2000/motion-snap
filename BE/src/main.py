@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from src.videos.models import Job, JobStatus
+from src.system.startup.rollback_jobs import rollback_jobs
+from src.system.startup.init_admin import init_admin
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -39,15 +40,11 @@ def get_db():
 
 
 @app.on_event("startup")
-def rollback_incomplete_jobs():
+def startup_tasks():
     db: Session = next(get_db())
-    incomplete_jobs = db.query(Job).filter(Job.status == JobStatus.DRAWING_3D).all()
-    for job in incomplete_jobs:
-        job.status = JobStatus.EXTRACTED_POSES
-    incomplete_jobs = db.query(Job).filter(Job.status == JobStatus.EXTRACTING_POSES).all()
-    for job in incomplete_jobs:
-        job.status = JobStatus.UPLOADED
-    db.commit()
+    init_admin(db)
+    rollback_jobs(db)
+    
 
 app.include_router(auth_router.router)
 app.include_router(video_router.router)

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from src import database
 from src.auth import schemas, service
+from src.users import schemas as user_schemas
 from src.auth.constants import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from src.auth.dependencies import get_current_user
 
@@ -24,13 +25,13 @@ def get_db():
         db.close()
 
 
-@router.post("/register", response_model=schemas.UserOut)
-def register(form_data: schemas.UserCreate, db: Session = Depends(get_db)):
+@router.post("/register", response_model=user_schemas.UserDetailResponse)
+def register(form_data: user_schemas.CreateUserRequest, db: Session = Depends(get_db)):
     return service.register_user(db, form_data)
 
 
 @router.post("/login")
-def login(response: Response, form_data: schemas.Login, db: Session = Depends(get_db)):
+def login(response: Response, form_data: schemas.LoginRequest, db: Session = Depends(get_db)):
     tokens = service.login_user(db, form_data.email, form_data.password)
     response.set_cookie(
         key="access_token",
@@ -76,9 +77,14 @@ def refresh(request: Request, response: Response, db: Session = Depends(get_db))
     return { "message": "Tokens refreshed successfully" }
     
 
-@router.get("/me")
-def get_me(current_user: schemas.UserOut = Depends(get_current_user)):
-    return { "username": current_user.username, "email": current_user.email }
+@router.get("/me", response_model=user_schemas.UserDetailResponse)
+def get_me(current_user: user_schemas.UserDetailResponse = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "role": current_user.role
+    }
     
 
 @router.post("/logout")

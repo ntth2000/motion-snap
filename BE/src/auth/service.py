@@ -1,7 +1,7 @@
 from datetime import datetime
 from src.auth.exceptions import ExistingUserException, InvalidUserInfoException, TokenExpiredException, InvalidTokenException, NotRegisteredEmail
 from src.auth.utils import hash_password, verify_password, create_access_token, create_refresh_token, verify_token
-from src.auth import models
+from src import models
 
 
 def register_user(db, user):
