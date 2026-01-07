@@ -11,6 +11,7 @@ interface User {
   id: string;
   username: string;
   email: string;
+  role: "USER" | "ADMIN";
 }
 
 interface AuthContextType {
@@ -19,7 +20,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   fetchUser: () => Promise<void>;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
+  login: (credentials: { email: string; password: string }) => Promise<any>;
   logout: () => Promise<void>;
 }
 
@@ -61,11 +62,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async ({ email, password }: { email: string; password: string }) => {
-    await loginAxios({ email, password })
-    const res = await getMe()
-    setUser(res)
-
-    setLoading(false);
+    const res = await loginAxios({ email, password });
+    console.log('Login response from service:', res);
+    return res.data;
   };
 
   const isAuthenticated = !!user;

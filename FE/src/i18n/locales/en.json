@@ -1,0 +1,52 @@
+{
+  "common": {
+    "submit": "Gửi",
+    "cancel": "Hủy",
+    "loading": "Đang tải...",
+    "error": "Đã xảy ra lỗi. Vui lòng thử lại."
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back to MotionSnap",
+      "hint": "Sign in to continue using the application",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "loginBtn": "Login",
+      "registerLink": "Register here.",
+      "message": {
+        "emailRequired": "Please enter your email.",
+        "passwordRequired": "Please enter your password.",
+        "invalidEmail": "Invalid email address.",
+        "invalidPassword": "Invalid password.",
+        "invalidCredentials": "Invalid login credentials. Please try again.",
+        "successLogin": "Login successful."
+      }
+    },
+    "register": {
+      "title": "Create a new account",
+      "hint": "Sign up to get started with MotionSnap",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "haveAccount": "Already have an account?",
+      "btnRegister": "Register",
+      "message": {
+        "passwordMismatch": "Passwords do not match."
+      }
+    },
+    "logout": {
+      "btnLogout": "Logout"
+    }
+  },
+  "comment": {
+    "addComment": "Add a comment...",
+    "submit": "Submit comment"
+  },
+  "settings": {
+    "title": "User Settings",
+    "profile": "Profile",
+    "apiKey": "API Key"
+  }
+}

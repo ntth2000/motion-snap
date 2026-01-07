@@ -1,5 +1,5 @@
-import { ExclamationCircleFilled, PlusSquareOutlined } from "@ant-design/icons";
-import { Button, message, Modal, Space, Tag, Typography } from "antd";
+import { ExclamationCircleFilled, PlusSquareOutlined, AppstoreOutlined, UnorderedListOutlined } from "@ant-design/icons";
+import { Button, message, Modal, Space, Tag, Typography, Select } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -8,15 +8,22 @@ import type { IVideo } from "../../types";
 import { eventEmitter } from "../../utils/eventEmitter";
 import { formatDate } from "../../utils/util";
 import { CustomTable } from "../Table";
+import VideoCard from "./VideoCard";
+
+
+const videosPerRowOptions = [5, 6, 7].map(num => ({ value: num, label: `${num} per row` }));
 
 const VideoList: React.FC = () => {
 	const [page, setPage] = useState(1);
+	const [viewType, setViewType] = useState<"grid" | "list">("grid");
 	const [videos, setVideos] = useState<IVideo[]>([]);
 	const [modal, modalContextHolder] = Modal.useModal();
 	const [messageApi, msgContextHolder] = message.useMessage();
 	const navigate = useNavigate();
 
 	const pageSize = 10;
+	const pagedData = videos.slice((page - 1) * pageSize, page * pageSize);
+	const [videosPerRow, setVideosPerRow] = useState<number>(5);
 	const onUploadVideo = () => {
 		eventEmitter.emit("open-upload-video-modal");
 	};
@@ -81,113 +88,154 @@ const VideoList: React.FC = () => {
 	return <>
 		{modalContextHolder}
 		{msgContextHolder}
-		<CustomTable
-			columns={[
-				{
-					key: "video",
-					title: "Video",
-					render: (record) => (
-						<div style={{
-							display: "flex",
-							gap: "16px",
-						}}>
-							<img
-								src={record.thumbnailUrl}
-								alt="thumbnail"
-								style={{
-									width: "200px",
-									height: "120px",
-									objectFit: "cover",
-									flexShrink: 0,
-									borderRadius: "8px"
-								}}
-							/>
+		<div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+			<div style={{ display: 'flex', alignItems: 'center' }}>
+				<Button
+					type={viewType === 'grid' ? 'primary' : 'default'}
+					onClick={() => setViewType('grid')}
+					icon={<AppstoreOutlined />}
+				/>
+				<Button
+					style={{ marginLeft: 8 }}
+					type={viewType === 'list' ? 'primary' : 'default'}
+					onClick={() => setViewType('list')}
+					icon={<UnorderedListOutlined />}
+				/>
+				{viewType === 'grid' && (
+					<Select
+						style={{ width: 160, marginLeft: 12 }}
+						value={videosPerRow}
+						onChange={(v) => setVideosPerRow(Number(v))}
+						options={videosPerRowOptions}
+					/>
+				)}
+			</div>
+		</div>
+
+		{viewType === 'list' ? (
+			<CustomTable
+				columns={[
+					{
+						key: "video",
+						title: "Video",
+						render: (record) => (
 							<div style={{
-								flex: 1,
-								overflow: "hidden",
+								display: "flex",
+								gap: "16px",
 							}}>
-								<Typography.Link
+								<img
+									src={record.thumbnailUrl}
+									alt="thumbnail"
 									style={{
-										fontWeight: "600",
-										fontSize: "16px",
-										whiteSpace: "nowrap",
-										overflow: "hidden",
-										textOverflow: "ellipsis",
-										cursor: "pointer",
+										width: "200px",
+										height: "120px",
+										objectFit: "cover",
+										flexShrink: 0,
+										borderRadius: "8px"
 									}}
-									onClick={() => { navigate(`/video/${record.id}`); }}
-								>
-									{record.video}
-								</Typography.Link>
+								/>
+								<div style={{
+									flex: 1,
+									overflow: "hidden",
+								}}>
+									<Typography.Link
+										style={{
+											fontWeight: "600",
+											fontSize: "16px",
+											whiteSpace: "nowrap",
+											overflow: "hidden",
+											textOverflow: "ellipsis",
+											cursor: "pointer",
+										}}
+										onClick={() => { navigate(`/video/${record.id}`); }}
+									>
+										{record.video}
+									</Typography.Link>
+								</div>
 							</div>
-						</div>
 
-					),
-				},
-				{ key: "createdAt", title: "Created At", width: '20%' },
-				{
-					key: "status",
-					title: "Status",
-					width: '20%',
-					render: (record) => {
-						let text = record.status;
-						let color = 'green';
-						if (record.status === 'drawing') {
-							color = 'orange';
-							text = "Drawing 3D"
-						} else if (record.status === 'extracting') {
-							color = 'red';
-							text = "Extracting frames"
+						),
+					},
+					{ key: "createdAt", title: "Created At", width: '20%' },
+					{
+						key: "status",
+						title: "Status",
+						width: '20%',
+						render: (record) => {
+							let text = record.status;
+							let color = 'green';
+							if (record.status === 'drawing') {
+								color = 'orange';
+								text = "Drawing 3D"
+							} else if (record.status === 'extracting') {
+								color = 'red';
+								text = "Extracting frames"
+							}
+							return (
+								<Tag color={color} key={record.status} style={{ textTransform: 'capitalize' }}>
+									{text}
+								</Tag>
+							);
 						}
-						return (
-							<Tag color={color} key={record.status} style={{ textTransform: 'capitalize' }}>
-								{text}
-							</Tag>
-						);
-					}
-				},
-				{
-					key: "action",
-					title: "Action",
-					width: '10%',
-					render: (record) => (<>
-						<Space size="middle">
-							<Button danger onClick={() => showDeleteConfirm(record.id)}>Delete</Button>
-						</Space>
+					},
+					{
+						key: "action",
+						title: "Action",
+						width: '10%',
+						render: (record) => (<>
+							<Space size="middle">
+								<Button danger onClick={() => showDeleteConfirm(record.id)}>Delete</Button>
+							</Space>
 
-					</>)
-				},
-			]}
-			data={videos.slice((page - 1) * pageSize, page * pageSize)}
-			total={videos.length}
-			current={page}
-			onPageChange={(p) => setPage(p)}
-			noData={
-				< div style={{ textAlign: "center", padding: "40px 0" }}>
-					<Button
-						color="default"
-						variant="outlined"
-						style={{
-							padding: '16px',
-							marginRight: '16px',
-						}}
-						onClick={onUploadVideo}
-					>
-						<PlusSquareOutlined />
-						<span
+						</>)
+					},
+				]}
+				data={pagedData}
+				total={videos.length}
+				current={page}
+				onPageChange={(p) => setPage(p)}
+				noData={
+					< div style={{ textAlign: "center", padding: "40px 0" }}>
+						<Button
+							color="default"
+							variant="outlined"
 							style={{
-								fontWeight: '500',
-								fontSize: '16px',
-								marginLeft: '2px',
-								marginBottom: '1px',
+								padding: '16px',
+								marginRight: '16px',
 							}}
+							onClick={onUploadVideo}
 						>
-							Upload your first video
-						</span>
-					</Button>
-				</div >
-			}
-		/>
+							<PlusSquareOutlined />
+							<span
+								style={{
+									fontWeight: '500',
+									fontSize: '16px',
+									marginLeft: '2px',
+									marginBottom: '1px',
+								}}
+							>
+								Upload your first video
+							</span>
+						</Button>
+					</div >
+				}
+			/>
+		) : (
+			<div>
+				{pagedData.length === 0 ? (
+					<div style={{ textAlign: 'center', padding: '40px 0' }}>
+						<Button onClick={onUploadVideo}>
+							<PlusSquareOutlined />
+							<span style={{ marginLeft: 8 }}>Upload your first video</span>
+						</Button>
+					</div>
+				) : (
+					<div style={{ display: 'grid', gap: 16, gridTemplateColumns: `repeat(${videosPerRow}, minmax(0, 1fr))` }}>
+						{pagedData.map((record) => <VideoCard key={record.id} record={record} navigate={navigate} showDeleteConfirm={showDeleteConfirm} />)}
+					</div>
+				)}
+			</div>
+		)}
 	</>
 }
 export default VideoList;

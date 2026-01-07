@@ -1,12 +1,29 @@
 export const API_ENDPOINT = import.meta.env.VITE_API_URL;
+
 export const API = {
-  LOGIN: 'auth/login',
-  REGISTER: 'auth/register',
-  LOGOUT: 'auth/logout',
-  REFRESH: 'auth/refresh',
-  ME: 'auth/me',
-  VIDEOS: '/videos',
-  UPLOAD_VIDEO: '/videos/upload',
-  STATUS: '/videos/status',
-  API_KEY: '/api-keys',
+  auth: {
+    login: 'auth/login',
+    register: 'auth/register',
+    logout: 'auth/logout',
+    refresh: 'auth/refresh',
+    me: 'auth/me',
+  },
+
+  apiKey: 'api-keys',
+
+  videos: {
+    list: '/videos',
+    upload: '/videos/upload',
+    status: '/videos/status',
+
+    comments: (videoId: number | string) =>
+      `/videos/${videoId}/comments`,
+  },
+
+  comments: {
+    byId: (commentId: number | string) =>
+      `/comments/${commentId}`,
+  },
+
+  apiKeys: '/api-keys',
 };

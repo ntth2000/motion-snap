@@ -11,7 +11,7 @@ export const uploadVideo = async (
     const formData = new FormData();
     formData.append("video", file);
 
-    const response = await axiosInstance.post(API.UPLOAD_VIDEO, formData, {
+    const response = await axiosInstance.post(API.videos.upload, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -29,7 +29,7 @@ export const uploadVideo = async (
 
 export const getAllVideos = async () => {
   try {
-    const response = await axiosInstance.get(API.VIDEOS, {
+    const response = await axiosInstance.get(API.videos.list, {
       withCredentials: true,
     });
     return response.data;
@@ -42,7 +42,7 @@ export const getAllVideos = async () => {
 
 export const getVideoById = async (videoId: string) => {
   try {
-    const response = await axiosInstance.get(`${API.VIDEOS}/${videoId}`, {
+    const response = await axiosInstance.get(`${API.videos.list}/${videoId}`, {
       withCredentials: true,
     });
     return response.data;
@@ -55,7 +55,7 @@ export const getVideoById = async (videoId: string) => {
 
 export const deleteVideo = async (videoId: number) => {
   try {
-    const response = await axiosInstance.delete(`${API.VIDEOS}/${videoId}`, {
+    const response = await axiosInstance.delete(`${API.videos.list}/${videoId}`, {
       withCredentials: true,
     });
     return response.data;
@@ -68,7 +68,7 @@ export const deleteVideo = async (videoId: number) => {
 
 export const extractPoses = async (videoId: number) => {
   try {
-    const response = await axiosInstance.post(`${API.VIDEOS}/extract_poses/${videoId}`, null, {
+    const response = await axiosInstance.post(`${API.videos.list}/extract_poses/${videoId}`, null, {
       withCredentials: true,
     });
     console.log('Extract poses response:', response.data);
@@ -82,7 +82,7 @@ export const extractPoses = async (videoId: number) => {
 
 export const draw3D = async (videoId: number) => {
   try {
-    const response = await axiosInstance.post(`${API.VIDEOS}/draw_3d/${videoId}`, null, {
+    const response = await axiosInstance.post(`${API.videos.list}/draw_3d/${videoId}`, null, {
       withCredentials: true,
     });
     console.log('Draw 3D response:', response.data);
@@ -96,7 +96,7 @@ export const draw3D = async (videoId: number) => {
 
 export const getExtractedFramesById = async (videoId: string) => {
   try {
-    const response = await axiosInstance.get(`${API.VIDEOS}/${videoId}/extracted_frames`, {
+    const response = await axiosInstance.get(`${API.videos.list}/${videoId}/extracted_frames`, {
       withCredentials: true,
     });
     console.log('Get extracted frames response:', response.data);
@@ -110,7 +110,7 @@ export const getExtractedFramesById = async (videoId: string) => {
 
 export const getExtractedPosesById = async (videoId: string) => {
   try {
-    const response = await axiosInstance.get(`${API.VIDEOS}/${videoId}/extracted_poses`, {
+    const response = await axiosInstance.get(`${API.videos.list}/${videoId}/extracted_poses`, {
       withCredentials: true,
     });
     console.log('Get extracted poses video response:', response.data);
@@ -124,7 +124,7 @@ export const getExtractedPosesById = async (videoId: string) => {
 
 export const getDrawn3DById = async (videoId: string) => {
   try {
-    const response = await axiosInstance.get(`${API.VIDEOS}/${videoId}/drawn_3d`, {
+    const response = await axiosInstance.get(`${API.videos.list}/${videoId}/drawn_3d`, {
       withCredentials: true,
     });
     return response.data;
@@ -138,7 +138,7 @@ export const getDrawn3DById = async (videoId: string) => {
 export const getExportedData = async (videoId: string, type: string = "extracted_poses") => {
   try {
     const response = await axiosInstance.get(
-      `${API.VIDEOS}/${videoId}/export?export_type=${type}`,
+      `${API.videos.list}/${videoId}/export?export_type=${type}`,
       {
         responseType: 'blob',
         headers: {
@@ -158,7 +158,7 @@ export const getExportedData = async (videoId: string, type: string = "extracted
 export const getJobStatus = async (videoId: string) => {
   console.log("cal getJobStatus")
   try {
-    const response = await axiosInstance.get(`${API.STATUS}/${videoId}`, {
+    const response = await axiosInstance.get(`${API.videos.status}/${videoId}`, {
       withCredentials: true,
     });
     return response.data;

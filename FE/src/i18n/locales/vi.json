@@ -1,0 +1,56 @@
+{
+  "common": {
+    "submit": "Gửi",
+    "cancel": "Hủy",
+    "loading": "Đang tải...",
+    "error": "Đã xảy ra lỗi. Vui lòng thử lại."
+  },
+  "auth": {
+    "login": {
+      "title": "Chào mừng trở lại MotionSnap",
+      "hint": "Đăng nhập để tiếp tục sử dụng ứng dụng",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "forgotPassword": "Quên mật khẩu?",
+      "noAccount": "Chưa có tài khoản?",
+      "loginBtn": "Đăng nhập",
+      "registerLink": "Đăng ký ngay",
+      "message": {
+        "emailRequired": "Vui lòng nhập email.",
+        "passwordRequired": "Vui lòng nhập mật khẩu.",
+        "invalidEmail": "Địa chỉ email không hợp lệ.",
+        "invalidPassword": "Mật khẩu không hợp lệ.",
+        "invalidCredentials": "Thông tin đăng nhập không hợp lệ. Vui lòng thử lại."
+      }
+    },
+    "register": {
+      "title": "Tạo tài khoản mới",
+      "hint": "Đăng ký để bắt đầu với MotionSnap",
+      "username": "Tên tài khoản",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "haveAccount": "Đã có tài khoản?",
+      "btnRegister": "Đăng ký",
+      "message": {
+        "passwordRequired": "Vui lòng nhập mật khẩu.",
+        "emailRequired": "Vui lòng nhập email.",
+        "usernameRequired": "Vui lòng nhập tên.",
+        "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự.",
+        "passwordMismatch": "Mật khẩu và xác nhận mật khẩu không khớp."
+      }
+    },
+    "logout": {
+      "btnLogout": "Đăng xuất"
+    }
+  },
+  "comment": {
+    "addComment": "Thêm bình luận...",
+    "submit": "Gửi bình luận"
+  },
+  "settings": {
+    "title": "Cài đặt người dùng",
+    "profile": "Hồ sơ",
+    "apiKey": "API Key"
+  }
+}

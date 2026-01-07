@@ -1,4 +1,4 @@
-import { LogoutOutlined, PlusSquareOutlined, SettingOutlined } from '@ant-design/icons';
+import { HomeOutlined, LogoutOutlined, PlusSquareOutlined, SettingOutlined, VideoCameraOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import {
   Avatar,
@@ -6,13 +6,14 @@ import {
   Dropdown,
   Space,
   Typography,
+  Tooltip,
 } from 'antd';
 import { Header } from 'antd/es/layout/layout';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
+import useAuth from '../../../hooks/useAuth';
+import UploadVideo from '../../UploadVideo';
+import { eventEmitter } from '../../../utils/eventEmitter';
 
-import useAuth from '../../hooks/useAuth';
-import { eventEmitter } from '../../utils/eventEmitter';
-import UploadVideo from '../UploadVideo';
 const { Text } = Typography;
 
 interface TopbarProps {
@@ -25,6 +26,8 @@ const getInitial = (name: string) =>
 export default function Topbar({ userName }: TopbarProps) {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const pathname = location?.pathname || '';
 
   const onLogout = async () => {
     try {
@@ -77,6 +80,27 @@ export default function Topbar({ userName }: TopbarProps) {
             <Typography.Text strong style={{ fontSize: 20, cursor: 'pointer' }} onClick={() => navigate('/')}>
               MotionSnap
             </Typography.Text>
+          </div>
+          <div style={{ fontSize: 24 }}>
+            <Tooltip title="Home">
+              <HomeOutlined
+                onClick={() => navigate('/')}
+                style={{
+                  marginRight: 24,
+                  cursor: 'pointer',
+                  color: pathname === '/' ? '#1890ff' : "#ccc",
+                }}
+              />
+            </Tooltip>
+            <Tooltip title="My Videos">
+              <VideoCameraOutlined
+                onClick={() => navigate('/my/videos')}
+                style={{
+                  cursor: 'pointer',
+                  color: pathname === '/my/videos' ? '#1890ff' : "#ccc",
+                }}
+              />
+            </Tooltip>
           </div>
           <div
             style={{

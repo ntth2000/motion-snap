@@ -15,7 +15,7 @@ export default function AuthLayout({
   subtitle,
 }: PropsWithChildren<AuthLayoutProps>) {
   return (
-    <Layout style={{ height: '100vh', overflow: 'hidden' }}>
+    <Layout>
       <Content>
         <Row
           justify="center"

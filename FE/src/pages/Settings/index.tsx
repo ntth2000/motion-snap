@@ -4,7 +4,7 @@ import { Content } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
-import AppLayout from "../../layout/AppLayout";
+import AppLayout from "../../components/layout";
 
 const Settings = () => {
   const navigate = useNavigate();

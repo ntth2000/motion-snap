@@ -10,4 +10,14 @@ interface IVideo {
     videoUrl?: string;
 }
 
-export type { IVideo };
+interface IComment {
+    id: number;
+    videoId: number;
+    parentId: number | null;
+    content: string;
+    depth: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type { IVideo, IComment };

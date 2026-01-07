@@ -5,9 +5,11 @@ import { useParams } from 'react-router';
 import Draw3D from '../../components/VideoDetail/Draw3d';
 import ExtractedPoses from '../../components/VideoDetail/ExtractedPoses';
 import ExtractedFrames from '../../components/VideoDetail/UploadedVideo';
-import AppLayout from '../../layout/AppLayout';
+import AppLayout from '../../components/layout';
 import { getExportedData, getJobStatus, getVideoById } from '../../services/videoService';
 import type { IVideo } from '../../types';
+import { CommentList } from '../../features/Comment';
+import { CommentInput } from '../../features/Comment/CommentInput';
 
 export default function VideoPage() {
   const { videoId } = useParams();
@@ -139,7 +141,14 @@ export default function VideoPage() {
   return (
     <AppLayout>
       {msgContextHolder}
-      <div style={{
+      {videoId && <div>
+        <div style={{ marginBottom: 16 }}>
+          <CommentInput videoId={videoId} />
+        </div>
+        <CommentList videoId={videoId} />
+      </div>}
+
+      {/* <div style={{
         position: 'absolute',
         top: 0,
         left: 0,
@@ -184,7 +193,7 @@ export default function VideoPage() {
               color="default"
               onClick={handleExport}
               disabled={
-                ((jobStatus === "extracting_poses" || jobStatus === "uploaded") && videoStep === 1) || 
+                ((jobStatus === "extracting_poses" || jobStatus === "uploaded") && videoStep === 1) ||
                 ((jobStatus === 'drawing_3d' || jobStatus === "extracted_poses") && videoStep == 2)
               }
             >
@@ -192,7 +201,7 @@ export default function VideoPage() {
             </Button>
           </div>
         }
-      </div>
+      </div> */}
     </AppLayout>
   );
 }
