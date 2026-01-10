@@ -3,7 +3,10 @@
     "submit": "Gửi",
     "cancel": "Hủy",
     "loading": "Đang tải...",
-    "error": "Đã xảy ra lỗi. Vui lòng thử lại."
+    "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "close": "Close",
+    "next": "Next",
+    "back": "Back"
   },
   "auth": {
     "login": {
@@ -31,7 +34,8 @@
       "password": "Password",
       "confirmPassword": "Confirm Password",
       "haveAccount": "Already have an account?",
-      "btnRegister": "Register",
+      "registerBtn": "Register",
+      "loginLink": "Login here.",
       "message": {
         "passwordMismatch": "Passwords do not match."
       }
@@ -44,9 +48,52 @@
     "addComment": "Add a comment...",
     "submit": "Submit comment"
   },
-  "settings": {
-    "title": "User Settings",
-    "profile": "Profile",
-    "apiKey": "API Key"
+  "topbar": {
+    "upload": "Upload",
+    "login": "Login",
+    "menu": {
+      "profile": "Your profile",
+      "settings": "Settings",
+      "logout": "Logout"
+    }
+  },
+  "footer": {
+    "description": "© {{year}} MotionSnap. This is a non-commercial project for educational purposes only."
+  },
+  "pages": {
+    "settings": {
+      "menu": {
+        "profile": "Profile",
+        "apiKey": "API Key"
+      },
+      "apiKeySetting": {
+        "title": "API Key Management",
+        "description": "Generate and manage your API keys for accessing MotionSnap services. \nYou will not be able to see it again, so copy it now and keep it secure.",
+        "generateBtn": "Generate New API Key",
+        "copyBtn": "Copy",
+        "regenerateBtn": "Regenerate",
+        "noApiKey": "You don't have any API keys yet.",
+        "subTitle": "Your API Key",
+        "message": {
+          "generateSuccess": "API key generated successfully.",
+          "generateFailed": "Failed to generate API key.",
+          "regenerateSuccess": "API key regenerated successfully.",
+          "regenerateFailed": "Failed to regenerate API key."
+        }
+      }
+    }
+  },
+  "upload": {
+    "title": "Upload Video",
+    "selectFile": "Select Video File",
+    "dragDrop": "Or drag & drop to upload",
+    "description": "Only support formats: MP4. Maximum file size: 30MB.",
+    "uploadBtn": "Upload",
+    "message": {
+      "uploadSuccess": "Upload successful!",
+      "uploadFailed": "Upload failed. Please try again.",
+      "invalidFileType": "Invalid file type. Please select a video file.",
+      "fileTooLarge": "File size exceeds the allowed limit."
+    }
   }
 }

@@ -14,12 +14,14 @@ import { useEffect, useState } from "react";
 
 import { uploadVideo } from "../../services/videoService";
 import { eventEmitter } from "../../utils/eventEmitter";
+import { useTranslation } from "react-i18next";
 
 const { Text, Title } = Typography;
 const { Dragger } = Upload;
 
 
 const UploadVideo: React.FC = () => {
+  const { t } = useTranslation();
   const [messageApi, msgContextHolder] = message.useMessage();
   const [files, setFiles] = useState<File[]>([]);
   const [progress, setProgress] = useState<Record<string, number>>({});
@@ -121,32 +123,32 @@ const UploadVideo: React.FC = () => {
       <Modal
         destroyOnHidden
         centered
-        title={uploadStep === "upload" ? "Upload videos" : "Preview"}
+        title={uploadStep === "upload" ? t("upload.uploadTitle") : t("upload.previewTitle")}
         closable={{ 'aria-label': 'Custom Close Button' }}
         open={isModalOpen}
         onCancel={handleCancel}
         footer={
           uploadStep === "preview" ? (
             <>
-              <Button onClick={handleCancel}>Cancel</Button>
+              <Button onClick={handleCancel}>{t("common.cancel")}</Button>
               <Button
                 color="default"
                 variant="solid"
                 onClick={handleUploadVideo}
                 loading={loading}
               >
-                Upload
+                {t("upload.uploadBtn")}
               </Button>
             </>
           ) : (
             <>
-              <Button onClick={handleCancel}>Close</Button>
+              <Button onClick={handleCancel}>{t("common.close")}</Button>
               {files.length > 0 && <Button
                 color="default"
                 variant="solid"
                 onClick={handleContinue}
               >
-                Next
+                {t("common.next")}
               </Button>
               }
             </>
@@ -187,13 +189,13 @@ const UploadVideo: React.FC = () => {
                   >
                     <UploadOutlined />
                   </div>
-                  <Title level={5}>Select videos</Title>
-                  <Text type="secondary">Or drag & drop to upload</Text>
+                  <Title level={5}>{t("upload.selectFile")}</Title>
+                  <Text type="secondary">{t("upload.dragDrop")}</Text>
                   <Text
                     type="secondary"
                     style={{ fontSize: 16, marginTop: "60px" }}
                   >
-                    Only support MP4 files. Max file size 30MB.
+                    {t("upload.description")}
                   </Text>
                 </div>
               </Dragger>
@@ -242,7 +244,7 @@ const UploadVideo: React.FC = () => {
                               style={{ marginTop: 8, maxWidth: 300, width: '100%' }}
                             />
                           ) : (
-                            <Text style={{ fontSize: 14 }} type="secondary">Ready to upload</Text>
+                            <Text style={{ fontSize: 14 }} type="secondary">{t("upload.readyToUpload")}</Text>
                           )}
                         </div>
                         <div className="">

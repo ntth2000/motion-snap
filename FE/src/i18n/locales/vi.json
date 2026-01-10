@@ -3,7 +3,10 @@
     "submit": "Gửi",
     "cancel": "Hủy",
     "loading": "Đang tải...",
-    "error": "Đã xảy ra lỗi. Vui lòng thử lại."
+    "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "close": "Đóng",
+    "next": "Tiếp theo",
+    "back": "Quay lại"
   },
   "auth": {
     "login": {
@@ -31,7 +34,8 @@
       "password": "Mật khẩu",
       "confirmPassword": "Xác nhận mật khẩu",
       "haveAccount": "Đã có tài khoản?",
-      "btnRegister": "Đăng ký",
+      "registerBtn": "Đăng ký",
+      "loginLink": "Đăng nhập ngay",
       "message": {
         "passwordRequired": "Vui lòng nhập mật khẩu.",
         "emailRequired": "Vui lòng nhập email.",
@@ -48,9 +52,54 @@
     "addComment": "Thêm bình luận...",
     "submit": "Gửi bình luận"
   },
-  "settings": {
-    "title": "Cài đặt người dùng",
-    "profile": "Hồ sơ",
-    "apiKey": "API Key"
+  "topbar": {
+    "upload": "Tải lên",
+    "login": "Đăng nhập",
+    "menu": {
+      "profile": "Trang cá nhân",
+      "settings": "Cài đặt",
+      "logout": "Đăng xuất"
+    }
+  },
+  "footer": {
+    "description": "© {{year}} MotionSnap. Đây là một dự án phi thương mại chỉ dành cho mục đích giáo dục."
+  },
+  "pages": {
+    "settings": {
+      "menu": {
+        "profile": "Hồ sơ",
+        "apiKey": "API Key"
+      },
+      "apiKeySetting": {
+        "title": "Cài đặt API Key",
+        "description": "Quản lý API Key của bạn để truy cập các tính năng nâng cao. \nBạn sẽ không thể xem lại API Key sau khi rời khỏi trang này, vì vậy hãy đảm bảo lưu nó ở nơi an toàn.",
+        "generateBtn": "Tạo API Key mới",
+        "copyBtn": "Sao chép",
+        "regenerateBtn": "Tạo lại",
+        "noApiKey": "Bạn chưa có API Key nào.",
+        "subTitle": "API Key của bạn",
+        "message": {
+          "generateSuccess": "API Key đã được tạo thành công.",
+          "generateFailed": "Tạo API Key thất bại.",
+          "regenerateSuccess": "API Key đã được tạo lại thành công.",
+          "regenerateFailed": "Tạo lại API Key thất bại."
+        }
+      }
+    }
+  },
+  "upload": {
+    "uploadTitle": "Tải video",
+    "previewTitle": "Xem trước",
+    "selectFile": "Chọn tệp video",
+    "dragDrop": "Hoặc kéo và thả tệp vào đây",
+    "description": "Chỉ hỗ trợ tệp MP4. Kích thước tệp tối đa: 30MB",
+    "uploadBtn": "Tải lên",
+    "readyToUpload": "Sẵn sàng để tải lên",
+    "message": {
+      "uploadSuccess": "Tải lên thành công!",
+      "uploadFailed": "Tải lên thất bại. Vui lòng thử lại.",
+      "invalidFileType": "Loại tệp không hợp lệ. Vui lòng chọn tệp video.",
+      "fileTooLarge": "Kích thước tệp vượt quá giới hạn cho phép."
+    }
   }
 }

@@ -3,8 +3,9 @@ import { type PropsWithChildren } from 'react';
 
 import useAuth from '../../hooks/useAuth';
 import Topbar from './Topbar';
+import Footer from './Footer';
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 export default function AppLayout({ children }: PropsWithChildren) {
   const {
@@ -15,23 +16,22 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Header
+      <div
         style={{
           position: 'sticky',
           top: 0,
           zIndex: 1000,
           padding: 0,
-          background: '#fff',
         }}
       >
         <Topbar userName={user?.username || ''} />
-      </Header>
+      </div>
 
       <Content
         style={{
           flex: 1,
           overflow: 'auto',
-          padding: '16px',
+          padding: '32px 0',
         }}
       >
         <div
@@ -40,11 +40,16 @@ export default function AppLayout({ children }: PropsWithChildren) {
             margin: '0 auto',
             width: '100%',
             borderRadius: borderRadiusLG,
+            minHeight: 'calc(100vh - 128px)',
+            display: 'flex',
+            flexDirection: 'column'
           }}
         >
           {children}
         </div>
       </Content>
+
+      <Footer />
     </Layout>
   );
 }

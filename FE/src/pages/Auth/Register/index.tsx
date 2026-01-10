@@ -104,10 +104,10 @@ export default function RegisterPage() {
           </Form.Item>
           <Form.Item
             name="confirm"
-            label="Confirm password"
+            label={t('auth.register.confirmPassword')}
             dependencies={['password']}
             rules={[
-              { required: true, message: 'Please confirm your password' },
+              { required: true, message: t('auth.register.message.passwordMismatch') },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue('password') === value) {
@@ -136,16 +136,16 @@ export default function RegisterPage() {
               htmlType="submit"
               style={{ width: '100%', padding: '16px 0' }}
             >
-              Create account
+              {t('auth.register.registerBtn')}
             </Button>
           </Form.Item>
         </Form>
         <Divider />
 
         <div style={{ textAlign: 'center' }}>
-          <Typography.Text> You already have an account? </Typography.Text>
+          <Typography.Text> {t('auth.register.haveAccount')} </Typography.Text>
           <Typography.Link strong href="/login">
-            Login here
+            {t('auth.register.loginLink')}
           </Typography.Link>
         </div>
       </Card>
