@@ -34,7 +34,7 @@ def login_user(db, email, password):
     db.add(new_refresh_token)
     db.commit()
 
-    return { "access_token": access_token, "refresh_token": refresh_token }
+    return access_token, refresh_token, user
 
 
 def refresh_tokens(refresh_token, db):

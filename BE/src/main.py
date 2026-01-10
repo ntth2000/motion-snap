@@ -11,6 +11,8 @@ from src import database
 from src.auth import router as auth_router
 from src.videos import router as video_router
 from src.api_keys import router as api_key_router
+from src.comments import router as comment_router
+
 from src.videos.constants import VIDEO_PATH, RESULT_PATH
 
 database.Base.metadata.create_all(bind=database.engine)
@@ -49,6 +51,7 @@ def startup_tasks():
 app.include_router(auth_router.router)
 app.include_router(video_router.router)
 app.include_router(api_key_router.router)
+app.include_router(comment_router.router)
 
 @app.middleware("http")
 async def disable_cache_for_storage(request: Request, call_next):

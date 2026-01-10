@@ -32,10 +32,10 @@ def register(form_data: user_schemas.CreateUserRequest, db: Session = Depends(ge
 
 @router.post("/login")
 def login(response: Response, form_data: schemas.LoginRequest, db: Session = Depends(get_db)):
-    tokens = service.login_user(db, form_data.email, form_data.password)
+    access_token, refresh_token, user = service.login_user(db, form_data.email, form_data.password)
     response.set_cookie(
         key="access_token",
-        value=tokens["access_token"],
+        value=access_token,
         httponly=True,
         samesite="lax",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
@@ -43,14 +43,17 @@ def login(response: Response, form_data: schemas.LoginRequest, db: Session = Dep
 
     response.set_cookie(
         key="refresh_token",
-        value=tokens["refresh_token"],
+        value=refresh_token,
         httponly=True,
         samesite="lax",
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
     )
 
     return {
-        "message": "Login successful"
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "role": user.role
     }
     
 

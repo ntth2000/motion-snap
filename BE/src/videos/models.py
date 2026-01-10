@@ -17,6 +17,7 @@ class Video(Base):
     # Relationships
     user = relationship("User", back_populates="videos")
     job = relationship("Job", back_populates="video")
+    comments = relationship("Comment", back_populates="video")
 
 
 class JobStatus(enum.Enum):
