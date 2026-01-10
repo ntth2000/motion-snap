@@ -1,0 +1,18 @@
+import enum
+
+
+class JobStatus(enum.Enum):
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+class ProcessingStage(enum.Enum):
+    INIT = "INIT"
+    EXTRACTING_FRAMES = "EXTRACTING_FRAMES"
+    DETECTING_POSE = "DETECTING_POSE"
+    CALIBRATING = "CALIBRATING"
+    MESHING = "MESHING"
+    RENDERING = "RENDERING"
+    FINALIZING = "FINALIZING"

@@ -1,14 +1,15 @@
-# 1. api: upload_video, nhận đầu vào là file mp4 rồi đầu ra là các file frame ảnh; 
-# 2. api: draw_poses, nhận đầu vào các các file frame ảnh rồi đầu ra là: 
+# 1. api: upload_video, nhận đầu vào là file mp4 rồi đầu ra là các file frame ảnh;
+# 2. api: draw_poses, nhận đầu vào các các file frame ảnh rồi đầu ra là:
 #     (i) các file frame ảnh có vẽ điểm poses
 #     (ii) xâu JSON theo format: { "tên_điểm_pose" : [toạ_độ_trục_x, toạ_độ_trục_y, toạ_độ_trục_z] }
 #           (chú ý là xâu JSON này có ít nhất là 12 điểm poses khác nhau)
-# 3. api: draw_3d, nhận đầu vào các các file frame ảnh rồi đầu ra là: 
+# 3. api: draw_3d, nhận đầu vào các các file frame ảnh rồi đầu ra là:
 #     (i) các file frame ảnh có vẽ đường bao 3D
 #     (ii) xâu JSON theo format: { "số_thứ_tự_của_điểm_trên_đường_bao_3D" : [toạ_độ_trục_x, toạ_độ_trục_y, toạ_độ_trục_z] }
-from pathlib import Path
-import subprocess
 import os
+import subprocess
+from pathlib import Path
+
 import cv2
 from moviepy import ImageSequenceClip
 
@@ -18,12 +19,16 @@ def extract_frames(video_id: int):
     input_path = f"/workspace/inputs/{video_id}"
 
     cmd = [
-        "docker", "run",
-        "--name", f"extract_frames_{video_id}",
-        "-v", f"{os.getcwd()}/storage/inputs/{video_id}:{input_path}",
+        "docker",
+        "run",
+        "--name",
+        f"extract_frames_{video_id}",
+        "-v",
+        f"{os.getcwd()}/storage/inputs/{video_id}:{input_path}",
         "easymocap",
-        "bash", "-c",
-        f"python3 apps/preprocess/extract_image.py ..{input_path} && sync"
+        "bash",
+        "-c",
+        f"python3 apps/preprocess/extract_image.py ..{input_path} && sync",
     ]
 
     subprocess.run(cmd, check=True)
@@ -34,20 +39,21 @@ def extract_2d(video_id: int):
     input_path = f"/workspace/inputs/{video_id}"
 
     cmd = [
-        "docker", "run", "--rm",
-        "-v", f"{os.getcwd()}/storage/inputs/{video_id}:{input_path}",
+        "docker",
+        "run",
+        "--rm",
+        "-v",
+        f"{os.getcwd()}/storage/inputs/{video_id}:{input_path}",
         "easymocap",
-        "bash", "-c",
-        f"python3 -m apps.preprocess.extract_keypoints ../workspace/inputs/{video_id} --mode yolo-hrnet"
+        "bash",
+        "-c",
+        f"python3 -m apps.preprocess.extract_keypoints ../workspace/inputs/{video_id} --mode yolo-hrnet",
     ]
 
     print("Running command:", " ".join(cmd))
 
     try:
-        result = subprocess.run(
-            cmd,
-            check=True
-        )
+        result = subprocess.run(cmd, check=True)
         return {"status": "success", "output": result.stdout}
 
     except subprocess.CalledProcessError as e:
@@ -79,10 +85,16 @@ def draw_2d_vertices(video_id: int):
 
     # Command bên trong container
     cmd = [
-        "docker", "run", "--rm",
-        "-v",  f"{host_input_path}:{input_path}",
-        "-v",  f"{host_output_path}:{output_path}",
-        "easymocap", "bash", "-c",
+        "docker",
+        "run",
+        "--rm",
+        "-v",
+        f"{host_input_path}:{input_path}",
+        "-v",
+        f"{host_output_path}:{output_path}",
+        "easymocap",
+        "bash",
+        "-c",
         (
             "export PYOPENGL_PLATFORM=egl && "
             "python3 -m apps.mocap.run "
@@ -91,7 +103,7 @@ def draw_2d_vertices(video_id: int):
             f"--root ..{input_path} "
             f"--out ..{output_path} "
             "--skip_vis_final --skip_final && sync"
-        )
+        ),
     ]
 
     # Gọi subprocess
@@ -126,10 +138,16 @@ def draw_3d_vertices(video_id: int):
 
     # Command bên trong container
     cmd = [
-        "docker", "run", "--rm",
-        "-v",  f"{host_input_path}:{input_path}",
-        "-v",  f"{host_output_path}:{output_path}",
-        "easymocap", "bash", "-c",
+        "docker",
+        "run",
+        "--rm",
+        "-v",
+        f"{host_input_path}:{input_path}",
+        "-v",
+        f"{host_output_path}:{output_path}",
+        "easymocap",
+        "bash",
+        "-c",
         (
             "export PYOPENGL_PLATFORM=egl && "
             "python3 -m apps.mocap.run "
@@ -138,9 +156,8 @@ def draw_3d_vertices(video_id: int):
             f"--root ..{input_path} "
             f"--out ..{output_path} "
             "--skip_vis_final && sync"
-        )
+        ),
     ]
-
 
     print("Running command:", " ".join(cmd))
 
@@ -166,7 +183,11 @@ def render_frames_to_video(frames_dir, output_path, fps=30):
     """
     frames_dir = Path(frames_dir)
     images = sorted(
-        [str(frames_dir / f) for f in os.listdir(frames_dir) if f.endswith((".jpg", ".png"))]
+        [
+            str(frames_dir / f)
+            for f in os.listdir(frames_dir)
+            if f.endswith((".jpg", ".png"))
+        ]
     )
 
     if not images:
@@ -176,7 +197,7 @@ def render_frames_to_video(frames_dir, output_path, fps=30):
     clip = ImageSequenceClip(images, fps=fps)
 
     # Xuất ra video (codec libx264 = mp4)
-    clip.write_videofile(str(output_path), codec='libx264', audio=False)
+    clip.write_videofile(str(output_path), codec="libx264", audio=False)
 
 
 def get_video_fps(video_path: str) -> float:

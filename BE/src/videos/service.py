@@ -1,36 +1,57 @@
-import os, base64
-
-from pathlib import Path
+import base64
+import os
 import shutil
-from fastapi import UploadFile, HTTPException, BackgroundTasks
+import zipfile
+from pathlib import Path
+
+from fastapi import BackgroundTasks, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload
-import zipfile
-from src.models import Video, Job
-from src.videos.models import JobStatus
-from src.videos.utils import validate_duration, get_video_size, validate_extension,convert_3d_keypoints_format, save_upload_file, remove_file, convert_2d_poses_format
+
+from src.models import Job, Video
+from src.posts.models import JobStatus
+from src.videos.constants import RESULT_PATH, VIDEO_PATH
 from src.videos.exceptions import UploadFilesFailedException
-from src.videos.video_processor import extract_frames, extract_2d, draw_2d_vertices, draw_3d_vertices, render_frames_to_video, get_video_fps
 from src.videos.schemas import VideoListResponse, VideoResponse
-from src.videos.constants import VIDEO_PATH, RESULT_PATH
+from src.videos.utils import (
+    convert_2d_poses_format,
+    convert_3d_keypoints_format,
+    get_video_size,
+    remove_file,
+    save_upload_file,
+    validate_duration,
+    validate_extension,
+)
+from src.videos.video_processor import (
+    draw_2d_vertices,
+    draw_3d_vertices,
+    extract_2d,
+    extract_frames,
+    get_video_fps,
+    render_frames_to_video,
+)
 
 
 def get_job_status(video_id: int, user_id: int, db: Session):
     """
     Get job status by video_id
     """
-    video = db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    video = (
+        db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    )
     if not video:
-        raise HTTPException(status_code=500, detail="Can't find the video. Please try again.")
-    
+        raise HTTPException(
+            status_code=500, detail="Can't find the video. Please try again."
+        )
+
     job = db.query(Job).filter(Job.id == video.job_id).first()
 
     if not job:
-        raise HTTPException(status_code=500, detail="Can't find the job. Please try again.")
+        raise HTTPException(
+            status_code=500, detail="Can't find the job. Please try again."
+        )
 
-    return {
-        "status": job.status
-    }
+    return {"status": job.status}
 
 
 def get_video_by_id(video_id: int, user_id: int, db: Session):
@@ -54,17 +75,26 @@ def get_video_by_id(video_id: int, user_id: int, db: Session):
         return None
 
     thumbnail_path = os.path.join(
-        "storage", "inputs", video_id_str, "images", video.filename.split('.')[0], "000000.jpg"
+        "storage",
+        "inputs",
+        video_id_str,
+        "images",
+        video.filename.split(".")[0],
+        "000000.jpg",
     )
-    width, height = get_video_size(video_file_path = os.path.join(video_dir, "videos", video.filename))
+    width, height = get_video_size(
+        video_file_path=os.path.join(video_dir, "videos", video.filename)
+    )
     thumbnail_b64 = None
     if os.path.exists(thumbnail_path):
         with open(thumbnail_path, "rb") as f:
-            thumbnail_b64 = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
+            thumbnail_b64 = "data:image/jpeg;base64," + base64.b64encode(
+                f.read()
+            ).decode("utf-8")
 
     status = video.job.status.value if video.job else ""
     base_url = "http://localhost:8000"
-    video_url =  f"{base_url}/storage/inputs/{video_id}/videos/{video.filename}"
+    video_url = f"{base_url}/storage/inputs/{video_id}/videos/{video.filename}"
 
     return VideoResponse(
         id=video.id,
@@ -74,7 +104,7 @@ def get_video_by_id(video_id: int, user_id: int, db: Session):
         status=status,
         video_url=video_url,
         width=width,
-        height=height
+        height=height,
     )
 
 
@@ -92,7 +122,7 @@ def get_videos_by_user(user_id: int, db: Session):
 
     if not videos:
         return VideoListResponse(videos=[])
-    
+
     result = []
     for video in videos:
         video_id = str(video.id)
@@ -109,7 +139,9 @@ def get_videos_by_user(user_id: int, db: Session):
         print(thumbnail_path)
         if os.path.exists(thumbnail_path):
             with open(thumbnail_path, "rb") as f:
-                thumbnail_b64 = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
+                thumbnail_b64 = "data:image/jpeg;base64," + base64.b64encode(
+                    f.read()
+                ).decode("utf-8")
 
         status = video.job.status.value if video.job else ""
 
@@ -119,7 +151,7 @@ def get_videos_by_user(user_id: int, db: Session):
                 filename=video.filename,
                 uploaded_at=video.uploaded_at,
                 thumbnail_url=thumbnail_b64,
-                status=status
+                status=status,
             )
         )
 
@@ -149,7 +181,7 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
             file_path="",
             user_id=user_id,
             job_id=new_job.id,
-            uploaded_at=None
+            uploaded_at=None,
         )
         db.add(new_video)
         db.commit()
@@ -169,10 +201,13 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
 
         extract_frames(new_video.id)
 
+        images_path = os.path.join(Path(VIDEO_PATH) / str(new_video.id) / "images")
 
-        images_path = os.path.join(Path(VIDEO_PATH)/str(new_video.id)/"images")
-
-        subdirs = [d for d in os.listdir(images_path) if os.path.isdir(os.path.join(images_path, d))]
+        subdirs = [
+            d
+            for d in os.listdir(images_path)
+            if os.path.isdir(os.path.join(images_path, d))
+        ]
         print(subdirs)
         if len(subdirs) == 1:
             old_subdir_path = os.path.join(images_path, subdirs[0])
@@ -180,9 +215,9 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
             os.rename(old_subdir_path, new_subdir_path)
         else:
             print("not found subfolder")
-        
-        if os.path.exists( os.path.dirname(Path(images_path)/"video")):
-            print('existed video folder')
+
+        if os.path.exists(os.path.dirname(Path(images_path) / "video")):
+            print("existed video folder")
         else:
             print("not existed")
 
@@ -192,13 +227,13 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
             "id": new_video.id,
             "filename": new_video.filename,
             "path": new_video.file_path,
-            "uploaded_at": new_video.uploaded_at
+            "uploaded_at": new_video.uploaded_at,
         }
 
     except Exception as e:
         print(e)
         db.rollback()
-        folder = Path(VIDEO_PATH)/str(new_video.id)
+        folder = Path(VIDEO_PATH) / str(new_video.id)
         if folder and os.path.exists(folder):
             shutil.rmtree(folder)
         if new_video:
@@ -214,7 +249,9 @@ def delete_video(video_id: int, user_id: int, db: Session):
     """
     Delete a video by its ID and user ID
     """
-    video = db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    video = (
+        db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    )
     if not video:
         return
 
@@ -227,7 +264,7 @@ def delete_video(video_id: int, user_id: int, db: Session):
             for name in dirs:
                 os.rmdir(os.path.join(root, name))
         os.rmdir(video_dir)
-    
+
     if os.path.exists(output_dir):
         for root, dirs, files in os.walk(output_dir, topdown=False):
             for name in files:
@@ -244,7 +281,7 @@ def extract_poses(video_id: int, db):
     video = db.query(Video).filter(Video.id == video_id).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
-    
+
     job = db.query(Job).filter(Job.id == video.job_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -263,11 +300,13 @@ def extract_poses(video_id: int, db):
         job.status = JobStatus.EXTRACTED_POSES
         db.commit()
 
-        fps = get_video_fps(Path(VIDEO_PATH) / str(video_id) / "videos" / video.filename)
+        fps = get_video_fps(
+            Path(VIDEO_PATH) / str(video_id) / "videos" / video.filename
+        )
         render_frames_to_video(
             frames_dir=Path(RESULT_PATH) / str(video_id) / "vis_keypoints2d",
             output_path=Path(RESULT_PATH) / str(video_id) / "vis_2d.mp4",
-            fps=fps
+            fps=fps,
         )
         return {"message": "Pose extraction completed"}
 
@@ -283,13 +322,15 @@ def get_extracted_poses(video_id: int, user_id: int, db: Session):
     """
     Get extracted poses for a video by its ID and user ID
     """
-    video = db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    video = (
+        db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    )
     if not video:
         return None
 
     base_url = "http://localhost:8000"
-    
-    video_url =  f"{base_url}/storage/outputs/{video_id}/vis_2d.mp4"
+
+    video_url = f"{base_url}/storage/outputs/{video_id}/vis_2d.mp4"
 
     return {"video_id": video_id, "video_url": video_url}
 
@@ -298,13 +339,15 @@ def get_3d(video_id: int, user_id: int, db: Session):
     """
     Get extracted poses for a video by its ID and user ID
     """
-    video = db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    video = (
+        db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    )
     if not video:
         return None
 
     base_url = "http://localhost:8000"
-    
-    video_url =  f"{base_url}/storage/outputs/{video_id}/vis_3d.mp4"
+
+    video_url = f"{base_url}/storage/outputs/{video_id}/vis_3d.mp4"
 
     return {"video_id": video_id, "video_url": video_url}
 
@@ -313,8 +356,10 @@ def get_extracted_frames(video_id: int, user_id: int, db: Session):
     """
     Get extracted frames for a video by its ID and user ID
     """
-    video_input_dir = Path(VIDEO_PATH)/ str(video_id) / "images"
-    video = db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    video_input_dir = Path(VIDEO_PATH) / str(video_id) / "images"
+    video = (
+        db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+    )
     if not video:
         return None
 
@@ -324,9 +369,17 @@ def get_extracted_frames(video_id: int, user_id: int, db: Session):
 
     frames_dir = subdirs[0]  # Giả sử chỉ có 1 folder cho video_name
 
-    frame_files = sorted([f for f in frames_dir.iterdir() if f.is_file() and f.suffix.lower() in [".jpg", ".png"]])
+    frame_files = sorted(
+        [
+            f
+            for f in frames_dir.iterdir()
+            if f.is_file() and f.suffix.lower() in [".jpg", ".png"]
+        ]
+    )
 
-    base_url = "http://localhost:8000"  # có thể lấy dynamic qua request.base_url nếu cần
+    base_url = (
+        "http://localhost:8000"  # có thể lấy dynamic qua request.base_url nếu cần
+    )
     frame_urls = [
         f"{base_url}/storage/inputs/{video_id}/images/{frames_dir.name}/{f.name}"
         for f in frame_files
@@ -339,21 +392,21 @@ def draw_3d(video_id: int, db: Session):
     video = db.query(Video).filter(Video.id == video_id).first()
     if not video:
         return None
-    
+
     job = db.query(Job).filter(Job.id == video.job_id).first()
     if not job:
         return None
-    
+
     job.status = JobStatus.DRAWING_3D
     db.commit()
     draw_3d_vertices(video_id)
 
-    fps = get_video_fps(Path(VIDEO_PATH) / str(video_id) / "videos"/ video.filename)
+    fps = get_video_fps(Path(VIDEO_PATH) / str(video_id) / "videos" / video.filename)
 
     render_frames_to_video(
         frames_dir=Path(RESULT_PATH) / str(video_id) / "render",
         output_path=Path(RESULT_PATH) / str(video_id) / "vis_3d.mp4",
-        fps=fps
+        fps=fps,
     )
 
     job.status = JobStatus.DRAWN_3D
@@ -362,10 +415,16 @@ def draw_3d(video_id: int, db: Session):
     return {"frame_count": 0, "message": "3D drawing completed"}
 
 
-def export_video_data(video_id: int, export_type: str, user_id: int, db: Session, background_tasks: BackgroundTasks):
+def export_video_data(
+    video_id: int,
+    export_type: str,
+    user_id: int,
+    db: Session,
+    background_tasks: BackgroundTasks,
+):
     output_base_dir = Path(RESULT_PATH) / str(video_id)
     input_base_dir = Path(VIDEO_PATH) / str(video_id)
-    export_dir = output_base_dir/"export_data"
+    export_dir = output_base_dir / "export_data"
     export_dir.mkdir(exist_ok=True)
     temp_export = export_dir / f"package_{export_type}"
     if temp_export.exists():
@@ -378,12 +437,12 @@ def export_video_data(video_id: int, export_type: str, user_id: int, db: Session
         subfolders = [f for f in json_2d_parent_folder.iterdir() if f.is_dir()]
         jsons_dir = subfolders[0]
         video_file = output_base_dir / "vis_2d.mp4"
-    
+
     if export_type == "3d":
         frames_dir = output_base_dir / "render"
         jsons_dir = output_base_dir / "keypoints3d"
         video_file = output_base_dir / "vis_3d.mp4"
-    
+
     if frames_dir.exists():
         shutil.copytree(frames_dir, temp_export / "frames")
     if jsons_dir.exists():
@@ -394,26 +453,28 @@ def export_video_data(video_id: int, export_type: str, user_id: int, db: Session
             convert_3d_keypoints_format(copied_jsons_path)
     if video_file.exists():
         shutil.copy(video_file, temp_export / "video.mp4")
-    
+
     zip_path = export_dir / f"video_{video_id}_{export_type}_export.zip"
     print(zip_path)
 
     # Tạo zip
-    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
         for folder_name in ["frames", "jsons", "video.mp4"]:
             path_to_add = temp_export / folder_name
             if path_to_add.exists():
                 if path_to_add.is_dir():
-                    for file in path_to_add.rglob('*'):
+                    for file in path_to_add.rglob("*"):
                         zipf.write(file, file.relative_to(temp_export))
                 else:
                     zipf.write(path_to_add, path_to_add.name)
-    
+
     background_tasks.add_task(remove_file, str(export_dir))
 
     return FileResponse(
         path=str(zip_path),
         filename=f"video_{video_id}_{export_type}_export.zip",
         media_type="application/zip",
-        headers={"Content-Disposition": f"attachment; filename=video_{video_id}_{export_type}_export.zip"}
+        headers={
+            "Content-Disposition": f"attachment; filename=video_{video_id}_{export_type}_export.zip"
+        },
     )

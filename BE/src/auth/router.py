@@ -1,13 +1,12 @@
-from fastapi import APIRouter, Depends, Response, Request
+from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from src import database
 from src.auth import schemas, service
-from src.users import schemas as user_schemas
 from src.auth.constants import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from src.auth.dependencies import get_current_user
-
+from src.users import schemas as user_schemas
 
 router = APIRouter(
     prefix="/api/auth",
@@ -25,14 +24,22 @@ def get_db():
         db.close()
 
 
-@router.post("/register", response_model=user_schemas.UserDetailResponse)
-def register(form_data: user_schemas.CreateUserRequest, db: Session = Depends(get_db)):
+@router.post(
+    "/register",
+    response_model=schemas.UserResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def register(form_data: schemas.RegisterRequest, db: Session = Depends(get_db)):
     return service.register_user(db, form_data)
 
 
-@router.post("/login")
-def login(response: Response, form_data: schemas.LoginRequest, db: Session = Depends(get_db)):
-    access_token, refresh_token, user = service.login_user(db, form_data.email, form_data.password)
+@router.post("/login", response_model=schemas.UserResponse)
+def login(
+    response: Response, form_data: schemas.LoginRequest, db: Session = Depends(get_db)
+):
+    access_token, refresh_token, user = service.login_user(
+        db, form_data.email, form_data.password
+    )
     response.set_cookie(
         key="access_token",
         value=access_token,
@@ -53,11 +60,11 @@ def login(response: Response, form_data: schemas.LoginRequest, db: Session = Dep
         "id": user.id,
         "username": user.username,
         "email": user.email,
-        "role": user.role
+        "role": user.role,
     }
-    
 
-@router.post('/refresh')
+
+@router.post("/refresh")
 def refresh(request: Request, response: Response, db: Session = Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
     tokens = service.refresh_tokens(refresh_token, db)
@@ -77,8 +84,8 @@ def refresh(request: Request, response: Response, db: Session = Depends(get_db))
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
     )
 
-    return { "message": "Tokens refreshed successfully" }
-    
+    return {"message": "Tokens refreshed successfully"}
+
 
 @router.get("/me", response_model=user_schemas.UserDetailResponse)
 def get_me(current_user: user_schemas.UserDetailResponse = Depends(get_current_user)):
@@ -86,9 +93,9 @@ def get_me(current_user: user_schemas.UserDetailResponse = Depends(get_current_u
         "id": current_user.id,
         "username": current_user.username,
         "email": current_user.email,
-        "role": current_user.role
+        "role": current_user.role,
     }
-    
+
 
 @router.post("/logout")
 def logout(request: Request, response: Response, db: Session = Depends(get_db)):

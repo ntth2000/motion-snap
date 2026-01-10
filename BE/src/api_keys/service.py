@@ -1,24 +1,32 @@
 from sqlalchemy.orm import Session
-from src.api_keys import utils, models
+
+from .models import APIKey
+from .utils import generate_api_key, get_prefix, hash_key
 
 
 def get_api_key(db: Session, user_id: int):
-    api_key = db.query(models.APIKey).filter(models.APIKey.user_id == user_id).first()
+    api_key = db.query(APIKey).filter(APIKey.user_id == user_id).first()
+
     if not api_key:
         return {"key": None}
 
-    return {"key": utils.mask_key(api_key.key) }
-    
-def generate_api_key(db: Session, user_id: int):
-    current_key = db.query(models.APIKey).filter(models.APIKey.user_id == user_id).first()
-    new_key = utils.generate_api_key()
+    return {"key": f"{api_key.prefix}****************"}
 
-    if current_key:
-        current_key.key = new_key
+
+def generate_api_key(db: Session, user_id: int):
+    new_raw_key = generate_api_key()
+    hashed_key = hash_key(new_raw_key)
+    prefix = get_prefix(new_raw_key)
+
+    current_key_record = db.query(APIKey).filter(APIKey.user_id == user_id).first()
+
+    if current_key_record:
+        current_key_record.hashed_key = hashed_key
+        current_key_record.prefix = prefix
     else:
-        api_key = models.APIKey(key=new_key, user_id=1)
+        api_key = APIKey(hashed_key=hashed_key, prefix=prefix, user_id=user_id)
         db.add(api_key)
 
     db.commit()
-    
-    return { "key": new_key }
+
+    return {"key": new_raw_key}

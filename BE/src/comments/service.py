@@ -1,88 +1,117 @@
-from src.models import Comment, User
-from .exceptions import CommentNotFoundException, UnauthorizedCommentDeletionException
+from sqlalchemy.orm import Session, joinedload
 
-def get_comments_by_video_id(video_id: int, db):
-    comments = (
+from src.models import Comment, Post, User, UserRole
+
+from .exceptions import (
+    CommentAlreadyDeletedException,
+    CommentNotFoundException,
+    PermissionDeniedException,
+    ResourceDeletedException,
+)
+from .schemas import CommentResponseDTO
+
+
+def get_comments_by_post_id(post_id: int, db: Session):
+    root_comments = (
         db.query(Comment)
-        .filter(
-            Comment.video_id == video_id,
-            Comment.is_deleted == 0
+        .options(
+            joinedload(Comment.user),
+            joinedload(Comment.replies).joinedload(Comment.user),
         )
-        .order_by(Comment.created_at.asc())
+        .filter(
+            Comment.post_id == post_id,
+            Comment.parent_id == None,
+            Comment.is_deleted == 0,
+        )
+        .order_by(Comment.created_at.desc())
         .all()
     )
 
-    response = []
+    result = []
 
-    for comment in comments:
-        user = db.query(User).filter(User.id == comment.user_id).first()
+    for root in root_comments:
+        root_dto = CommentResponseDTO(
+            id=root.id,
+            user_id=root.user_id,
+            username=root.user.username,
+            content=root.content,
+            is_deleted=bool(root.is_deleted),
+            created_at=root.created_at,
+            parent_id=None,
+            depth=0,
+            replies=[],
+        )
 
-        response.append({
-            "id": comment.id,
-            "userId": comment.user_id,
-            "username": user.username if user else "Unknown",
-            "content": comment.content,
-            "parentId": comment.parent_id,
-            "depth": comment.depth,
-            "createdAt": comment.created_at.isoformat(),
-            "isDeleted": bool(comment.is_deleted)
-        })
+        for reply in root.replies:
+            if reply.is_deleted:
+                continue
+            reply_dto = CommentResponseDTO(
+                id=reply.id,
+                user_id=reply.user_id,
+                username=reply.user.username,
+                content=reply.content,
+                is_deleted=bool(reply.is_deleted),
+                created_at=reply.created_at,
+                parent_id=reply.parent_id,
+                depth=reply.depth,
+            )
+            root_dto.replies.append(reply_dto)
 
-    return {
-        "comments": response,
-        "count": len(response)
-    }
+        root_dto.replies.sort(key=lambda x: x.created_at)
+        result.append(root_dto)
+
+    return {"comments": result, "count": len(result)}
 
 
-def post_comment(video_id: int, parent_comment_id: int | None, content: str, current_user, db):
-    new_comment = Comment(
-        user_id=current_user.id,
-        video_id=video_id,
-        content=content,
-        parent_id=parent_comment_id
-    )
+def post_comment(
+    post_id: int, parent_comment_id: int | None, content: str, current_user, db: Session
+):
+    depth = 0
 
     if parent_comment_id is not None:
-        parent_comment = db.query(Comment).filter(Comment.id == parent_comment_id).first()
-        if not parent_comment:
-            raise ValueError("Parent comment not found")
-
-        new_comment.depth = parent_comment.depth + 1
-        new_comment.path = (
-            f"{parent_comment.path}.{parent_comment.id}"
-            if parent_comment.path
-            else str(parent_comment.id)
+        parent_comment = (
+            db.query(Comment)
+            .filter(Comment.id == parent_comment_id, Comment.is_deleted == 0)
+            .first()
         )
-    else:
-        new_comment.depth = 0
-        new_comment.path = None
+        if not parent_comment:
+            raise CommentNotFoundException()
+        depth = 1
 
+    new_comment = Comment(
+        user_id=current_user.id,
+        post_id=post_id,
+        content=content,
+        depth=depth,
+        parent_id=parent_comment_id,
+    )
     db.add(new_comment)
     db.commit()
-    db.refresh(new_comment)
+    db.refresh(new_comment, attribute_names=["user"])
 
-    return {
-        "id": new_comment.id,
-        "user_id": new_comment.user_id,
-        "username": current_user.username,
-        "video_id": new_comment.video_id,
-        "created_at": new_comment.created_at.isoformat(),
-        "updated_at": new_comment.updated_at.isoformat(),
-        "content": new_comment.content,
-        "is_deleted": new_comment.is_deleted,
-        "parent_id": new_comment.parent_id,
-        "depth": new_comment.depth,
-        "path": new_comment.path,
-    }
+    return CommentResponseDTO(
+        id=new_comment.id,
+        user_id=new_comment.user_id,
+        username=current_user.username,
+        content=new_comment.content,
+        is_deleted=False,
+        created_at=new_comment.created_at,
+        parent_id=new_comment.parent_id,
+        depth=new_comment.depth,
+    )
 
 
-def put_comment(comment_id: int, content: str, current_user, db):
-    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+def put_comment(comment_id: int, content: str, current_user, db: Session):
+    comment = (
+        db.query(Comment)
+        .filter(Comment.id == comment_id, Comment.is_deleted == 0)
+        .first()
+    )
     if not comment:
         raise CommentNotFoundException()
 
     if comment.user_id != current_user.id:
-        raise UnauthorizedCommentDeletionException()
+        raise PermissionDeniedException()
 
     comment.content = content
     db.commit()
@@ -96,18 +125,33 @@ def put_comment(comment_id: int, content: str, current_user, db):
         "created_at": comment.created_at.isoformat(),
         "content": comment.content,
         "is_deleted": comment.is_deleted,
-        "path": comment.path
+        "path": comment.path,
     }
 
 
-def delete_comment(comment_id: int, current_user, db):
-    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+def delete_comment(comment_id: int, current_user: User, db: Session):
+    comment = (
+        db.query(Comment)
+        .options(joinedload(Comment.post))
+        .filter(Comment.id == comment_id)
+        .first()
+    )
+
     if not comment:
         raise CommentNotFoundException()
 
-    if comment.user_id != current_user.id and current_user.role != "ADMIN":
-        UnauthorizedCommentDeletionException()
+    if comment.post.is_deleted:
+        raise ResourceDeletedException(
+            message="Cannot delete comment from a deleted post."
+        )
+
+    if comment.user_id != current_user.id and current_user.role != UserRole.ADMIN:
+        raise PermissionDeniedException()
+
+    if comment.is_deleted:
+        raise CommentAlreadyDeletedException()
 
     comment.is_deleted = 1
     db.commit()
+
     return {"message": "Comment deleted successfully"}

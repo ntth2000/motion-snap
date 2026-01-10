@@ -1,5 +1,7 @@
-from fastapi import HTTPException, status, UploadFile
-from .constants import MAX_DURATION_IN_SECONDS, ALLOWED_VIDEO_EXTENSIONS
+from fastapi import HTTPException, UploadFile, status
+
+from .constants import ALLOWED_VIDEO_EXTENSIONS, MAX_DURATION_IN_SECONDS
+
 
 class UnsupportedVideoExtensionException(HTTPException):
     def __init__(self, ext: str):
@@ -7,6 +9,7 @@ class UnsupportedVideoExtensionException(HTTPException):
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail=f"Unsupported video extension: {ext}. Allowed extensions: {', '.join(sorted(ext for ext in ALLOWED_VIDEO_EXTENSIONS))}.",
         )
+
 
 class VideoTooLongException(HTTPException):
     def __init__(self, duration: float):
@@ -20,7 +23,7 @@ class UploadFilesFailedException(HTTPException):
     def __init__(self, file: UploadFile):
         super().__init__(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to upload {file.filename}."
+            detail=f"Failed to upload {file.filename}.",
         )
 
 
@@ -28,5 +31,5 @@ class SavingFileException(HTTPException):
     def __init__(self, file: UploadFile):
         super().__init__(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to upload {file.filename}."
+            detail=f"Failed to upload {file.filename}.",
         )

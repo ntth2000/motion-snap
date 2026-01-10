@@ -1,11 +1,13 @@
-from fastapi import Depends, Request, Response
 from datetime import timedelta
+
+from fastapi import Depends, Request, Response
 from sqlalchemy.orm import Session
+
 from src import database
-from src.auth.utils import verify_token, create_access_token
-from src.models import User
 from src.auth.constants import ACCESS_TOKEN_EXPIRE_MINUTES
 from src.auth.exceptions import TokenExpiredException, UserNotFound
+from src.auth.utils import create_access_token, verify_token
+from src.models import User
 
 
 def get_db():
@@ -17,9 +19,7 @@ def get_db():
 
 
 def get_current_user(
-    request: Request,
-    response: Response,
-    db: Session = Depends(get_db)
+    request: Request, response: Response, db: Session = Depends(get_db)
 ):
     access_token = request.cookies.get("access_token")
     refresh_token = request.cookies.get("refresh_token")
@@ -40,7 +40,7 @@ def get_current_user(
         # Tạo access token mới
         new_access_token = create_access_token(
             {"sub": refresh_payload["sub"]},
-            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
         )
 
         response.set_cookie(

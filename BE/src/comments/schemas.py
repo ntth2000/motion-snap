@@ -1,23 +1,27 @@
-from pydantic import BaseModel
+from datetime import datetime
 from typing import Optional
 
+from src.schemas import BaseSchema
 
-class GetCommentDTO(BaseModel):
+
+class CommentResponseDTO(BaseSchema):
     id: int
-    userId: int
+    user_id: int
     username: str
-    createdAt: str
     content: str
-    isDeleted: int
-    depth: Optional[int] = None
-    parentId: Optional[int] = None
+    is_deleted: bool
+    created_at: datetime
+
+    parent_id: Optional[int] = None
+    depth: int = 0
+    replies: Optional[list["CommentResponseDTO"]] = None
 
 
-class GetAllCommentsResponseDTO(BaseModel):
-    comments: list[GetCommentDTO]
+class GetAllCommentsResponseDTO(BaseSchema):
+    comments: list[CommentResponseDTO]
     count: int = 0
 
 
-class CreateCommentRequestDTO(BaseModel):
+class CreateCommentRequestDTO(BaseSchema):
     content: str
     parent_comment_id: Optional[int] = None
