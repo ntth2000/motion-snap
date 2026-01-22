@@ -1,0 +1,69 @@
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate, useParams } from "react-router-dom";
+
+import PostItem from "../../components/PostList/PostItem";
+import AvatarUI from "../../components/UI/Avatar";
+import { getPosts } from "../../services/postService";
+import { getUserByUsername } from "../../services/userService";
+import { type IPost } from "../../types";
+export default function UserProfile() {
+  const { t } = useTranslation();
+  const { username: profileOwner } = useParams<{ username: string }>();
+  const navigate = useNavigate();
+  const [userDetail, setUserDetail] = useState<{ id: number, username: string, name: string }>();
+  const [posts, setPosts] = useState<IPost[]>([]);
+  console.log(profileOwner)
+
+  useEffect(() => {
+    const getUserInfo = async (username: string) => {
+      try {
+        const res = await getUserByUsername(username);
+        setUserDetail({
+          id: res.id,
+          username: res.username,
+          name: res.name
+        })
+      } catch (error) {
+        navigate("/");
+      }
+    }
+    const getUserPosts = async (username: number | string) => {
+      const res = await getPosts(`username=${username}`);
+      setPosts(res)
+    }
+
+    if (profileOwner) {
+      getUserInfo(profileOwner);
+      getUserPosts(profileOwner)
+    }
+  }, [profileOwner])
+
+  return <main className="max-w-250 mx-auto pb-20">
+    <section className="flex flex-col items-center pt-12 px-4">
+      <div className="relative">
+        <AvatarUI height="h-20" width="w-20" name={userDetail?.name || ""} />
+      </div>
+      <div className="mt-6 flex flex-col items-center gap-1">
+        <h2 className="text-[#0d121b] dark:text-white text-3xl font-bold leading-tight tracking-tight">{userDetail?.name}</h2>
+        <p className="text-primary text-lg font-medium">@{userDetail?.username}</p>
+      </div>
+    </section>
+    {posts.length > 0 &&
+      <section className="mt-12 px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {posts.map(post => <div
+          onClick={() => { navigate(`/posts/${post.id}`) }}
+          key={post.id}
+          className="cursor-pointer group relative bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
+        >
+          <PostItem isDisplayOwner={false} post={post} />
+        </div>)}
+      </section>
+    }
+    {posts.length === 0 && <section className="mt-20">
+      <p className="text-gray-500 text-center">
+        {t("pages.profile.noPosts")}
+      </p>
+    </section>}
+  </main>
+}

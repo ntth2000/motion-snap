@@ -1,6 +1,7 @@
 from typing import List
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query, UploadFile, status
+from fastapi import (APIRouter, BackgroundTasks, Depends, Query, UploadFile,
+                     status)
 from fastapi.params import File
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session

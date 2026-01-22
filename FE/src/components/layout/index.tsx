@@ -1,49 +1,21 @@
-import { Layout, theme } from 'antd';
+import { Layout } from 'antd';
 import { type PropsWithChildren } from 'react';
 
-import useAuth from '../../hooks/useAuth';
-import Topbar from './Topbar';
 import Footer from './Footer';
+import Topbar from './Topbar';
 
 const { Content } = Layout;
 
 export default function AppLayout({ children }: PropsWithChildren) {
-  const {
-    token: { borderRadiusLG },
-  } = theme.useToken();
-
-  const { user } = useAuth();
-
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 1000,
-          padding: 0,
-        }}
-      >
-        <Topbar userName={user?.username || ''} />
+    <Layout className="min-h-screen">
+      <div className="sticky top-0 z-1000">
+        <Topbar />
       </div>
 
-      <Content
-        style={{
-          flex: 1,
-          overflow: 'auto',
-          padding: '32px 0',
-        }}
-      >
+      <Content className="flex-1 overflow-auto py-8!">
         <div
-          style={{
-            maxWidth: 1200,
-            margin: '0 auto',
-            width: '100%',
-            borderRadius: borderRadiusLG,
-            minHeight: 'calc(100vh - 128px)',
-            display: 'flex',
-            flexDirection: 'column'
-          }}
+          className="px-[50px] mx-auto! w-full min-h-[calc(100vh-128px)] flex flex-col"
         >
           {children}
         </div>

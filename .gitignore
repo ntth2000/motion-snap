@@ -35,3 +35,6 @@ FE/*.local
 # Mac/VSCode
 .DS_Store
 .vscode/
+
+
+.agent

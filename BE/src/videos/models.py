@@ -1,10 +1,19 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import (Column, DateTime, Enum, Float, ForeignKey, Integer,
+                        String, Text, func)
 from sqlalchemy.orm import relationship
 
 from src.database import Base
+from src.videos.enums import JobStatus, ProcessingStage
+
+
+class VideoStatus(enum.Enum):
+    UPLOADED = "UPLOADED"
+    EXTRACTED_FRAMES = "EXTRACTED_FRAMES"
+    EXTRACTED_POSES = "EXTRACTED_POSES"
+    DRAWN_3D = "DRAWN_3D"
 
 
 class Video(Base):
@@ -20,5 +29,29 @@ class Video(Base):
     duration = Column(Float, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    width = Column(Integer, nullable=True)
+    height = Column(Integer, nullable=True)
+
     # Relationships
     post = relationship("Post", back_populates="videos")
+    job = relationship(
+        "Job", back_populates="video", uselist=False, cascade="all, delete-orphan"
+    )
+
+
+class Job(Base):
+    __tablename__ = "jobs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    video_id = Column(Integer, ForeignKey("videos.id"), nullable=False)
+    status = Column(Enum(JobStatus), default=JobStatus.PENDING)
+    stage = Column(Enum(ProcessingStage), default=ProcessingStage.UPLOADING)
+    progress = Column(Integer, default=0)
+    message = Column(Text, nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    started_at = Column(DateTime, nullable=True)
+    finished_at = Column(DateTime, nullable=True)
+
+    # Relationship
+    video = relationship("Video", back_populates="job")

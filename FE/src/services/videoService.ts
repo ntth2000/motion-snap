@@ -66,9 +66,9 @@ export const deleteVideo = async (videoId: number) => {
 }
 
 
-export const extractPoses = async (videoId: number) => {
+export const extractPoses = async (postId: number) => {
   try {
-    const response = await axiosInstance.post(`${API.videos.list}/extract_poses/${videoId}`, null, {
+    const response = await axiosInstance.post(`${API.posts.extractPoses(postId)}`, null, {
       withCredentials: true,
     });
     console.log('Extract poses response:', response.data);

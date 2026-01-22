@@ -15,6 +15,7 @@ def init_admin(db):
     admin = db.query(User).filter(User.role == "ADMIN").first()
     if not admin:
         new_admin = User(
+            name="Administrator",
             username="admin",
             email=ADMIN_EMAIL,
             password_hash=hash_password(ADMIN_PASSWORD),

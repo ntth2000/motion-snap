@@ -1,0 +1,15 @@
+import enum
+
+
+class JobStatus(enum.Enum):
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+class ProcessingStage(enum.Enum):
+    UPLOADING = "UPLOADING"
+    EXTRACTING_FRAMES = "EXTRACTING_FRAMES"
+    EXTRACTING_POSES = "EXTRACTING_POSES"
+    DRAWING_3D = "DRAWING_3D"

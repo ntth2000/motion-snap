@@ -1,12 +1,15 @@
-@import 'table.css';
-@import 'comment.css';
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
 
-* {
-  margin: 0;
-}
 
-.px-2 {
-  padding-top: 8px;
+@layer theme, base, antd, components, utilities;
+
+@theme {
+  --color-primary: #60a5fa;
+  --color-secondary: #888;
+  --color-background-light: #f6f6f8;
+  --color-background-dark: #101622;
 }
 
 .topbar {
@@ -20,13 +23,6 @@
 .topbar.topbar-scrolled {
   box-shadow: 0 2px 8px #f0f1f2;
   background-color: #fff;
-}
-
-
-.footer {
-  background-color: #fff;
-  width: 100%;
-  border-top: 1px solid #f0f0f0;
 }
 
 .footer .content {

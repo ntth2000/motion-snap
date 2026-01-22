@@ -1,10 +1,10 @@
 import { Button, Card, Divider, Form, Input, message, Typography } from 'antd';
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { register } from '../../../services/authService';
-import AuthLayout from '../../../layout/AuthLayout';
-import { useTranslation } from 'react-i18next';
 import Title from 'antd/lib/typography/Title';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
+
+import { register } from '../../../services/authService';
 
 
 export default function RegisterPage() {
@@ -42,21 +42,17 @@ export default function RegisterPage() {
   };
 
   return (
-    <div style={{ width: '100%', minHeight: "70vh", maxWidth: 480, margin: '16px auto', display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div className="w-full min-h-[70vh] max-w-120 my-4 mx-auto! flex items-center justify-center">
       {contextHolder}
-      <Card bordered style={{ width: '100%', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
+      <Card className="w-full shadow-xl">
         <Title
           level={4}
-          style={{ marginBottom: 8, textAlign: 'center' }}
+          className="mb-2 text-center"
         >
           {t('auth.register.title')}
         </Title>
         <div
-          style={{
-            marginBottom: 24,
-            textAlign: 'center',
-            color: 'rgba(0,0,0,0.65)',
-          }}
+          className="mb-6 text-center text-secondary"
         >
           {t('auth.register.hint')}
         </div>
@@ -114,7 +110,7 @@ export default function RegisterPage() {
                     return Promise.resolve();
                   }
                   return Promise.reject(
-                    new Error('The two passwords do not match')
+                    new Error(t('auth.register.message.passwordMismatch'))
                   );
                 },
               }),
@@ -134,7 +130,7 @@ export default function RegisterPage() {
               variant="solid"
               loading={loading}
               htmlType="submit"
-              style={{ width: '100%', padding: '16px 0' }}
+              className="w-full py-4 mt-2"
             >
               {t('auth.register.registerBtn')}
             </Button>
@@ -142,9 +138,9 @@ export default function RegisterPage() {
         </Form>
         <Divider />
 
-        <div style={{ textAlign: 'center' }}>
+        <div className="text-center">
           <Typography.Text> {t('auth.register.haveAccount')} </Typography.Text>
-          <Typography.Link strong href="/login">
+          <Typography.Link className="hover:underline!" href="/login">
             {t('auth.register.loginLink')}
           </Typography.Link>
         </div>

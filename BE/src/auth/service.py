@@ -1,20 +1,12 @@
 from datetime import datetime
 
 from src import models
-from src.auth.exceptions import (
-    ExistingUserException,
-    InvalidTokenException,
-    InvalidUserInfoException,
-    NotRegisteredEmail,
-    TokenExpiredException,
-)
-from src.auth.utils import (
-    create_access_token,
-    create_refresh_token,
-    hash_password,
-    verify_password,
-    verify_token,
-)
+from src.auth.exceptions import (ExistingUserException, InvalidTokenException,
+                                 InvalidUserInfoException, NotRegisteredEmail,
+                                 TokenExpiredException)
+from src.auth.utils import (create_access_token, create_refresh_token,
+                            hash_password, verify_password, verify_token)
+from src.users.utils import generate_username
 
 
 def register_user(db, user):
@@ -26,8 +18,9 @@ def register_user(db, user):
         raise ExistingUserException()
 
     hashed_pw = hash_password(user.password)
+    username = generate_username(user.name)
     new_user = models.User(
-        username=user.username, password_hash=hashed_pw, email=user.email
+        name=user.name, username=username, password_hash=hashed_pw, email=user.email
     )
 
     db.add(new_user)

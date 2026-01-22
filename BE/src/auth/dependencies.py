@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Optional
 
 from fastapi import Depends, Request, Response
 from sqlalchemy.orm import Session
@@ -18,43 +19,54 @@ def get_db():
         db.close()
 
 
-def get_current_user(
+def get_optional_current_user(
     request: Request, response: Response, db: Session = Depends(get_db)
 ):
-    access_token = request.cookies.get("access_token")
-    refresh_token = request.cookies.get("refresh_token")
+    try:
+        access_token = request.cookies.get("access_token")
+        refresh_token = request.cookies.get("refresh_token")
 
-    if not access_token:
-        raise TokenExpiredException()
+        if not access_token and not refresh_token:
+            return None
 
-    payload = verify_token(access_token)
+        payload = None
 
-    if payload is None:
-        if not refresh_token:
-            raise TokenExpiredException()
+        if access_token:
+            payload = verify_token(access_token)
 
-        refresh_payload = verify_refresh_token(refresh_token)
-        if refresh_payload is None:
-            raise TokenExpiredException()
+        if payload is None:
+            if not refresh_token:
+                return None
 
-        # Tạo access token mới
-        new_access_token = create_access_token(
-            {"sub": refresh_payload["sub"]},
-            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
-        )
+            refresh_payload = verify_refresh_token(refresh_token)
+            if refresh_payload is None:
+                return None
 
-        response.set_cookie(
-            key="access_token",
-            value=new_access_token,
-            httponly=True,
-            samesite="lax",
-            max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        )
+            # Tạo access token mới
+            new_access_token = create_access_token(
+                {"sub": refresh_payload["sub"]},
+                expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+            )
 
-        payload = verify_token(new_access_token)
+            response.set_cookie(
+                key="access_token",
+                value=new_access_token,
+                httponly=True,
+                samesite="lax",
+                max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            )
 
-    user = db.query(User).filter(User.email == payload["sub"]).first()
+            payload = verify_token(new_access_token)
+
+        user = db.query(User).filter(User.email == payload["sub"]).first()
+        return user
+
+    except Exception as e:
+        return None
+
+
+def get_current_user(user: Optional[User] = Depends(get_optional_current_user)):
     if not user:
-        raise UserNotFound()
+        raise TokenExpiredException()
 
     return user

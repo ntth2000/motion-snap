@@ -1,4 +1,4 @@
-from src.models import Job, JobStatus
+from src.videos.models import Job, JobStatus, ProcessingStage
 
 
 def rollback_jobs(db):

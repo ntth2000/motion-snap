@@ -9,8 +9,10 @@ from src import database
 from src.api_keys import router as api_key_router
 from src.auth import router as auth_router
 from src.comments import router as comment_router
+from src.posts import router as post_router
 from src.system.startup.init_admin import init_admin
 from src.system.startup.rollback_jobs import rollback_jobs
+from src.users import router as user_router
 from src.videos import router as video_router
 from src.videos.constants import RESULT_PATH, VIDEO_PATH
 
@@ -51,6 +53,8 @@ app.include_router(auth_router.router)
 app.include_router(video_router.router)
 app.include_router(api_key_router.router)
 app.include_router(comment_router.router)
+app.include_router(post_router.router)
+app.include_router(user_router.router)
 
 
 @app.middleware("http")
@@ -68,5 +72,5 @@ if not os.path.exists(VIDEO_PATH):
 if not os.path.exists(RESULT_PATH):
     os.makedirs(RESULT_PATH)
 
-app.mount("/storage/inputs", StaticFiles(directory=VIDEO_PATH), name="inputs")
-app.mount("/storage/outputs", StaticFiles(directory=RESULT_PATH), name="outputs")
+app.mount("/api/storage/inputs", StaticFiles(directory=VIDEO_PATH), name="inputs")
+app.mount("/api/storage/outputs", StaticFiles(directory=RESULT_PATH), name="outputs")

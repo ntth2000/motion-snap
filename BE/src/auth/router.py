@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 
 from src import database
 from src.auth import schemas, service
-from src.auth.constants import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
+from src.auth.constants import (ACCESS_TOKEN_EXPIRE_MINUTES,
+                                REFRESH_TOKEN_EXPIRE_DAYS)
 from src.auth.dependencies import get_current_user
 from src.users import schemas as user_schemas
 
@@ -61,6 +62,7 @@ def login(
         "username": user.username,
         "email": user.email,
         "role": user.role,
+        "name": user.name,
     }
 
 
@@ -91,6 +93,7 @@ def refresh(request: Request, response: Response, db: Session = Depends(get_db))
 def get_me(current_user: user_schemas.UserDetailResponse = Depends(get_current_user)):
     return {
         "id": current_user.id,
+        "name": current_user.name,
         "username": current_user.username,
         "email": current_user.email,
         "role": current_user.role,

@@ -1,11 +1,11 @@
-import { Button, Card, Col, Divider, Form, Input, message, Row, Typography } from 'antd';
+import { Button, Card, Divider, Form, Input, message, Typography } from 'antd';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import useAuth from '../../../hooks/useAuth';
-import AuthLayout from '../../../layout/AuthLayout';
-import Title from 'antd/lib/typography/Title';
-import { useTranslation } from 'react-i18next';
+
+const { Title, Paragraph } = Typography;
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -25,7 +25,6 @@ export default function LoginPage() {
     try {
       setLoading(true);
       const res = await login({ email, password });
-      console.log(res)
       messageApi.open({
         type: 'success',
         content: 'Logged in successfully! Redirect to home page.',
@@ -58,25 +57,19 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div style={{ width: '100%', minHeight: "70vh", maxWidth: 480, margin: '16px auto', display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div className="w-full min-h-[70vh] max-w-120 m-4 mx-auto! flex items-center justify-center">
       {contextHolder}
-      <Card bordered style={{ width: '100%', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
+      <Card className="w-full shadow-xl rounded-3xl">
         <Title
           level={4}
-          style={{ marginBottom: 8, textAlign: 'center' }}
+          className="mb-2 text-center"
         >
           {t('auth.login.title')}
         </Title>
-        <div
-          style={{
-            marginBottom: 24,
-            textAlign: 'center',
-            color: 'rgba(0,0,0,0.65)',
-          }}
+        <Paragraph type="secondary" className="w-full text-center"
         >
           {t('auth.login.hint')}
-        </div>
-
+        </Paragraph>
         <Form
           layout="vertical"
           form={form}
@@ -117,7 +110,7 @@ export default function LoginPage() {
               loading={loading}
               htmlType="submit"
               size='large'
-              style={{ width: '100%' }}
+              className="w-full"
             >
               {t('auth.login.loginBtn')}
             </Button>
@@ -125,9 +118,9 @@ export default function LoginPage() {
         </Form>
         <Divider />
 
-        <div style={{ textAlign: 'center' }}>
+        <div className="text-center">
           <Typography.Text> {t('auth.login.noAccount')} </Typography.Text>
-          <Typography.Link strong href="/register">
+          <Typography.Link className="hover:underline!" href="/register">
             {t('auth.login.registerLink')}
           </Typography.Link>
         </div>

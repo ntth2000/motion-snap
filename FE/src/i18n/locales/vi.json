@@ -6,7 +6,8 @@
     "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
     "close": "Đóng",
     "next": "Tiếp theo",
-    "back": "Quay lại"
+    "back": "Quay lại",
+    "retry": "Tải lại"
   },
   "auth": {
     "login": {
@@ -41,7 +42,8 @@
         "emailRequired": "Vui lòng nhập email.",
         "usernameRequired": "Vui lòng nhập tên.",
         "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự.",
-        "passwordMismatch": "Mật khẩu và xác nhận mật khẩu không khớp."
+        "passwordMismatch": "Mật khẩu và xác nhận mật khẩu không khớp.",
+        "invalidEmail": "Địa chỉ email không hợp lệ."
       }
     },
     "logout": {
@@ -49,42 +51,83 @@
     }
   },
   "comment": {
-    "addComment": "Thêm bình luận...",
-    "submit": "Gửi bình luận"
+    "title": "Bình luận",
+    "noComments": "Chưa có bình luận nào. Hãy là người đầu tiên bình luận!",
+    "postCommentPlaceholder": "Viết bình luận...",
+    "submitComment": "Gửi bình luận",
+    "editBtn": "Chỉnh sửa",
+    "deleteBtn": "Xóa",
+    "updateBtn": "Cập nhật",
+    "cancelBtn": "Huỷ",
+    "deleteConfirmTitle": "Bạn muốn xoá bình luận này?",
+    "message": {
+      "delete_success": "Đã xoá bình luận.",
+      "delete_error": "Xoá thất bại. Vui lòng thử lại.",
+      "update_error": "Cập nhật thất bại. Vui lòng thử lại.",
+      "update_success": "Cập nhật bình luận thành công."
+    }
   },
   "topbar": {
     "upload": "Tải lên",
     "login": "Đăng nhập",
+    "home": "Trang chủ",
+    "myVideos": "Video của tôi",
     "menu": {
       "profile": "Trang cá nhân",
-      "settings": "Cài đặt",
+      "apiKey": "API Key",
       "logout": "Đăng xuất"
     }
   },
   "footer": {
     "description": "© {{year}} MotionSnap. Đây là một dự án phi thương mại chỉ dành cho mục đích giáo dục."
   },
+  "apiKeySetting": {
+    "title": "Cài đặt API Key",
+    "description": "Quản lý API Key của bạn để truy cập các tính năng nâng cao. \nBạn sẽ không thể xem lại API Key sau khi rời khỏi trang này, vì vậy hãy đảm bảo lưu nó ở nơi an toàn.",
+    "generateBtn": "Tạo API Key mới",
+    "copyBtn": "Sao chép",
+    "regenerateBtn": "Tạo lại",
+    "noApiKey": "Bạn chưa có API Key nào.",
+    "subTitle": "API Key của bạn",
+    "message": {
+      "generateSuccess": "API Key đã được tạo thành công.",
+      "generateFailed": "Tạo API Key thất bại.",
+      "regenerateSuccess": "API Key đã được tạo lại thành công.",
+      "regenerateFailed": "Tạo lại API Key thất bại.",
+      "copySuccess": "Đã sao chép."
+    }
+  },
   "pages": {
     "settings": {
       "menu": {
         "profile": "Hồ sơ",
         "apiKey": "API Key"
-      },
-      "apiKeySetting": {
-        "title": "Cài đặt API Key",
-        "description": "Quản lý API Key của bạn để truy cập các tính năng nâng cao. \nBạn sẽ không thể xem lại API Key sau khi rời khỏi trang này, vì vậy hãy đảm bảo lưu nó ở nơi an toàn.",
-        "generateBtn": "Tạo API Key mới",
-        "copyBtn": "Sao chép",
-        "regenerateBtn": "Tạo lại",
-        "noApiKey": "Bạn chưa có API Key nào.",
-        "subTitle": "API Key của bạn",
-        "message": {
-          "generateSuccess": "API Key đã được tạo thành công.",
-          "generateFailed": "Tạo API Key thất bại.",
-          "regenerateSuccess": "API Key đã được tạo lại thành công.",
-          "regenerateFailed": "Tạo lại API Key thất bại."
-        }
       }
+    },
+    "feed": {
+      "title": "Khám phá"
+    },
+    "post": {
+      "shareBtn": "Chia sẻ",
+      "downloadBtn": "Tải xuống",
+      "viewOptions": {
+        "originalVideo": "Video gốc",
+        "extractedPoses": "Khung xương",
+        "draw3d": "Vẽ 3D"
+      },
+      "editBtn": "Chỉnh sửa",
+      "deleteBtn": "Xóa",
+      "deleteConfirmTitle": "Bạn muốn xoá bài đăng này?",
+      "message": {
+        "delete_success": "Đã xoá bài đăng.",
+        "delete_error": "Xoá thất bại. Vui lòng thử lại.",
+        "update_error": "Cập nhật thất bại. Vui lòng thử lại.",
+        "update_success": "Cập nhật thành công."
+      }
+    },
+    "profile": {
+      "editProfileBtn": "Thay đổi thông tin",
+      "noPosts": "Chưa có bài đăng nào."
     }
   },
   "upload": {

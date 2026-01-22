@@ -1,99 +1,169 @@
 {
   "common": {
-    "submit": "Gửi",
-    "cancel": "Hủy",
-    "loading": "Đang tải...",
-    "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "An error occurred. Please try again.",
     "close": "Close",
     "next": "Next",
-    "back": "Back"
+    "back": "Back",
+    "retry": "Retry"
   },
   "auth": {
     "login": {
       "title": "Welcome back to MotionSnap",
-      "hint": "Sign in to continue using the application",
+      "hint": "Log in to continue using the app",
       "email": "Email",
       "password": "Password",
       "forgotPassword": "Forgot password?",
       "noAccount": "Don't have an account?",
-      "loginBtn": "Login",
-      "registerLink": "Register here.",
+      "loginBtn": "Log in",
+      "registerLink": "Sign up now",
       "message": {
         "emailRequired": "Please enter your email.",
         "passwordRequired": "Please enter your password.",
         "invalidEmail": "Invalid email address.",
         "invalidPassword": "Invalid password.",
-        "invalidCredentials": "Invalid login credentials. Please try again.",
-        "successLogin": "Login successful."
+        "invalidCredentials": "Invalid credentials. Please try again."
       }
     },
     "register": {
       "title": "Create a new account",
       "hint": "Sign up to get started with MotionSnap",
+      "username": "Username",
       "email": "Email",
       "password": "Password",
       "confirmPassword": "Confirm Password",
       "haveAccount": "Already have an account?",
-      "registerBtn": "Register",
-      "loginLink": "Login here.",
+      "registerBtn": "Sign up",
+      "loginLink": "Log in now",
       "message": {
-        "passwordMismatch": "Passwords do not match."
+        "passwordRequired": "Please enter a password.",
+        "emailRequired": "Please enter an email.",
+        "usernameRequired": "Please enter a username.",
+        "passwordTooShort": "Password must be at least 6 characters.",
+        "passwordMismatch": "Passwords do not match.",
+        "invalidEmail": "Invalid email address."
       }
     },
     "logout": {
-      "btnLogout": "Logout"
+      "btnLogout": "Log out"
     }
   },
   "comment": {
-    "addComment": "Add a comment...",
-    "submit": "Submit comment"
+    "title": "Comments",
+    "noComments": "No comments yet. Be the first to comment!",
+    "postCommentPlaceholder": "Write a comment...",
+    "submitComment": "Post comment",
+    "editBtn": "Edit",
+    "deleteBtn": "Delete",
+    "updateBtn": "Update",
+    "cancelBtn": "Cancel",
+    "deleteConfirmTitle": "Do you want to delete this comment?",
+    "message": {
+      "delete_success": "Comment deleted.",
+      "delete_error": "Delete failed. Please try again.",
+      "update_error": "Update failed. Please try again.",
+      "update_success": "Comment updated successfully."
+    }
   },
   "topbar": {
     "upload": "Upload",
-    "login": "Login",
+    "login": "Log in",
+    "home": "Home",
+    "myVideos": "My Videos",
     "menu": {
-      "profile": "Your profile",
-      "settings": "Settings",
-      "logout": "Logout"
+      "profile": "Profile",
+      "apiKey": "API Key",
+      "logout": "Log out"
     }
   },
   "footer": {
     "description": "© {{year}} MotionSnap. This is a non-commercial project for educational purposes only."
+  },
+  "apiKeySetting": {
+    "title": "API Key Settings",
+    "description": "Manage your API Key to access advanced features.\nYou will not be able to view the API Key again after leaving this page, so make sure to save it in a safe place.",
+    "generateBtn": "Generate new API Key",
+    "copyBtn": "Copy",
+    "regenerateBtn": "Regenerate",
+    "noApiKey": "You don't have an API Key yet.",
+    "subTitle": "Your API Key",
+    "message": {
+      "generateSuccess": "API Key generated successfully.",
+      "generateFailed": "Failed to generate API Key.",
+      "regenerateSuccess": "API Key regenerated successfully.",
+      "regenerateFailed": "Failed to regenerate API Key.",
+      "copySuccess": "Copied."
+    }
   },
   "pages": {
     "settings": {
       "menu": {
         "profile": "Profile",
         "apiKey": "API Key"
-      },
-      "apiKeySetting": {
-        "title": "API Key Management",
-        "description": "Generate and manage your API keys for accessing MotionSnap services. \nYou will not be able to see it again, so copy it now and keep it secure.",
-        "generateBtn": "Generate New API Key",
-        "copyBtn": "Copy",
-        "regenerateBtn": "Regenerate",
-        "noApiKey": "You don't have any API keys yet.",
-        "subTitle": "Your API Key",
-        "message": {
-          "generateSuccess": "API key generated successfully.",
-          "generateFailed": "Failed to generate API key.",
-          "regenerateSuccess": "API key regenerated successfully.",
-          "regenerateFailed": "Failed to regenerate API key."
-        }
       }
+    },
+    "feed": {
+      "title": "Explore"
+    },
+    "post": {
+      "shareBtn": "Share",
+      "downloadBtn": "Download",
+      "viewOptions": {
+        "originalVideo": "Original",
+        "extractedPoses": "Skeleton",
+        "draw3d": "3D Render"
+      },
+      "editBtn": "Edit",
+      "deleteBtn": "Delete",
+      "deleteConfirmTitle": "Do you want to delete this post?",
+      "message": {
+        "delete_success": "Post deleted.",
+        "delete_error": "Delete failed. Please try again.",
+        "update_error": "Update failed. Please try again.",
+        "update_success": "Update successful."
+      }
+    },
+    "profile": {
+      "editProfileBtn": "Edit Profile",
+      "noPosts": "No posts yet."
     }
   },
-  "upload": {
+  "uploadModal": {
+    "subTitle": "Upload videos for pose estimation.",
+    "viewMode": {
+      "single": "Single View",
+      "multi": "Multi View"
+    },
+    "single": {
+      "title": "Upload 1 video",
+      "description": "Provide single-view data for calibration."
+    },
+    "multi": {
+      "title": "Upload 2 videos",
+      "description": "Provide multi-view data for calibration."
+    },
+    "caption": "Caption",
+    "captionPlaceholder": "Describe the object...",
     "title": "Upload Video",
-    "selectFile": "Select Video File",
-    "dragDrop": "Or drag & drop to upload",
-    "description": "Only support formats: MP4. Maximum file size: 30MB.",
+    "previewTitle": "Preview",
+    "selectFile": "Select video file",
+    "dragDrop": "Click or drag video here",
+    "description": "MP4 files only. Max file size: 30MB",
     "uploadBtn": "Upload",
+    "readyToUpload": "Ready to upload",
     "message": {
       "uploadSuccess": "Upload successful!",
       "uploadFailed": "Upload failed. Please try again.",
       "invalidFileType": "Invalid file type. Please select a video file.",
-      "fileTooLarge": "File size exceeds the allowed limit."
+      "fileTooLarge": "File size exceeds the limit."
+    },
+    "progress": {
+      "title": "Uploading...",
+      "description": "Please do not close the browser.",
+      "processing": "Processing...",
+      "finish": "Finish. Saving data..."
     }
   }
 }

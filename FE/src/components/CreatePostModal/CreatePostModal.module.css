@@ -1,0 +1,250 @@
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Common Layouts */
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.textCenter {
+  text-align: center;
+}
+
+.mb8 {
+  margin-bottom: 8px;
+}
+
+.mb16 {
+  margin-bottom: 16px;
+}
+
+.mb24 {
+  margin-bottom: 24px;
+}
+
+.mt4 {
+  margin-top: 4px;
+}
+
+.mt16 {
+  margin-top: 16px;
+}
+
+.mt24 {
+  margin-top: 24px;
+}
+
+/* Dragger Styles (Upload Zone) */
+.draggerWrapper {
+  /* Override Antd Dragger default styles if needed via wrapper */
+}
+
+/* Class này dùng để override style mặc định của Antd Dragger thông qua className */
+.customDragger {
+  background: #fafafa !important;
+  border-radius: 12px !important;
+  border: 2px dashed #d9d9d9 !important;
+  padding: 40px 0 !important;
+  transition: all 0.3s !important;
+}
+
+.customDragger:hover {
+  border-color: #135bec !important;
+}
+
+/* Style khi đã có file */
+.draggerHasFile {
+  background: #f6ffed !important;
+  border-color: #52c41a !important;
+}
+
+.draggerMini {
+  padding: 30px 0 !important;
+}
+
+.draggerIcon {
+  font-size: 48px;
+  color: #135bec;
+}
+
+.draggerIconMini {
+  font-size: 32px;
+  color: #135bec;
+}
+
+.draggerText {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.draggerTextMini {
+  font-size: 14px;
+}
+
+.successIcon {
+  color: #52c41a;
+}
+
+.successIconLarge {
+  font-size: 48px;
+  color: #52c41a;
+}
+
+.successIconMedium {
+  font-size: 32px;
+  color: #52c41a;
+}
+
+/* Preview Styles */
+.previewContainer {
+  display: flex;
+  gap: 24px;
+}
+
+.previewLeft {
+  flex: 2;
+}
+
+.previewRight {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.previewHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.previewLabel {
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* Video Box Ratio 16:9 */
+.videoWrapper {
+  position: relative;
+  padding-top: 56.25%;
+  /* 16:9 Aspect Ratio */
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.videoContent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.playIcon {
+  font-size: 48px;
+  opacity: 0.8;
+}
+
+.playIconMini {
+  font-size: 32px;
+  opacity: 0.8;
+}
+
+.videoName {
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 8px;
+}
+
+/* Form Elements */
+.captionArea {
+  border-radius: 8px !important;
+  resize: none !important;
+  margin-bottom: 16px;
+}
+
+.fileInfoBox {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.fileInfoLabel {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.fileName {
+  font-size: 12px;
+  color: #666;
+}
+
+/* MultiView Specific */
+.infoBox {
+  margin-top: 24px;
+  padding: 12px;
+  background: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.infoText {
+  font-size: 12px;
+  color: #0050b3;
+}
+
+.previewNameMini {
+  font-size: 11px;
+  color: #999;
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Modal Header & Footer */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoIcon {
+  font-size: 24px;
+  color: #135bec;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.primaryButton {
+  background: #135bec !important;
+}

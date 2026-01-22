@@ -15,6 +15,7 @@ class Comment(Base):
     is_deleted = Column(Integer, default=0)
     parent_id = Column(Integer, ForeignKey("comments.id"), nullable=True)
     depth = Column(Integer, default=0)
+    like_count = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -22,3 +23,13 @@ class Comment(Base):
     post = relationship("Post", back_populates="comments")
     replies = relationship("Comment", back_populates="parent", remote_side=[id])
     parent = relationship("Comment", back_populates="replies", remote_side=[parent_id])
+    likes = relationship("CommentLike", backref="comment", cascade="all, delete-orphan")
+
+
+class CommentLike(Base):
+    __tablename__ = "comment_likes"
+
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    comment_id = Column(Integer, ForeignKey("comments.id"), primary_key=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

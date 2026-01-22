@@ -3,12 +3,8 @@ from datetime import datetime, timedelta
 import bcrypt
 import jwt
 
-from src.auth.constants import (
-    ACCESS_TOKEN_EXPIRE_MINUTES,
-    ALGORITHM,
-    REFRESH_TOKEN_EXPIRE_DAYS,
-    SECRET_KEY,
-)
+from src.auth.constants import (ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM,
+                                REFRESH_TOKEN_EXPIRE_DAYS, SECRET_KEY)
 from src.auth.exceptions import InvalidTokenException, TokenExpiredException
 
 

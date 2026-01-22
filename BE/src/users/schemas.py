@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from pydantic import BaseModel
 
 from src.schemas import BaseSchema
@@ -5,15 +7,16 @@ from src.schemas import BaseSchema
 
 class UserDetailResponse(BaseSchema):
     id: int
+    name: str
     username: str
-    email: str
-    role: str
+    email: Optional[str] = None
+    role: Optional[str] = None
 
     class Config:
         orm_mode = True
 
 
 class CreateUserRequest(BaseSchema):
-    username: str
+    name: str
     password: str
     email: str

@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from src.posts.models import JobStatus
+from .enums import JobStatus, ProcessingStage
 
 
 class VideoUpload(BaseModel):
@@ -26,7 +26,8 @@ class VideoResponse(BaseModel):
     filename: str
     uploaded_at: datetime
     thumbnail_url: Optional[str] = None
-    status: str = None
+    status: Optional[JobStatus] = None
+    current_stage: Optional[ProcessingStage] = None
     video_url: Optional[str] = None
     width: Optional[int] = None
     height: Optional[int] = None

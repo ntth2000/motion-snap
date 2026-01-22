@@ -11,7 +11,8 @@ class CommentResponseDTO(BaseSchema):
     content: str
     is_deleted: bool
     created_at: datetime
-
+    like_count: int = 0
+    liked: bool = False
     parent_id: Optional[int] = None
     depth: int = 0
     replies: Optional[list["CommentResponseDTO"]] = None
@@ -25,3 +26,9 @@ class GetAllCommentsResponseDTO(BaseSchema):
 class CreateCommentRequestDTO(BaseSchema):
     content: str
     parent_comment_id: Optional[int] = None
+
+
+class LikeResponseDTO(BaseSchema):
+    comment_id: int
+    liked: bool
+    like_count: int

@@ -32,7 +32,7 @@ export const register = async ({ email, password, username }: RegisterParams) =>
     const res = await axiosInstance.post(API.auth.register, {
       email,
       password,
-      username,
+      name: username,
     });
 
     return res.data;

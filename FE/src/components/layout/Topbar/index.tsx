@@ -1,36 +1,34 @@
-import { HomeOutlined, LogoutOutlined, PlusSquareOutlined, SettingOutlined, UserOutlined, VideoCameraOutlined } from '@ant-design/icons';
-import type { MenuProps } from 'antd';
 import {
-  Avatar,
-  Button,
-  Dropdown,
-  Space,
-  Typography,
-  Tooltip,
-} from 'antd';
-import { Header } from 'antd/es/layout/layout';
-import { useNavigate, useLocation } from 'react-router';
-import useAuth from '../../../hooks/useAuth';
-import UploadVideo from '../../UploadVideo';
-import { eventEmitter } from '../../../utils/eventEmitter';
+  KeyOutlined,
+  LogoutOutlined,
+  PlusSquareOutlined,
+  SettingOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import type { MenuProps } from 'antd';
+import { Avatar, Button, Dropdown, Layout, Modal, Typography } from 'antd';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router';
 
-const { Text } = Typography;
+import MotionPhotosOnIcon from '../../../assets/icons/MotionPhotosOn';
+import useAuth from '../../../hooks/useAuth';
+import { eventEmitter } from '../../../utils/eventEmitter';
+import { getFirstChar } from '../../../utils/util';
+import ApiKeySetting from '../../ApiKeySetting';
+import CreatePostModal from '../../CreatePostModal';
 
-interface TopbarProps {
-  userName: string;
-}
+const { Header } = Layout;
+const { Title } = Typography;
 
-const getInitial = (name: string) =>
-  name?.trim()?.charAt(0)?.toUpperCase() || '?';
-
-export default function Topbar({ userName }: TopbarProps) {
+export default function Topbar() {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
-  const { logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = location?.pathname || '';
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState<boolean>(false);
+  const [isCreatePostModelOpen, setIsCreatePostModelOpen] = useState<boolean>(false);
 
   const onLogout = async () => {
     try {
@@ -45,146 +43,137 @@ export default function Topbar({ userName }: TopbarProps) {
     eventEmitter.emit('open-upload-video-modal');
   };
 
-  const items: MenuProps['items'] = [
+  const menuItems: MenuProps['items'] = [
     {
       key: 'profile',
       label: (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'start',
-            alignItems: 'center',
-          }}
-        >
+        <div className="flex items-center gap-2">
           <UserOutlined />
-          <Text style={{ paddingLeft: 8 }}>{t('topbar.menu.profile')}</Text>
+          <span>{t('topbar.menu.profile')}</span>
         </div>
       ),
-      onClick: () => navigate('/settings'),
+      onClick: () => navigate(`/profile/${user?.username}`),
     },
     {
       key: 'api-key',
       label: (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'start',
-            alignItems: 'center',
-          }}
-        >
+        <div className="flex items-center gap-2">
           <SettingOutlined />
-          <Text style={{ paddingLeft: 8 }}>{t('topbar.menu.settings')}</Text>
+          <span>{t('topbar.menu.apiKey')}</span>
         </div>
       ),
-      onClick: () => navigate('/settings'),
+      onClick: () => setIsApiKeyModalOpen(true),
     },
     {
       key: 'logout',
       label: (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'start',
-            alignItems: 'center',
-          }}
-        >
+        <div className="flex items-center gap-2 text-red-500">
           <LogoutOutlined />
-          <Text style={{ paddingLeft: 8 }}>
-            {t('topbar.menu.logout')}
-          </Text>
+          <span>{t('topbar.menu.logout')}</span>
         </div>
       ),
-      onClick: () => onLogout?.(),
+      onClick: onLogout,
     },
+  ];
+
+  const navLinks = [
+    {
+      path: '/',
+      label: t('topbar.home'),
+      show: true,
+    }
   ];
 
   return (
     <>
-      <UploadVideo />
-      <Header>
-        <div className="topbar">
-          <div>
-            <Typography.Text strong style={{ fontSize: 20, cursor: 'pointer' }} onClick={() => navigate('/')}>
-              MotionSnap
-            </Typography.Text>
-          </div>
-          <div style={{ fontSize: 24 }}>
-            <Tooltip title="Home">
-              <HomeOutlined
-                onClick={() => navigate('/')}
-                style={{
-                  marginRight: 24,
-                  cursor: 'pointer',
-                  color: pathname === '/' ? '#1890ff' : "#ccc",
-                }}
-              />
-            </Tooltip>
-            {isAuthenticated &&
-              <Tooltip title="My Videos">
-                <VideoCameraOutlined
-                  onClick={() => navigate('/my/videos')}
-                  style={{
-                    cursor: 'pointer',
-                    color: pathname === '/my/videos' ? '#1890ff' : "#ccc",
-                  }}
-                />
-              </Tooltip>
-            }
-          </div>
+      <CreatePostModal />
+      {isApiKeyModalOpen &&
+        <Modal
+          open={isApiKeyModalOpen}
+          onCancel={() => setIsApiKeyModalOpen(false)}
+          title={
+            <Title level={5}>
+              <KeyOutlined />
+              <span className='ml-2'>{t('apiKeySetting.title')}</span>
+            </Title>
+          }
+          footer={<Button onClick={() => setIsApiKeyModalOpen(false)}>{t('common.close')}</Button>}
+          width={800}
+          height={400}
+          centered
+          maskClosable={false}
+          styles={{ body: { padding: '24px 24px 0 24px' } }}>
+          <ApiKeySetting />
+        </Modal>}
+      <Header className="sticky top-0 flex w-full items-center justify-between border-b border-gray-100 shadow-sm">
+        <div className="flex items-center gap-10">
           <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
+            className="group flex cursor-pointer items-center gap-2"
+            onClick={() => navigate('/')}
           >
-            {isAuthenticated ?
-              <>
-                <Button
-                  color="default"
-                  variant="outlined"
-                  style={{
-                    padding: '12px',
-                    marginRight: '16px',
-                  }}
-                  onClick={showModal}
-                >
-                  <PlusSquareOutlined />
-                  <span
-                    style={{
-                      textTransform: 'uppercase',
-                      fontWeight: '500',
-                      fontSize: '16px',
-                      marginLeft: '2px',
-                      marginBottom: '1px',
-                    }}
-                  >
-                    {t('topbar.upload')}
-                  </span>
-                </Button>
-
-                <Dropdown
-                  menu={{ items }}
-                  trigger={['click']}
-                  placement="bottomRight"
-                  overlayStyle={{ minWidth: '130px' }}
-                >
-                  <Space style={{ cursor: 'pointer' }}>
-                    <Avatar className="avatar" style={{ marginBottom: '2px' }}>
-                      {getInitial(userName)}
-                    </Avatar>
-                  </Space>
-                </Dropdown>
-              </>
-              :
-              <Button color="default"
-                variant="link"
-                onClick={() => { navigate('/login') }}
-              >
-                {t('topbar.login')}
-              </Button>
-            }
+            <div className="bg-primary relative flex size-9 items-center justify-center rounded-lg transition-transform">
+              <span className="material-symbols-outlined text-white">
+                <MotionPhotosOnIcon />
+              </span>
+              <span className="absolute left-1/2 top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
+            </div>
+            <p className="text-xl font-semibold">
+              MotionSnap
+            </p>
           </div>
+
+          <nav className="hidden items-center gap-6 md:flex">
+            {navLinks.map(
+              (link) =>
+                link.show && (
+                  <div
+                    key={link.path}
+                    onClick={() => navigate(link.path)}
+                    className={`cursor-pointer
+                      ${pathname === link.path ? 'text-primary' : 'hover:text-primary text-secondary'}`}
+                  >
+                    {link.label}
+                  </div>
+                )
+            )}
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {isAuthenticated ? (
+            <>
+              <Button
+                className="!flex items-center !font-medium uppercase"
+                icon={<PlusSquareOutlined />}
+                onClick={showModal}
+              >
+                {t('topbar.upload')}
+              </Button>
+
+              <Dropdown
+                menu={{ items: menuItems }}
+                trigger={['click']}
+                placement="bottomRight"
+                overlayClassName="min-w-[160px]"
+              >
+                <div className="cursor-pointer transition-opacity hover:opacity-80">
+                  <Avatar
+                    className="!bg-primary/10 !text-primary !font-bold border border-primary/20"
+                    size="large"
+                  >
+                    {getFirstChar("abc")}
+                  </Avatar>
+                </div>
+              </Dropdown>
+            </>
+          ) : (
+            <Button
+              type="text"
+              onClick={() => navigate('/login')}
+            >
+              {t('topbar.login')}
+            </Button>
+          )}
         </div>
       </Header>
     </>

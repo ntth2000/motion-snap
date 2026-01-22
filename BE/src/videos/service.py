@@ -9,27 +9,16 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload
 
 from src.models import Job, Video
-from src.posts.models import JobStatus
 from src.videos.constants import RESULT_PATH, VIDEO_PATH
 from src.videos.exceptions import UploadFilesFailedException
 from src.videos.schemas import VideoListResponse, VideoResponse
-from src.videos.utils import (
-    convert_2d_poses_format,
-    convert_3d_keypoints_format,
-    get_video_size,
-    remove_file,
-    save_upload_file,
-    validate_duration,
-    validate_extension,
-)
-from src.videos.video_processor import (
-    draw_2d_vertices,
-    draw_3d_vertices,
-    extract_2d,
-    extract_frames,
-    get_video_fps,
-    render_frames_to_video,
-)
+from src.videos.utils import (convert_2d_poses_format,
+                              convert_3d_keypoints_format, get_video_size,
+                              remove_file, save_upload_file, validate_duration,
+                              validate_extension)
+from src.videos.video_processor import (draw_2d_vertices, draw_3d_vertices,
+                                        extract_2d, extract_frames,
+                                        get_video_fps, render_frames_to_video)
 
 
 def get_job_status(video_id: int, user_id: int, db: Session):

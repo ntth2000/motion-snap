@@ -28,4 +28,4 @@ def createKey(
     db: Session = Depends(get_db),
     current_user: user_schemas.UserDetailResponse = Depends(get_current_user),
 ):
-    return service.generate_api_key(db, current_user.id)
+    return service.create_api_key(db, current_user.id)

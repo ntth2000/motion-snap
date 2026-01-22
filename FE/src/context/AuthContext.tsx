@@ -6,17 +6,11 @@ import React, {
 } from "react";
 
 import { getMe, login as loginAxios, logout as logoutAxios } from '../services/authService'
-
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: "USER" | "ADMIN";
-}
+import type { IUser } from "../types";
 
 interface AuthContextType {
-  user: User | null;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  user: IUser | null;
+  setUser: React.Dispatch<React.SetStateAction<IUser | null>>;
   isAuthenticated: boolean;
   loading: boolean;
   fetchUser: () => Promise<void>;
@@ -31,7 +25,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const logout = async () => {
@@ -63,7 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async ({ email, password }: { email: string; password: string }) => {
     const res = await loginAxios({ email, password });
-    console.log('Login response from service:', res);
+    setUser(res.data);
     return res.data;
   };
 

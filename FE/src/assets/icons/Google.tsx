@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Google = ({
   width = '24',
   height = '24',

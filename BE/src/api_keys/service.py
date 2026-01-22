@@ -13,7 +13,7 @@ def get_api_key(db: Session, user_id: int):
     return {"key": f"{api_key.prefix}****************"}
 
 
-def generate_api_key(db: Session, user_id: int):
+def create_api_key(db: Session, user_id: int):
     new_raw_key = generate_api_key()
     hashed_key = hash_key(new_raw_key)
     prefix = get_prefix(new_raw_key)

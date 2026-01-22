@@ -15,7 +15,7 @@ class LoginResponse(BaseModel):
 
 
 class RegisterRequest(BaseSchema):
-    username: str = Field(..., min_length=3, max_length=50)
+    name: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=6, max_length=100)
 
@@ -25,6 +25,7 @@ class UserResponse(BaseSchema):
     username: str
     email: EmailStr
     role: str
+    name: str
 
 
 class TokenSchema(BaseSchema):
