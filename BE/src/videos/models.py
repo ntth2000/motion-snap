@@ -27,6 +27,7 @@ class Video(Base):
 
     view_index = Column(Integer, nullable=False, default=0)
     duration = Column(Float, nullable=True)
+    thumbnail_url = Column(String, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     width = Column(Integer, nullable=True)

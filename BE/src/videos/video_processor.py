@@ -35,19 +35,20 @@ def extract_frames(video_id: int):
     print(f"Frames extracted successfully for video_id={video_id}")
 
 
-def extract_2d(video_id: int):
-    input_path = f"/workspace/inputs/{video_id}"
+def extract_2d(post_id: int, view_index: int):
+    input_path = f"/workspace/inputs/{post_id}/{view_index:03d}"
+    print("input_path", input_path)
 
     cmd = [
         "docker",
         "run",
-        "--rm",
+        # "--rm",
         "-v",
-        f"{os.getcwd()}/storage/inputs/{video_id}:{input_path}",
+        f"{os.getcwd()}/storage/inputs/{post_id}/{view_index:03d}:{input_path}",
         "easymocap",
         "bash",
         "-c",
-        f"python3 -m apps.preprocess.extract_keypoints ../workspace/inputs/{video_id} --mode yolo-hrnet",
+        f"python3 -m apps.preprocess.extract_keypoints ../workspace/inputs/{post_id}/{view_index:03d} --mode yolo-hrnet",
     ]
 
     print("Running command:", " ".join(cmd))
@@ -66,19 +67,19 @@ def extract_2d(video_id: int):
         raise
 
 
-def draw_2d_vertices(video_id: int):
+def draw_2d_vertices(post_id: int, view_index: int):
     """
     Gọi Docker container để chạy 2D vertices extraction.
     Input trên host: storage/inputs/{video_id}
     Mount vào container để chạy run.py.
     """
     # Đường dẫn input thực tế trên máy host
-    input_path = f"/workspace/inputs/{video_id}"
-    output_path = f"/workspace/outputs/{video_id}"
+    input_path = f"/workspace/inputs/{post_id}/{view_index:03d}"
+    output_path = f"/workspace/outputs/{post_id}/{view_index:03d}"
 
     # Đường dẫn trên host
-    host_input_path = os.path.join(os.getcwd(), "storage", "inputs", str(video_id))
-    host_output_path = os.path.join(os.getcwd(), "storage", "outputs", str(video_id))
+    host_input_path = os.path.join(os.getcwd(), "storage", "inputs", str(post_id), str(f"{view_index:03d}"))
+    host_output_path = os.path.join(os.getcwd(), "storage", "outputs", str(post_id), str(f"{view_index:03d}"))
 
     # Đảm bảo thư mục tồn tại
     os.makedirs(host_output_path, exist_ok=True)
@@ -116,7 +117,7 @@ def draw_2d_vertices(video_id: int):
         )
 
     print(process.stdout)
-    return f"2D vertices drawn successfully for video_id={video_id}"
+    return f"2D vertices drawn successfully for post_id={post_id} view_index={view_index}"
 
 
 def draw_3d_vertices(video_id: int):

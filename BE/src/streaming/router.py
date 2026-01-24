@@ -1,0 +1,126 @@
+import os
+import base64
+import cv2
+import glob
+import threading
+import shutil
+import numpy as np
+from src.models import User, APIKey, Job, Video, Post
+from src.auth.exceptions import UserNotFound
+from src.api_keys.utils import verify_key
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Header, Depends, BackgroundTasks
+from src.posts.constants import VIDEO_PATH
+from sqlalchemy.orm import Session
+from src.database import get_db, SessionLocal
+from datetime import datetime
+from src.videos.enums import JobStatus, ProcessingStage
+from .utils import verify_credentials, process_finished_session
+
+session_status = {}
+
+router = APIRouter(
+    prefix="/api/streaming",
+    tags=["streaming"],
+)
+
+
+@router.post("/start-recording")
+def start_recording(
+    x_username: str = Header(...),
+    x_api_key: str = Header(...),
+    db: Session = Depends(get_db),
+):
+    # 1. Auth
+    user = verify_credentials(x_username, x_api_key, db)
+
+    # 2. Tạo Post mới
+    new_post = Post(
+        user_id=user.id,
+        caption=f"Multiview recording using Multiple Camera Remote at {datetime.now()}",
+        is_deleted=0,
+    )
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
+
+    post_id = new_post.id
+    for cam in ['001', '002']:
+        os.makedirs(os.path.join(VIDEO_PATH, str(post_id), cam, 'images', 'video'), exist_ok=True)
+
+    session_status[post_id] = {"001": False, "002": False}
+
+    return {"status": "ready", "post_id": post_id, "user": user.username}
+
+
+@router.websocket("/upload/{post_id}/{cam_id}")
+async def ws_upload(
+    websocket: WebSocket,
+    post_id: int,
+    cam_id: str,
+    x_username: str = Header(...),
+    x_api_key: str = Header(...),
+    db: Session = Depends(get_db),
+    background_tasks: BackgroundTasks = None,
+):
+
+    await websocket.accept()
+
+    user = verify_credentials(x_username, x_api_key, db)
+    if not user:
+        await websocket.close()
+        return
+
+    base_dir = os.path.abspath(VIDEO_PATH) # Lấy đường dẫn gốc tuyệt đối
+    save_dir = os.path.join(base_dir, str(post_id), cam_id, 'images', 'video')
+    print("save_dir: ", save_dir)
+    
+
+    txt_file = os.path.join(save_dir, "received.txt")
+    frame_count = 0
+    try:
+        while True:
+            data = await websocket.receive_text()
+
+            # Log ra console cho chắc
+            print(f"[WS] post={post_id}, cam={cam_id}, len={len(data)}")
+
+            if data == "STOP_RECORDING":
+                await websocket.close()
+                break
+
+            save_dir = os.path.join(VIDEO_PATH, str(post_id), cam_id, 'images', 'video')
+            os.makedirs(save_dir, exist_ok=True)
+            if not os.path.exists(save_dir):
+                print(f"[WS] Không thể tạo thư mục: {save_dir}")
+                await websocket.close()
+                return
+                
+            try:
+                img_bytes = base64.b64decode(data)
+                nparr = np.frombuffer(img_bytes, np.uint8)
+                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                if img is None:
+                    continue
+                if img is not None:
+                    filename = os.path.join(save_dir, f"{frame_count:06d}.jpg")
+                    cv2.imwrite(filename, img)
+                    frame_count += 1
+            except Exception as e:
+                print(f"[Post {post_id}] {cam_id} error: {str(e)}")
+
+    except WebSocketDisconnect:
+        print(f"⚠️ [Post {post_id}] {cam_id} disconnected.")
+
+    finally:
+        print("✅ [Post {post_id}] {cam_id} finished.")
+        print("session status", session_status)
+        if post_id in session_status:
+            print("✅ [Post {post_id}] {cam_id} finished.")
+            session_status[post_id][cam_id] = True
+
+            if all(session_status[post_id].values()):
+                threading.Thread(
+                    target=process_finished_session,
+                    args=(post_id, session_status, background_tasks),
+                    daemon=True
+                ).start()

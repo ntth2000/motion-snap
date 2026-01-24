@@ -12,9 +12,11 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "default_password")
 
 
 def init_admin(db):
-    admin = db.query(User).filter(User.role == "ADMIN").first()
+    admin = db.query(User).filter(User.id == -1).first() 
+    
     if not admin:
         new_admin = User(
+            id=-1,
             name="Administrator",
             username="admin",
             email=ADMIN_EMAIL,
@@ -22,4 +24,11 @@ def init_admin(db):
             role=UserRole.ADMIN,
         )
         db.add(new_admin)
-        db.commit()
+        try:
+            db.commit()
+            print("Admin account seeded with ID -1.")
+        except Exception as e:
+            db.rollback()
+            print(f"Failed to seed admin: {e}")
+    else:
+        print("Admin with ID -1 already exists.")

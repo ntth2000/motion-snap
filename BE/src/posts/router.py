@@ -67,14 +67,14 @@ async def create_post(
     )
 
 
-# DELETE /api/posts/{post_id}
-@router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post_endpoint(
-    post_id: int,
+# DELETE /api/posts
+@router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
+def delete_posts_endpoint(
+    post_ids: list[int],
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return service.delete_post(post_id, current_user, db)
+    return service.delete_post(post_ids, current_user, db)
 
 
 # PUT /api/posts/{post_id}

@@ -51,6 +51,7 @@ def get_posts(db: Session, username: Optional[str]):
             video.file_url = video.file_url
             video.status = video.job.status if video.job else JobStatus.COMPLETED
             video.stage = video.job.stage if video.job else ProcessingStage.UPLOADED
+            video.thumbnail_url = video.thumbnail_url
 
     return all_posts
 
@@ -138,13 +139,11 @@ async def create_post_with_video(
         files_to_process.append((video_view2, 2, "002"))
 
     post_id_backup = None
-    print("loging here 1")
     try:
         new_post = Post(caption=caption, user_id=current_user.id)
         db.add(new_post)
         db.flush()
         post_id_backup = new_post.id
-        print("loging here 1-1")
 
         videos_db = []
         created_video_ids = (
@@ -206,6 +205,7 @@ async def create_post_with_video(
                 if thumb_path:
                     new_post.thumbnail_url = thumb_path
                     thumbnail_created = True
+                    new_video.thumbnail_url = thumb_path
 
             db.commit()
             db.refresh(new_job)
@@ -258,33 +258,35 @@ def update_post(post_id: int, caption: str, current_user: User, db: Session):
     return post
 
 
-def delete_post(post_id: int, current_user: User, db: Session):
-    post = db.query(Post).filter(Post.id == post_id).first()
+def delete_post(post_ids: list[int], current_user: User, db: Session):
+    for post_id in post_ids:
+        post = db.query(Post).filter(Post.id == post_id).first()
 
-    if not post:
-        raise PostNotFoundException()
+        if not post:
+            raise PostNotFoundException()
 
-    if post.is_deleted:
-        raise ResourceDeletedException(message="Post is already deleted.")
+        if post.is_deleted:
+            raise ResourceDeletedException(message="Post is already deleted.")
 
-    if post.user_id != current_user.id and current_user.role != UserRole.ADMIN:
-        raise PermissionDeniedException(
-            message="You are not authorized to delete this post."
-        )
+        if post.user_id != current_user.id and current_user.role != UserRole.ADMIN:
+            raise PermissionDeniedException(
+                message="You are not authorized to delete this post."
+            )
 
-    post.is_deleted = 1
+        post.is_deleted = 1
     db.commit()
 
     # Xóa folder chứa video
-    folder = Path(VIDEO_PATH) / str(post_id)
-    if folder.exists():
-        shutil.rmtree(folder)
+    for post_id in post_ids:
+        folder = Path(VIDEO_PATH) / str(post_id)
+        if folder.exists():
+            shutil.rmtree(folder)
 
     return {"message": "Post deleted successfully"}
 
 
 def extract_poses(post_id: int, db: Session):
-    post = db.query(Post).filter(Post.id == post_id).first()
+    post = db.query(Post).filter(Post.id == post_id).options(joinedload(Post.videos)).first()
 
     if not post:
         raise PostNotFoundException()
@@ -294,8 +296,8 @@ def extract_poses(post_id: int, db: Session):
 
     try:
         # 1. Update Status
-        post.job.status = JobStatus.PROCESSING
-        post.job.stage = ProcessingStage.EXTRACTING_POSES
+        post.video.job.status = JobStatus.PROCESSING
+        post.video.job.stage = ProcessingStage.EXTRACTING_POSES
         db.commit()
         db.refresh(post)  # Refresh để lấy data mới nhất
 

@@ -21,6 +21,7 @@ def extract_frames(post_id: int, sub_folder_name: str):
     cmd = [
         "docker",
         "run",
+        "--rm",
         "--name",
         f"extract_frames_{post_id}_{sub_folder_name}",
         "-v",

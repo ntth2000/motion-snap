@@ -18,3 +18,7 @@ def mask_key(key: str) -> str:
 
 def get_prefix(key: str) -> str:
     return key[:7]  # sk_ + 4 characters
+
+
+def verify_key(raw_key, hashed_key):
+    return raw_key == hashed_key

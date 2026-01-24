@@ -10,6 +10,8 @@ from src.api_keys import router as api_key_router
 from src.auth import router as auth_router
 from src.comments import router as comment_router
 from src.posts import router as post_router
+from src.admin import router as admin_router
+from src.streaming import router as streaming_router
 from src.system.startup.init_admin import init_admin
 from src.system.startup.rollback_jobs import rollback_jobs
 from src.users import router as user_router
@@ -55,7 +57,8 @@ app.include_router(api_key_router.router)
 app.include_router(comment_router.router)
 app.include_router(post_router.router)
 app.include_router(user_router.router)
-
+app.include_router(admin_router.router)
+app.include_router(streaming_router.router)
 
 @app.middleware("http")
 async def disable_cache_for_storage(request: Request, call_next):

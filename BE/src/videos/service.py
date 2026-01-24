@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload
 
 from src.models import Job, Video
+from .enums import JobStatus, ProcessingStage
 from src.videos.constants import RESULT_PATH, VIDEO_PATH
 from src.videos.exceptions import UploadFilesFailedException
 from src.videos.schemas import VideoListResponse, VideoResponse
@@ -267,41 +268,42 @@ def delete_video(video_id: int, user_id: int, db: Session):
 
 
 def extract_poses(video_id: int, db):
-    video = db.query(Video).filter(Video.id == video_id).first()
+    video = db.query(Video).filter(Video.id == video_id).options(joinedload(Video.job), joinedload(Video.post)).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    job = db.query(Job).filter(Job.id == video.job_id).first()
+    job = db.query(Job).filter(Job.video_id == video.id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
     try:
-        job.status = JobStatus.EXTRACTING_POSES
+        job.status = JobStatus.PROCESSING
+        job.stage = ProcessingStage.EXTRACTING_POSES
         db.commit()
+        db.refresh(job)
 
-        extract_2d(video_id)
+        extract_2d(video.post_id, video.view_index)
 
-        # import random
-        # if random.randint(0) == 0: raise HTTPException()
+        draw_2d_vertices(video.post_id, video.view_index)
 
-        draw_2d_vertices(video_id)
-
-        job.status = JobStatus.EXTRACTED_POSES
+        job.status = JobStatus.COMPLETED
         db.commit()
+        db.refresh(job)
 
         fps = get_video_fps(
-            Path(VIDEO_PATH) / str(video_id) / "videos" / video.filename
+            Path(VIDEO_PATH) / str(video.post_id) /f"{video.view_index:03d}" / "videos" / "video.mp4"
         )
         render_frames_to_video(
-            frames_dir=Path(RESULT_PATH) / str(video_id) / "vis_keypoints2d",
-            output_path=Path(RESULT_PATH) / str(video_id) / "vis_2d.mp4",
+            frames_dir=Path(RESULT_PATH) / str(video.post_id) /f"{video.view_index:03d}" / "vis_keypoints2d",
+            output_path=Path(RESULT_PATH) / str(video.post_id) /f"{video.view_index:03d}" / "vis_2d.mp4",
             fps=fps,
         )
         return {"message": "Pose extraction completed"}
 
     except Exception as e:
         # Nếu có lỗi, revert trạng thái về uploaded
-        job.status = JobStatus.UPLOADED
+        job.status = JobStatus.COMPLETED
+        job.stage = ProcessingStage.UPLOADING
         db.commit()
         # Raise HTTP error để client biết
         raise HTTPException(status_code=500, detail="Pose extraction failed")
