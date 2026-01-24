@@ -16,6 +16,7 @@ export const getMe = async () => {
   return res.data;
 };
 
+
 export const login = async ({ email, password }: LoginParams) => {
   const res = await axiosInstance.post(API.auth.login, {
     email,

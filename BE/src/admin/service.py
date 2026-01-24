@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, desc
-from src.models import User, Post, Job, RefreshToken
+from sqlalchemy import func, desc, case
+from src.models import User, Post, Job, RefreshToken, Video
 from src.videos.enums import JobStatus, ProcessingStage
 from typing import Optional
 from src.auth.utils import verify_password, create_access_token, create_refresh_token

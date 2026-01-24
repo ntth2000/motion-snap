@@ -9,6 +9,11 @@ export const API = {
     me: 'auth/me',
   },
 
+  admin: {
+    login: 'admin/login',
+    stats: 'admin/dashboard',
+  },
+
   apiKey: 'api-keys',
 
   users: {

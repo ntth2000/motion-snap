@@ -61,8 +61,8 @@ export default function PostPage() {
     <div className="">
       <PostDetail post={post} isOwner={isOwner} />
     </div>
-    <div className="space-y-10">
+    {user?.role !== "ADMIN" && <div className="space-y-10">
       <Comments postId={post.id.toString()} isAuthenticated={isAuthenticated} />
-    </div>
+    </div>}
   </div>;
 };

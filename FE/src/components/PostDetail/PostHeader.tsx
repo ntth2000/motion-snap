@@ -7,7 +7,7 @@ import { useNavigate } from "react-router";
 
 import { VIEW_MODE } from "../../constants";
 import useAuth from "../../hooks/useAuth";
-import { deletePost, getExportedData, toggleLikePost, updatePostCaption } from "../../services/postService";
+import { deletePosts, getExportedData, toggleLikePost, updatePostCaption } from "../../services/postService";
 import type { IPost } from "../../types";
 import { formatDate, getFirstChar } from "../../utils/util";
 
@@ -22,6 +22,7 @@ const { Paragraph } = Typography;
 export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeaderProps) {
   const { t } = useTranslation();
   const [modal, modalContextHolder] = Modal.useModal();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [messageApi, msgContextHolder] = message.useMessage();
   const [isEditingCaption, setIsEditingCaption] = useState<boolean>(false);
@@ -59,7 +60,7 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
     navigate(`/profile/${username}`);
   }
 
-  const handleDeletePost = (id: string | number) => {
+  const handleDeletePost = (id: number) => {
     modal.confirm({
       title: t('pages.post.deleteConfirmTitle'),
       icon: <ExclamationCircleOutlined />,
@@ -67,7 +68,7 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
       cancelText: t("common.cancel"),
       onOk: async () => {
         try {
-          await deletePost(id);
+          await deletePosts([id]);
           navigate("/");
         } catch (error) {
           messageApi.open({
@@ -187,6 +188,7 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
       <div className="flex items-center gap-8 pt-2">
         <Button
           type="text"
+          disabled={user?.role === "ADMIN"}
           icon={<LikeOutlined className={`text-lg ${likeStatus.liked ? "text-primary" : ""}`} />}
           className={`flex items-center gap-2 hover:text-primary! ${likeStatus.liked ? "text-primary!" : "text-secondary!"}`}
           onClick={handleLikePost}

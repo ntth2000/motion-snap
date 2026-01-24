@@ -13,9 +13,12 @@ export default function UserProfile() {
   const navigate = useNavigate();
   const [userDetail, setUserDetail] = useState<{ id: number, username: string, name: string }>();
   const [posts, setPosts] = useState<IPost[]>([]);
-  console.log(profileOwner)
 
   useEffect(() => {
+    if (!profileOwner || profileOwner.toLowerCase() === "admin") {
+      navigate('/');
+      return;
+    };
     const getUserInfo = async (username: string) => {
       try {
         const res = await getUserByUsername(username);

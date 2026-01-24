@@ -6,10 +6,13 @@
 @layer theme, base, antd, components, utilities;
 
 @theme {
-  --color-primary: #60a5fa;
+  --color-primary: #8fc9ff;
   --color-secondary: #888;
-  --color-background-light: #f6f6f8;
-  --color-background-dark: #101622;
+  --color-background-light: #f5f7f8;
+  --color-background-dark: #0f1923;
+  --color-success-pastel: #dcfce7;
+  --color-info-pastel: #e0f2fe;
+  --color-processing-pastel: #fffbe6;
 }
 
 .topbar {

@@ -9,9 +9,31 @@
     "back": "Back",
     "retry": "Retry"
   },
+  "admin": {
+    "console": "Admin Console",
+    "systemAdmin": "System Admin",
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Welcome to the admin console."
+    },
+    "managePost": {
+      "title": "Manage Posts",
+      "description": "Manage posts on the platform."
+    },
+    "manageUser": {
+      "title": "Manage Users",
+      "description": "Manage users on the platform."
+    },
+    "manageAPIKey": {
+      "title": "Manage API Keys",
+      "description": "Control access, monitor usage, and manage developer keys."
+    }
+  },
   "auth": {
     "login": {
       "title": "Welcome back to MotionSnap",
+      "adminTitle": "Admin Login",
+      "adminConsoleSubtitle": "Access the management console",
       "hint": "Log in to continue using the app",
       "email": "Email",
       "password": "Password",

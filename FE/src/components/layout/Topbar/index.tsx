@@ -7,16 +7,16 @@ import {
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Avatar, Button, Dropdown, Layout, Modal, Typography } from 'antd';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
-import MotionPhotosOnIcon from '../../../assets/icons/MotionPhotosOn';
 import useAuth from '../../../hooks/useAuth';
 import { eventEmitter } from '../../../utils/eventEmitter';
 import { getFirstChar } from '../../../utils/util';
 import ApiKeySetting from '../../ApiKeySetting';
 import CreatePostModal from '../../CreatePostModal';
+import Logo from '../../UI/Logo';
 
 const { Header } = Layout;
 const { Title } = Typography;
@@ -43,28 +43,8 @@ export default function Topbar() {
     eventEmitter.emit('open-upload-video-modal');
   };
 
-  const menuItems: MenuProps['items'] = [
-    {
-      key: 'profile',
-      label: (
-        <div className="flex items-center gap-2">
-          <UserOutlined />
-          <span>{t('topbar.menu.profile')}</span>
-        </div>
-      ),
-      onClick: () => navigate(`/profile/${user?.username}`),
-    },
-    {
-      key: 'api-key',
-      label: (
-        <div className="flex items-center gap-2">
-          <SettingOutlined />
-          <span>{t('topbar.menu.apiKey')}</span>
-        </div>
-      ),
-      onClick: () => setIsApiKeyModalOpen(true),
-    },
-    {
+  const menuItems: MenuProps['items'] = useMemo(() =>
+    user?.role === 'ADMIN' ? [{
       key: 'logout',
       label: (
         <div className="flex items-center gap-2 text-red-500">
@@ -73,16 +53,51 @@ export default function Topbar() {
         </div>
       ),
       onClick: onLogout,
-    },
-  ];
+    }] : [
+      {
+        key: 'profile',
+        label: (
+          <div className="flex items-center gap-2">
+            <UserOutlined />
+            <span>{t('topbar.menu.profile')}</span>
+          </div>
+        ),
+        onClick: () => navigate(`/profile/${user?.username}`),
+      },
+      {
+        key: 'api-key',
+        label: (
+          <div className="flex items-center gap-2">
+            <SettingOutlined />
+            <span>{t('topbar.menu.apiKey')}</span>
+          </div>
+        ),
+        onClick: () => setIsApiKeyModalOpen(true),
+      },
+      {
+        key: 'logout',
+        label: (
+          <div className="flex items-center gap-2 text-red-500">
+            <LogoutOutlined />
+            <span>{t('topbar.menu.logout')}</span>
+          </div>
+        ),
+        onClick: onLogout,
+      },
+    ], [user]);
 
-  const navLinks = [
+  const navLinks = useMemo(() => [
     {
       path: '/',
       label: t('topbar.home'),
       show: true,
+    },
+    {
+      path: '/my-videos',
+      label: t('topbar.myVideos'),
+      show: isAuthenticated && user?.role === "USER",
     }
-  ];
+  ], [isAuthenticated]);
 
   return (
     <>
@@ -111,12 +126,7 @@ export default function Topbar() {
             className="group flex cursor-pointer items-center gap-2"
             onClick={() => navigate('/')}
           >
-            <div className="bg-primary relative flex size-9 items-center justify-center rounded-lg transition-transform">
-              <span className="material-symbols-outlined text-white">
-                <MotionPhotosOnIcon />
-              </span>
-              <span className="absolute left-1/2 top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
-            </div>
+            <Logo />
             <p className="text-xl font-semibold">
               MotionSnap
             </p>
@@ -142,13 +152,14 @@ export default function Topbar() {
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
             <>
-              <Button
+              {user?.role !== 'ADMIN' && <Button
                 className="!flex items-center !font-medium uppercase"
                 icon={<PlusSquareOutlined />}
                 onClick={showModal}
               >
                 {t('topbar.upload')}
               </Button>
+              }
 
               <Dropdown
                 menu={{ items: menuItems }}

@@ -71,9 +71,10 @@ export const getVideoById = async (videoId: string) => {
 }
 
 
-export const deletePost = async (postId: number | string) => {
+export const deletePosts = async (postIds: number[]) => {
   try {
-    const response = await axiosInstance.delete(`${API.posts.byId(postId)}`, {
+    const response = await axiosInstance.delete(`${API.posts.list()}`, {
+      data: postIds,
       withCredentials: true,
     });
     return response.data;

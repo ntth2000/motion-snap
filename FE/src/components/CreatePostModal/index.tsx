@@ -153,19 +153,16 @@ export default function CreatePostModal({ }: CreatePostModalProps) {
               <p className="text-slate-500 text-sm m-0">{t("uploadModal.progress.description")}</p>
             </div>
 
-            {/* --- THANH PROGRESS LINE Ở ĐÂY --- */}
             <div className="w-full px-2">
               <Progress
                 percent={uploadProgress}
-                // Màu gradient từ xanh dương sang xanh lá
                 strokeColor={{
-                  '0%': '#3b82f6', // Tailwind blue-500
-                  '100%': '#22c55e', // Tailwind green-500
+                  '0%': '#3b82f6',
+                  '100%': '#22c55e',
                 }}
-                strokeWidth={16}     // Độ dày của thanh (to hơn cho dễ nhìn)
-                status="active"      // Hiệu ứng sóng chạy
-                strokeLinecap="round" // Bo tròn đầu thanh
-                // Tùy chỉnh số % hiển thị bên cạnh (nếu muốn)
+                strokeWidth={16}
+                status="active"
+                strokeLinecap="round"
                 format={(percent) => (
                   <span className="text-slate-700 font-bold ml-2">{percent}%</span>
                 )}
