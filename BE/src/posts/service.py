@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import zipfile
@@ -19,12 +20,23 @@ from src.videos.enums import JobStatus, ProcessingStage
 from src.videos.models import Video, VideoStatus
 from src.videos.utils import remove_file
 
-from .exceptions import (PermissionDeniedException, PostNotFoundException,
-                         ResourceDeletedException, UploadFilesFailedException)
+from .exceptions import (
+    PermissionDeniedException,
+    PostNotFoundException,
+    ResourceDeletedException,
+    UploadFilesFailedException,
+)
 from .schemas import PostResponseDTO
-from .video_processor import (draw_2d_vertices, draw_3d_vertices, extract_2d,
-                              extract_frames, get_video_fps,
-                              render_frames_to_video)
+from .video_processor import (
+    draw_2d_vertices,
+    draw_3d_vertices,
+    extract_2d,
+    extract_frames,
+    get_video_fps,
+    render_frames_to_video,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def get_posts(db: Session, username: Optional[str]):
@@ -52,6 +64,7 @@ def get_posts(db: Session, username: Optional[str]):
             video.status = video.job.status if video.job else JobStatus.COMPLETED
             video.stage = video.job.stage if video.job else ProcessingStage.UPLOADED
             video.thumbnail_url = video.thumbnail_url
+            video.job_id = video.job.id if video.job else None
 
     return all_posts
 
@@ -93,6 +106,7 @@ def get_post_by_id(db: Session, post_id: int, user_id: Optional[int]):
             v.file_url = "http://localhost:8000/api/" + v.file_url
             v.status = v.job.status if v.job else JobStatus.COMPLETED
             v.stage = v.job.stage if v.job else ProcessingStage.UPLOADED
+            v.job_id = v.job.id if v.job else None
 
     return post
 
@@ -125,7 +139,7 @@ async def create_post_with_video(
             raise HTTPException(400, "Missing video")
         file_handler.validate_extension(video_main)
         await file_handler.validate_duration(video_main)
-        files_to_process.append((video_main, 0, "001"))
+        files_to_process.append((video_main, 0, "000"))
 
     elif view_mode == "multi":
         if not video_view1 or not video_view2:
@@ -135,8 +149,8 @@ async def create_post_with_video(
             file_handler.validate_extension(v)
             await file_handler.validate_duration(v)
 
-        files_to_process.append((video_view1, 1, "001"))
-        files_to_process.append((video_view2, 2, "002"))
+        files_to_process.append((video_view1, 0, "000"))
+        files_to_process.append((video_view2, 1, "001"))
 
     post_id_backup = None
     try:
@@ -183,18 +197,11 @@ async def create_post_with_video(
             db.flush()
             new_job = Job(
                 video_id=new_video.id,
-                status=JobStatus.PROCESSING,
+                status=JobStatus.COMPLETED,
                 stage=ProcessingStage.UPLOADING,
             )
             db.add(new_job)
             db.flush()
-
-            new_job = Job(
-                video_id=new_video.id,  # Link với video ID vừa tạo
-                status=JobStatus.PROCESSING,
-                stage=ProcessingStage.UPLOADING,
-            )
-            db.add(new_job)
 
             processing_queue.append(
                 {"video": new_video, "job": new_job, "sub_folder_name": sub_folder_name}
@@ -216,9 +223,12 @@ async def create_post_with_video(
             sub_folder = v["sub_folder_name"]
             job.stage = ProcessingStage.EXTRACTING_FRAMES
             job.status = JobStatus.PROCESSING
+            db.commit()
+            db.refresh(job)
             extract_frames(new_post.id, sub_folder)
             job.status = JobStatus.COMPLETED
             db.commit()
+            db.refresh(job)
 
         db.refresh(new_post)
 
@@ -235,6 +245,7 @@ async def create_post_with_video(
 
 
 def update_post(post_id: int, caption: str, current_user: User, db: Session):
+    logger.info(f"===> [Post {post_id}] Updating post...")
     post = db.query(Post).filter(Post.id == post_id).first()
 
     if not post:
@@ -260,6 +271,8 @@ def update_post(post_id: int, caption: str, current_user: User, db: Session):
 
 def delete_post(post_ids: list[int], current_user: User, db: Session):
     for post_id in post_ids:
+        logger.info(f"===> [Post {post_id}] Deleting post...")
+
         post = db.query(Post).filter(Post.id == post_id).first()
 
         if not post:
@@ -274,6 +287,7 @@ def delete_post(post_ids: list[int], current_user: User, db: Session):
             )
 
         post.is_deleted = 1
+
     db.commit()
 
     # Xóa folder chứa video
@@ -281,12 +295,20 @@ def delete_post(post_ids: list[int], current_user: User, db: Session):
         folder = Path(VIDEO_PATH) / str(post_id)
         if folder.exists():
             shutil.rmtree(folder)
+        result = Path(RESULT_PATH) / str(post_id)
+        if result.exists():
+            shutil.rmtree(result)
 
     return {"message": "Post deleted successfully"}
 
 
 def extract_poses(post_id: int, db: Session):
-    post = db.query(Post).filter(Post.id == post_id).options(joinedload(Post.videos)).first()
+    post = (
+        db.query(Post)
+        .filter(Post.id == post_id)
+        .options(joinedload(Post.videos))
+        .first()
+    )
 
     if not post:
         raise PostNotFoundException()
@@ -405,7 +427,7 @@ def get_extracted_poses(post_id: int, db: Session):
     result["videos"] = []
     for v in post.videos:
         video_url = (
-            f"{base_url}/storage/outputs/{post_id}/{(v.view_index+1):03}/vis_2d.mp4"
+            f"{base_url}/storage/outputs/{post_id}/{(v.view_index):03}/vis_2d.mp4"
         )
         result["videos"].append(
             {"id": v.id, "file_url": video_url, "view_index": v.view_index}
@@ -441,7 +463,7 @@ def get_drawn_3d(post_id: int, db: Session):
     result["videos"] = []
     for v in post.videos:
         video_url = (
-            f"{base_url}/storage/outputs/{post_id}/{(v.view_index+1):03}/vis_3d.mp4"
+            f"{base_url}/storage/outputs/{post_id}/{(v.view_index):03}/vis_3d.mp4"
         )
         result["videos"].append(
             {"id": v.id, "file_url": video_url, "view_index": v.view_index}
@@ -456,11 +478,10 @@ def get_comments_by_post_id(db: Session, post_id: int, user_id: Optional[int]):
         db.query(Comment)
         .options(
             joinedload(Comment.user),
-            joinedload(Comment.replies).joinedload(Comment.user),
+            joinedload(Comment.likes),
         )
         .filter(
             Comment.post_id == post_id,
-            Comment.parent_id == None,
             Comment.is_deleted == 0,
         )
         .order_by(Comment.created_at.desc())
@@ -493,56 +514,18 @@ def get_comments_by_post_id(db: Session, post_id: int, user_id: Optional[int]):
             created_at=root.created_at,
             like_count=root.like_count,
             liked=is_root_liked,
-            parent_id=None,
-            depth=0,
-            replies=[],
         )
 
-        if root.replies:
-            for reply in root.replies:
-                if reply.is_deleted:
-                    continue
-                reply_dto = CommentResponseDTO(
-                    id=reply.id,
-                    user_id=reply.user_id,
-                    username=reply.user.username,
-                    content=reply.content,
-                    is_deleted=bool(reply.is_deleted),
-                    created_at=reply.created_at,
-                    parent_id=reply.parent_id,
-                    depth=reply.depth,
-                    like_count=root.like_count,
-                    liked=is_root_liked,
-                )
-                root_dto.replies.append(reply_dto)
-
-            root_dto.replies.sort(key=lambda x: x.created_at)
         result.append(root_dto)
 
     return {"comments": result, "count": len(result)}
 
 
-def post_comment(
-    post_id: int, parent_comment_id: int | None, content: str, current_user, db: Session
-):
-    depth = 0
-
-    if parent_comment_id is not None:
-        parent_comment = (
-            db.query(Comment)
-            .filter(Comment.id == parent_comment_id, Comment.is_deleted == 0)
-            .first()
-        )
-        if not parent_comment:
-            raise CommentNotFoundException()
-        depth = 1
-
+def post_comment(post_id: int, content: str, current_user, db: Session):
     new_comment = Comment(
         user_id=current_user.id,
         post_id=post_id,
         content=content,
-        depth=depth,
-        parent_id=parent_comment_id,
     )
     db.add(new_comment)
     db.commit()
@@ -555,20 +538,17 @@ def post_comment(
         content=new_comment.content,
         is_deleted=False,
         created_at=new_comment.created_at,
-        parent_id=new_comment.parent_id,
-        depth=new_comment.depth,
     )
 
 
 def export_data(
     post_id: int,
-    export_type: str,
     db: Session,
     background_tasks: BackgroundTasks,
 ):
     post = (
         db.query(Post)
-        .options(joinedload(Post.user), joinedload(Post.videos), joinedload(Post.job))
+        .options(joinedload(Post.user), joinedload(Post.videos))
         .filter(Post.id == post_id)
         .first()
     )
@@ -577,56 +557,76 @@ def export_data(
     if post.is_deleted:
         raise ResourceDeletedException(message="This post has been deleted.")
 
-    output_base_dir = Path(RESULT_PATH) / str(post_id) / "001"
-    input_base_dir = Path(VIDEO_PATH) / str(post_id) / "001"
+    export_base_dir = Path(RESULT_PATH) / str(post_id) / "export_data"
+    export_base_dir.mkdir(parents=True, exist_ok=True)
 
-    export_dir = output_base_dir / "export_data"
-    export_dir.mkdir(exist_ok=True)
-    temp_export = export_dir / f"package_{export_type}"
-    if temp_export.exists():
-        shutil.rmtree(temp_export)
-    temp_export.mkdir(parents=True)
+    temp_export_dir = export_base_dir / f"package_post_{post_id}"
+    if temp_export_dir.exists():
+        shutil.rmtree(temp_export_dir)
+    temp_export_dir.mkdir(parents=True)
 
-    if export_type == "extracted_poses":
-        frames_dir = output_base_dir / "vis_keypoints2d"
-        json_2d_parent_folder = input_base_dir / "annots"
-        subfolders = [f for f in json_2d_parent_folder.iterdir() if f.is_dir()]
-        jsons_dir = subfolders[0]
-        video_file = output_base_dir / "vis_2d.mp4"
+    for video in post.videos:
+        view_index = f"{video.view_index:03d}"
+        video_export_dir = temp_export_dir / f"video_{view_index}"
+        video_export_dir.mkdir(parents=True, exist_ok=True)
 
-    if export_type == "3d":
-        frames_dir = output_base_dir / "render"
-        jsons_dir = output_base_dir / "keypoints3d"
-        video_file = output_base_dir / "vis_3d.mp4"
+        output_dir = Path("storage/outputs") / str(video.post_id) / view_index
+        input_dir = Path("storage/inputs") / str(video.post_id) / view_index
 
-    if frames_dir.exists():
-        shutil.copytree(frames_dir, temp_export / "frames")
-    if jsons_dir.exists():
-        copied_jsons_path = shutil.copytree(jsons_dir, temp_export / "jsons")
-    if video_file.exists():
-        shutil.copy(video_file, temp_export / "video.mp4")
+        original_video_path = input_dir / "videos" / "video.mp4"
+        if original_video_path.exists():
+            original_dir = video_export_dir / "original"
+            original_dir.mkdir(exist_ok=True)
+            shutil.copy(original_video_path, original_dir / "video.mp4")
 
-    zip_path = export_dir / f"post_{post_id}_{export_type}_export.zip"
+        pose_2d_video = output_dir / "vis_2d.mp4"
+        if pose_2d_video.exists():
+            poses_2d_dir = video_export_dir / "extracted_poses"
+            poses_2d_dir.mkdir()
+
+            frames_dir = output_dir / "vis_keypoints2d"
+            json_parent = input_dir / "annots"
+
+            if frames_dir.exists():
+                shutil.copytree(frames_dir, poses_2d_dir / "frames")
+
+            if json_parent.exists():
+                subfolders = [f for f in json_parent.iterdir() if f.is_dir()]
+                if subfolders:
+                    shutil.copytree(subfolders[0], poses_2d_dir / "jsons")
+
+            shutil.copy(pose_2d_video, poses_2d_dir / "video.mp4")
+
+        pose_3d_video = output_dir / "vis_3d.mp4"
+        if pose_3d_video.exists():
+            poses_3d_dir = video_export_dir / "3d"
+            poses_3d_dir.mkdir()
+
+            frames_3d = output_dir / "render"
+            jsons_3d = output_dir / "keypoints3d"
+
+            if frames_3d.exists():
+                shutil.copytree(frames_3d, poses_3d_dir / "frames")
+
+            if jsons_3d.exists():
+                shutil.copytree(jsons_3d, poses_3d_dir / "jsons")
+
+            shutil.copy(pose_3d_video, poses_3d_dir / "video.mp4")
+
+    zip_path = export_base_dir / f"post_{post_id}_export.zip"
+    if zip_path.exists():
+        zip_path.unlink()
 
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for folder_name in ["frames", "jsons", "video.mp4"]:
-            path_to_add = temp_export / folder_name
-            if path_to_add.exists():
-                if path_to_add.is_dir():
-                    for file in path_to_add.rglob("*"):
-                        zipf.write(file, file.relative_to(temp_export))
-                else:
-                    zipf.write(path_to_add, path_to_add.name)
+        for file in temp_export_dir.rglob("*"):
+            zipf.write(file, file.relative_to(temp_export_dir))
 
-    background_tasks.add_task(remove_file, str(export_dir))
+    background_tasks.add_task(remove_file, str(export_base_dir))
 
     return FileResponse(
         path=str(zip_path),
-        filename=f"post_{post_id}_{export_type}_export.zip",
+        filename=f"post_{post_id}_export.zip",
         media_type="application/zip",
-        headers={
-            "Content-Disposition": f"attachment; filename=post_{post_id}_{export_type}_export.zip"
-        },
     )
 
 

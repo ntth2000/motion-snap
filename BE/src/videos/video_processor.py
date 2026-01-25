@@ -7,11 +7,19 @@
 #     (i) các file frame ảnh có vẽ đường bao 3D
 #     (ii) xâu JSON theo format: { "số_thứ_tự_của_điểm_trên_đường_bao_3D" : [toạ_độ_trục_x, toạ_độ_trục_y, toạ_độ_trục_z] }
 import os
+import logging
 import subprocess
 from pathlib import Path
 
 import cv2
 from moviepy import ImageSequenceClip
+
+from src.database import SessionLocal
+
+from .enums import JobStatus
+from .models import Job
+
+logger = logging.getLogger(__name__)
 
 
 def extract_frames(video_id: int):
@@ -36,13 +44,14 @@ def extract_frames(video_id: int):
 
 
 def extract_2d(post_id: int, view_index: int):
+    print("===> Start to extract 2d.")
     input_path = f"/workspace/inputs/{post_id}/{view_index:03d}"
     print("input_path", input_path)
 
     cmd = [
         "docker",
         "run",
-        # "--rm",
+        "--rm",
         "-v",
         f"{os.getcwd()}/storage/inputs/{post_id}/{view_index:03d}:{input_path}",
         "easymocap",
@@ -54,7 +63,13 @@ def extract_2d(post_id: int, view_index: int):
     print("Running command:", " ".join(cmd))
 
     try:
-        result = subprocess.run(cmd, check=True)
+        result = subprocess.run(
+            cmd,
+            stdout=None,
+            stderr=None,
+            text=True,
+            check=True,
+        )
         return {"status": "success", "output": result.stdout}
 
     except subprocess.CalledProcessError as e:
@@ -64,7 +79,7 @@ def extract_2d(post_id: int, view_index: int):
         print(e.stdout)
         print("----- STDERR -----")
         print(e.stderr)
-        raise
+        raise Exception(e.stderr)
 
 
 def draw_2d_vertices(post_id: int, view_index: int):
@@ -73,13 +88,18 @@ def draw_2d_vertices(post_id: int, view_index: int):
     Input trên host: storage/inputs/{video_id}
     Mount vào container để chạy run.py.
     """
+    print("===> Start to draw 2d vertices.")
     # Đường dẫn input thực tế trên máy host
     input_path = f"/workspace/inputs/{post_id}/{view_index:03d}"
     output_path = f"/workspace/outputs/{post_id}/{view_index:03d}"
 
     # Đường dẫn trên host
-    host_input_path = os.path.join(os.getcwd(), "storage", "inputs", str(post_id), str(f"{view_index:03d}"))
-    host_output_path = os.path.join(os.getcwd(), "storage", "outputs", str(post_id), str(f"{view_index:03d}"))
+    host_input_path = os.path.join(
+        os.getcwd(), "storage", "inputs", str(post_id), str(f"{view_index:03d}")
+    )
+    host_output_path = os.path.join(
+        os.getcwd(), "storage", "outputs", str(post_id), str(f"{view_index:03d}")
+    )
 
     # Đảm bảo thư mục tồn tại
     os.makedirs(host_output_path, exist_ok=True)
@@ -108,7 +128,14 @@ def draw_2d_vertices(post_id: int, view_index: int):
     ]
 
     # Gọi subprocess
-    process = subprocess.run(cmd, check=True)
+    process = subprocess.run(
+        cmd,
+        stdout=None,
+        stderr=None,
+        text=True,
+        check=True,
+    )
+    logger.info("after draw 2d vertices")
 
     # Kiểm tra lỗi
     if process.returncode != 0:
@@ -117,53 +144,79 @@ def draw_2d_vertices(post_id: int, view_index: int):
         )
 
     print(process.stdout)
-    return f"2D vertices drawn successfully for post_id={post_id} view_index={view_index}"
+    return (
+        f"2D vertices drawn successfully for post_id={post_id} view_index={view_index}"
+    )
 
 
-def draw_3d_vertices(video_id: int):
+def draw_3d_vertices(post_id: int, view_index: int):
     """
     Gọi Docker container để chạy 2D vertices extraction.
     Input trên host: storage/inputs/{video_id}
     Mount vào container để chạy run.py.
     """
     # Đường dẫn input thực tế trên máy host
-    input_path = f"/workspace/inputs/{video_id}"
-    output_path = f"/workspace/outputs/{video_id}"
+    BASE_DIR = os.path.abspath(os.getcwd())
+    host_patch_dir = os.path.join(BASE_DIR, "new_draw_3d")
+    host_input_path = os.path.join(
+        BASE_DIR, "storage", "inputs", str(post_id), str(f"{view_index:03d}")
+    )
+    host_output_path = os.path.join(
+        BASE_DIR, "storage", "outputs", str(post_id), str(f"{view_index:03d}")
+    )
 
     # Đường dẫn trên host
-    host_input_path = os.path.join(os.getcwd(), "storage", "inputs", str(video_id))
-    host_output_path = os.path.join(os.getcwd(), "storage", "outputs", str(video_id))
 
+    container_input = f"/workspace/inputs/{post_id}/{view_index:03d}"
+    container_output = f"/workspace/outputs/{post_id}/{view_index:03d}"
+    container_patch_mount = "/mnt/patch"
     # Đảm bảo thư mục tồn tại
     os.makedirs(host_output_path, exist_ok=True)
 
     # Command bên trong container
+    copy_cmds = (
+        f"mkdir -p /workspace/models && "
+        f"cp {container_patch_mount}/smpl_partSegmentation_mapping.pkl models/ && "
+        f"cp {container_patch_mount}/vis3d.py myeasymocap/io/vis3d.py && "
+        f"cp {container_patch_mount}/hrnet_pare_finetune.yml config/1v1p/hrnet_pare_finetune.yml"
+    )
+
+    main_cmd = (
+        "export PYOPENGL_PLATFORM=egl && "
+        "python3 -m apps.mocap.run "
+        "--data config/datasets/svimage.yml "
+        "--exp config/1v1p/hrnet_pare_finetune.yml "
+        f"--root ..{container_input} "
+        f"--out ..{container_output} "
+        "--skip_vis_final && sync"
+    )
+
+    full_bash_cmd = f"{copy_cmds} && {main_cmd}"
+
     cmd = [
         "docker",
         "run",
         "--rm",
         "-v",
-        f"{host_input_path}:{input_path}",
+        f"{host_input_path}:{container_input}",
         "-v",
-        f"{host_output_path}:{output_path}",
+        f"{host_output_path}:{container_output}",
+        "-v",
+        f"{host_patch_dir}:{container_patch_mount}",
         "easymocap",
         "bash",
         "-c",
-        (
-            "export PYOPENGL_PLATFORM=egl && "
-            "python3 -m apps.mocap.run "
-            "--data config/datasets/svimage.yml "
-            "--exp config/1v1p/hrnet_pare_finetune.yml "
-            f"--root ..{input_path} "
-            f"--out ..{output_path} "
-            "--skip_vis_final && sync"
-        ),
+        full_bash_cmd,
     ]
 
-    print("Running command:", " ".join(cmd))
-
     # Gọi subprocess
-    process = subprocess.run(cmd, check=True)
+    process = subprocess.run(
+        cmd,
+        stdout=None,
+        stderr=None,
+        text=True,
+        check=True,
+    )
 
     # Kiểm tra lỗi
     if process.returncode != 0:
@@ -171,7 +224,9 @@ def draw_3d_vertices(video_id: int):
             f"Docker command failed:\n{process.stderr or process.stdout}"
         )
 
-    return f"2D vertices drawn successfully for video_id={video_id}"
+    return (
+        f"2D vertices drawn successfully for post_id={post_id} view_index={view_index}"
+    )
 
 
 def render_frames_to_video(frames_dir, output_path, fps=30):
@@ -182,6 +237,7 @@ def render_frames_to_video(frames_dir, output_path, fps=30):
     Returns:
         str: Path to the output video file.
     """
+    logger.info("before render frames to video")
     frames_dir = Path(frames_dir)
     images = sorted(
         [
@@ -199,6 +255,7 @@ def render_frames_to_video(frames_dir, output_path, fps=30):
 
     # Xuất ra video (codec libx264 = mp4)
     clip.write_videofile(str(output_path), codec="libx264", audio=False)
+    logger.info("after render frames to video")
 
 
 def get_video_fps(video_path: str) -> float:
@@ -208,15 +265,6 @@ def get_video_fps(video_path: str) -> float:
         video_path (str): Đường dẫn đến file video
     Returns:
         float: fps của video
-    """
-    """
-    Lấy FPS (frame per second) của video gốc.
-
-    Args:
-        video_path (str): Đường dẫn tới file video.
-
-    Returns:
-        float: Giá trị FPS của video.
     """
     print(video_path)
     cap = cv2.VideoCapture(video_path)

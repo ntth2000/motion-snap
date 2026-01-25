@@ -66,9 +66,9 @@ export const deleteVideo = async (videoId: number) => {
 }
 
 
-export const extractPoses = async (postId: number) => {
+export const extractPoses = async (videoId: number) => {
   try {
-    const response = await axiosInstance.post(`${API.posts.extractPoses(postId)}`, null, {
+    const response = await axiosInstance.post(`${API.videos.extractPoses(videoId)}`, null, {
       withCredentials: true,
     });
     console.log('Extract poses response:', response.data);
@@ -82,7 +82,7 @@ export const extractPoses = async (postId: number) => {
 
 export const draw3D = async (videoId: number) => {
   try {
-    const response = await axiosInstance.post(`${API.videos.list}/draw_3d/${videoId}`, null, {
+    const response = await axiosInstance.post(`${API.videos.draw3D(videoId)}`, null, {
       withCredentials: true,
     });
     console.log('Draw 3D response:', response.data);
@@ -108,7 +108,7 @@ export const getExtractedFramesById = async (videoId: string) => {
 }
 
 
-export const getExtractedPosesById = async (videoId: string) => {
+export const getExtractedPosesById = async (videoId: number) => {
   try {
     const response = await axiosInstance.get(`${API.videos.list}/${videoId}/extracted_poses`, {
       withCredentials: true,
@@ -122,7 +122,7 @@ export const getExtractedPosesById = async (videoId: string) => {
 }
 
 
-export const getDrawn3DById = async (videoId: string) => {
+export const getDrawn3DById = async (videoId: number) => {
   try {
     const response = await axiosInstance.get(`${API.videos.list}/${videoId}/drawn_3d`, {
       withCredentials: true,
@@ -155,10 +155,10 @@ export const getExportedData = async (videoId: string, type: string = "extracted
 }
 
 
-export const getJobStatus = async (videoId: string) => {
+export const getJobStatus = async (videoId: number) => {
   console.log("cal getJobStatus")
   try {
-    const response = await axiosInstance.get(`${API.videos.status}/${videoId}`, {
+    const response = await axiosInstance.get(`${API.videos.status(videoId)}`, {
       withCredentials: true,
     });
     return response.data;

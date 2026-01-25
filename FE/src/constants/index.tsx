@@ -12,6 +12,8 @@ export const API = {
   admin: {
     login: 'admin/login',
     stats: 'admin/dashboard',
+    users: 'admin/users',
+    apiKeys: 'admin/api-keys',
   },
 
   apiKey: 'api-keys',
@@ -48,8 +50,16 @@ export const API = {
   videos: {
     list: '/videos',
     upload: '/videos/upload',
-    status: '/videos/status',
-
+    status: (videoId: number | string) =>
+      `/videos/status/${videoId}`,
+    extractPoses: (videoId: number | string) =>
+      `/videos/extract_poses/${videoId}`,
+    draw3D: (videoId: number | string) =>
+      `/videos/draw_3d/${videoId}`,
+    getExtractedPosesById: (videoId: number | string) =>
+      `/videos/${videoId}/extract_poses`,
+    getDrawn3DById: (postId: number | string) =>
+      `/videos/${postId}/drawn_3d`,
     comments: (videoId: number | string) =>
       `/videos/${videoId}/comments`,
   },

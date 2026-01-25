@@ -1,15 +1,16 @@
-import { CheckCircleFilled, CloudUploadOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import { CloudUploadOutlined, VideoCameraOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd';
-import { Button, message, Modal, Progress, Tabs, Typography } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { Button, message, Modal, Tabs, Typography } from 'antd';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { createPostApi } from "../../services/postService";
 import { eventEmitter } from "../../utils/eventEmitter";
+import UploadProgress from '../UI/Progress';
 import styles from './CreatePostModal.module.css';
 import { MultiView } from './Multiview';
 import { SingleView } from './Singleview';
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
 type ViewMode = 'single' | 'multi';
 type UploadStep = 'upload' | 'preview';
@@ -143,45 +144,7 @@ export default function CreatePostModal({ }: CreatePostModalProps) {
       styles={{ body: { padding: '24px 24px 0 24px', overflowY: 'scroll' } }}
     >
       {msgContextHolder}
-      {isUploading && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/75 backdrop-blur-md transition-all duration-300 px-4">
-          {/* Tăng width hộp chứa lên một chút (ví dụ w-[400px]) để thanh ngang nhìn thoáng hơn */}
-          <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-8 w-full max-w-[400px]">
-
-            <div className="flex flex-col items-center gap-2 text-center">
-              <h3 className="text-xl font-bold text-slate-800 m-0">{t("uploadModal.progress.title")}</h3>
-              <p className="text-slate-500 text-sm m-0">{t("uploadModal.progress.description")}</p>
-            </div>
-
-            <div className="w-full px-2">
-              <Progress
-                percent={uploadProgress}
-                strokeColor={{
-                  '0%': '#3b82f6',
-                  '100%': '#22c55e',
-                }}
-                strokeWidth={16}
-                status="active"
-                strokeLinecap="round"
-                format={(percent) => (
-                  <span className="text-slate-700 font-bold ml-2">{percent}%</span>
-                )}
-              />
-            </div>
-
-            {uploadProgress < 100 ? (
-              <div className="text-slate-400 text-xs animate-pulse">
-                {t("uploadModal.progress.processing")}
-              </div>
-            ) : (
-              <div className="text-green-600 text-sm font-medium flex items-center gap-2">
-                <CheckCircleFilled /> {t("uploadModal.progress.finish")}
-              </div>
-            )}
-
-          </div>
-        </div>
-      )}
+      {isUploading && <UploadProgress uploadProgress={uploadProgress} />}
       <Tabs
         activeKey={viewMode}
         onChange={handleTabChange}

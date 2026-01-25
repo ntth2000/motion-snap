@@ -14,7 +14,7 @@ import { formatDate, getFirstChar } from "../../utils/util";
 interface PostHeaderProps {
   postDetail: IPost;
   isOwner: boolean;
-  viewMode: string;
+  viewMode?: string;
 }
 
 const { Paragraph } = Typography;
@@ -87,7 +87,7 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
       const url = window.URL.createObjectURL(response.data);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `post${postDetail.id}_${type}_export.zip`);
+      link.setAttribute("download", `post_${postDetail.id}_export.zip`);
       document.body.appendChild(link);
       link.click();
       link.remove();

@@ -13,8 +13,6 @@ class CommentResponseDTO(BaseSchema):
     created_at: datetime
     like_count: int = 0
     liked: bool = False
-    parent_id: Optional[int] = None
-    depth: int = 0
     replies: Optional[list["CommentResponseDTO"]] = None
 
 

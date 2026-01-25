@@ -1,6 +1,8 @@
 import base64
+import logging
 import os
 import shutil
+import traceback
 import zipfile
 from pathlib import Path
 
@@ -8,8 +10,8 @@ from fastapi import BackgroundTasks, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload
 
+from src.database import SessionLocal
 from src.models import Job, Video
-from .enums import JobStatus, ProcessingStage
 from src.videos.constants import RESULT_PATH, VIDEO_PATH
 from src.videos.exceptions import UploadFilesFailedException
 from src.videos.schemas import VideoListResponse, VideoResponse
@@ -21,27 +23,34 @@ from src.videos.video_processor import (draw_2d_vertices, draw_3d_vertices,
                                         extract_2d, extract_frames,
                                         get_video_fps, render_frames_to_video)
 
+from .enums import JobStatus, ProcessingStage
+
+logger = logging.getLogger(__name__)
+
 
 def get_job_status(video_id: int, user_id: int, db: Session):
     """
     Get job status by video_id
     """
     video = (
-        db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+        db.query(Video)
+        .options(joinedload(Video.post))
+        .filter(Video.id == video_id, Video.post.has(user_id=user_id))
+        .first()
     )
     if not video:
         raise HTTPException(
             status_code=500, detail="Can't find the video. Please try again."
         )
 
-    job = db.query(Job).filter(Job.id == video.job_id).first()
+    job = db.query(Job).filter(Job.video_id == video_id).first()
 
     if not job:
         raise HTTPException(
             status_code=500, detail="Can't find the job. Please try again."
         )
 
-    return {"status": job.status}
+    return {"status": job.status, "stage": job.stage}
 
 
 def get_video_by_id(video_id: int, user_id: int, db: Session):
@@ -239,6 +248,7 @@ def delete_video(video_id: int, user_id: int, db: Session):
     """
     Delete a video by its ID and user ID
     """
+    logger.info(f"===> [Video {video_id}] Deleting video...")
     video = (
         db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
     )
@@ -267,80 +277,125 @@ def delete_video(video_id: int, user_id: int, db: Session):
     db.commit()
 
 
-def extract_poses(video_id: int, db):
-    video = db.query(Video).filter(Video.id == video_id).options(joinedload(Video.job), joinedload(Video.post)).first()
-    if not video:
-        raise HTTPException(status_code=404, detail="Video not found")
-
-    job = db.query(Job).filter(Job.video_id == video.id).first()
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-
+def extract_poses(video_id: int, fps: int = 5):
+    db = SessionLocal()
     try:
+        video = db.query(Video).filter(Video.id == video_id).first()
+        job = db.query(Job).filter(Job.video_id == video_id).first()
+
+        # Update status ban đầu
         job.status = JobStatus.PROCESSING
         job.stage = ProcessingStage.EXTRACTING_POSES
+        logger.info(f"===> [Video {video_id} job_id {job.id}] Updating DB to PROCESSING...")
         db.commit()
-        db.refresh(job)
 
+        logger.info(f"===> [Video {video_id}] Start extract pipeline")
+
+        # 1. Extract 2D
         extract_2d(video.post_id, video.view_index)
+        logger.info(f"===> [Video {video_id}] Extract 2D DONE")
 
+        # 2. Draw Vertices
         draw_2d_vertices(video.post_id, video.view_index)
+        logger.info(f"===> [Video {video_id}] Draw vertices DONE")
 
+        # 3. Update DB Completed
+        logger.info(f"===> [Video {video_id}] Updating DB to COMPLETED...")
         job.status = JobStatus.COMPLETED
         db.commit()
-        db.refresh(job)
+        logger.info(f"===> [Video {video_id}] DB Updated")
 
-        fps = get_video_fps(
-            Path(VIDEO_PATH) / str(video.post_id) /f"{video.view_index:03d}" / "videos" / "video.mp4"
+        # 4. Render Video
+        logger.info("===> [Video {video_id}] Preparing to render output video...")
+
+        video_input_path = (
+            Path(VIDEO_PATH)
+            / str(video.post_id)
+            / f"{video.view_index:03d}"
+            / "videos"
+            / "video.mp4"
         )
+        if not video_input_path.exists():
+            logger.error(f"❌ File not found: {video_input_path}")
+            raise FileNotFoundError(f"Video input not found: {video_input_path}")
+
+        if not fps:
+          fps = get_video_fps(video_input_path)
+        logger.info(f"===> FPS detected: {fps}")
+
+        output_path = (
+            Path(RESULT_PATH)
+            / str(video.post_id)
+            / f"{video.view_index:03d}"
+            / "vis_2d.mp4"
+        )
+
         render_frames_to_video(
-            frames_dir=Path(RESULT_PATH) / str(video.post_id) /f"{video.view_index:03d}" / "vis_keypoints2d",
-            output_path=Path(RESULT_PATH) / str(video.post_id) /f"{video.view_index:03d}" / "vis_2d.mp4",
+            frames_dir=Path(RESULT_PATH)
+            / str(video.post_id)
+            / f"{video.view_index:03d}"
+            / "vis_keypoints2d",
+            output_path=output_path,
             fps=fps,
         )
+        logger.info("===> ALL DONE")
         return {"message": "Pose extraction completed"}
 
     except Exception as e:
-        # Nếu có lỗi, revert trạng thái về uploaded
-        job.status = JobStatus.COMPLETED
-        job.stage = ProcessingStage.UPLOADING
-        db.commit()
-        # Raise HTTP error để client biết
-        raise HTTPException(status_code=500, detail="Pose extraction failed")
+        logger.error(f"ERROR in extract_poses: {str(e)}")
+        logger.error(traceback.format_exc())
+
+        try:
+            db.rollback()
+            job = db.query(Job).filter(Job.video_id == video_id).first()
+            job.status = JobStatus.FAILED
+            job.stage = ProcessingStage.EXTRACTING_POSES
+            db.commit()
+        except:
+            logger.error("Could not update DB status to FAILED")
+
+    finally:
+        db.close()
 
 
-def get_extracted_poses(video_id: int, user_id: int, db: Session):
+def get_extracted_poses(video_id: int, db: Session):
     """
     Get extracted poses for a video by its ID and user ID
     """
     video = (
-        db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+        db.query(Video)
+        .filter(Video.id == video_id)
+        .options(joinedload(Video.job), joinedload(Video.post))
+        .first()
     )
     if not video:
-        return None
+        return {"video_id": video_id, "video_url": None}
 
-    base_url = "http://localhost:8000"
+    file_path = f"storage/outputs/{video.post_id}/{video.view_index:03d}/vis_2d.mp4"
+    if not os.path.exists(file_path):
+        return {"video_id": video_id, "video_url": None}
 
-    video_url = f"{base_url}/storage/outputs/{video_id}/vis_2d.mp4"
-
-    return {"video_id": video_id, "video_url": video_url}
+    return {"video_id": video_id, "video_url": file_path}
 
 
-def get_3d(video_id: int, user_id: int, db: Session):
+def get_3d(video_id: int, db: Session):
     """
     Get extracted poses for a video by its ID and user ID
     """
     video = (
-        db.query(Video).filter(Video.id == video_id, Video.user_id == user_id).first()
+        db.query(Video)
+        .filter(Video.id == video_id)
+        .options(joinedload(Video.job), joinedload(Video.post))
+        .first()
     )
     if not video:
-        return None
+        return {"video_id": video_id, "video_url": None}
 
-    base_url = "http://localhost:8000"
+    file_path = f"storage/outputs/{video.post_id}/{video.view_index:03d}/vis_3d.mp4"
+    if not os.path.exists(file_path):
+        return {"video_id": video_id, "video_url": None}
 
-    video_url = f"{base_url}/storage/outputs/{video_id}/vis_3d.mp4"
-
-    return {"video_id": video_id, "video_url": video_url}
+    return {"video_id": video_id, "video_url": file_path}
 
 
 def get_extracted_frames(video_id: int, user_id: int, db: Session):
@@ -369,7 +424,7 @@ def get_extracted_frames(video_id: int, user_id: int, db: Session):
     )
 
     base_url = (
-        "http://localhost:8000"  # có thể lấy dynamic qua request.base_url nếu cần
+        "http://localhost:8000"
     )
     frame_urls = [
         f"{base_url}/storage/inputs/{video_id}/images/{frames_dir.name}/{f.name}"
@@ -379,31 +434,72 @@ def get_extracted_frames(video_id: int, user_id: int, db: Session):
     return {"video_id": video_id, "frame_count": len(frame_urls), "frames": frame_urls}
 
 
-def draw_3d(video_id: int, db: Session):
-    video = db.query(Video).filter(Video.id == video_id).first()
-    if not video:
-        return None
+def draw_3d(video_id: int):
 
-    job = db.query(Job).filter(Job.id == video.job_id).first()
-    if not job:
-        return None
+    logger.info("===> Start to draw 3d. Video ID: ", video_id)
+    db = SessionLocal()
+    try:
+        video = db.query(Video).filter(Video.id == video_id).first()
+        if not video:
+            return None
 
-    job.status = JobStatus.DRAWING_3D
-    db.commit()
-    draw_3d_vertices(video_id)
+        job = db.query(Job).filter(Job.video_id == video.id).first()
+        if not job:
+            return None
 
-    fps = get_video_fps(Path(VIDEO_PATH) / str(video_id) / "videos" / video.filename)
+        logger.info("[Video ID: ] Update status to PROCESSING and stage to DRAWING_3D")
+        job.status = JobStatus.PROCESSING
+        job.stage = ProcessingStage.DRAWING_3D
 
-    render_frames_to_video(
-        frames_dir=Path(RESULT_PATH) / str(video_id) / "render",
-        output_path=Path(RESULT_PATH) / str(video_id) / "vis_3d.mp4",
-        fps=fps,
-    )
+        db.commit()
 
-    job.status = JobStatus.DRAWN_3D
-    db.commit()
+        logger.info("[Video ID: ] Start to draw 3d vertices")
+        draw_3d_vertices(video.post_id, video.view_index)
 
-    return {"frame_count": 0, "message": "3D drawing completed"}
+        logger.info("[Video ID: ] Get video fps")
+        fps = get_video_fps(
+            Path(VIDEO_PATH)
+            / str(video.post_id)
+            / f"{video.view_index:03d}"
+            / "videos"
+            / "video.mp4"
+        )
+
+        logger.info("[Video ID: ] Render frames to video")
+        render_frames_to_video(
+            frames_dir=Path(RESULT_PATH)
+            / str(video.post_id)
+            / f"{video.view_index:03d}"
+            / "render",
+            output_path=Path(RESULT_PATH)
+            / str(video.post_id)
+            / f"{video.view_index:03d}"
+            / "vis_3d.mp4",
+            fps=fps,
+        )
+
+        logger.info("[Video ID: ] Update status to COMPLETED and stage to COMPLETED")
+        job.status = JobStatus.COMPLETED
+        job.stage = ProcessingStage.DRAWING_3D
+        db.commit()
+
+        return {"frame_count": 0, "message": "3D drawing completed"}
+
+    except Exception as e:
+        logger.error(f"ERROR in draw_3d_vertices: {str(e)}")
+        logger.error(traceback.format_exc())
+
+        try:
+            db.rollback()
+            job = db.query(Job).filter(Job.video_id == video_id).first()
+            job.status = JobStatus.FAILED
+            job.stage = ProcessingStage.DRAWING_3D
+            db.commit()
+        except:
+            logger.error("Could not update DB status to FAILED")
+
+    finally:
+        db.close()
 
 
 def export_video_data(

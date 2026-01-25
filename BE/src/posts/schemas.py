@@ -19,6 +19,7 @@ class VideoDTO(BaseSchema):
     status: JobStatus
     stage: ProcessingStage
     thumbnail_url: Optional[str] = None
+    job_id: Optional[int] = None
 
 
 class UpdatePostRequestDTO(PostBaseDTO):

@@ -23,6 +23,7 @@ def create_api_key(db: Session, user_id: int):
     if current_key_record:
         current_key_record.hashed_key = hashed_key
         current_key_record.prefix = prefix
+        current_key_record.is_revoked = 0
     else:
         api_key = APIKey(hashed_key=hashed_key, prefix=prefix, user_id=user_id)
         db.add(api_key)

@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 
 from src import database
 from src.auth import schemas, service
-from src.auth.constants import (ACCESS_TOKEN_EXPIRE_MINUTES,
-                                REFRESH_TOKEN_EXPIRE_DAYS)
+from src.auth.constants import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from src.auth.dependencies import get_current_user
 from src.users import schemas as user_schemas
 

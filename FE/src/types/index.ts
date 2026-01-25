@@ -2,12 +2,12 @@ interface IVideo {
   key: React.Key;
   id: number;
   video: string;
-  title: string;
-  description: string;
   createdAt: string;
   status: string;
   thumbnailUrl: string;
-  videoUrl?: string;
+  fileUrl: string;
+  stage: string;
+  jobId: number;
 }
 
 interface IComment {
@@ -38,7 +38,7 @@ interface IPost {
   thumbnailUrl?: string;
   createdAt: string;
   viewMode: string;
-  videos?: { id: number; fileUrl: string }[];
+  videos?: IVideo[];
   liked?: boolean;
   likeCount?: number;
   user: IUser;

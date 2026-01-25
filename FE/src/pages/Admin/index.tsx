@@ -1,26 +1,20 @@
 import {
-  BellOutlined,
+  AreaChartOutlined,
   DashboardOutlined,
   KeyOutlined,
-  SearchOutlined,
-  TeamOutlined,
-  AreaChartOutlined,
   LogoutOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import {
   Breadcrumb,
-  Button,
   Dropdown,
   Layout,
   Menu,
 } from 'antd';
-import Dashboard from './Dashboard';
-import ManagePost from './ManagePost';
-import ManageUser from './ManageUser';
-import ManageApiKey from './ManageApiKey';
-import { useState } from 'react';
-import AvatarUI from '../../components/UI/Avatar';
 import { useTranslation } from 'react-i18next';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+
+import AvatarUI from '../../components/UI/Avatar';
 import Logo from '../../components/UI/Logo';
 import useAuth from '../../hooks/useAuth';
 
@@ -30,7 +24,18 @@ const { Header, Sider, Content } = Layout;
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const { logout } = useAuth();
-  const [activeKey, setActiveKey] = useState('dashboard');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const getActiveKey = () => {
+    const path = location.pathname;
+    if (path.includes('/admin/posts')) return 'posts';
+    if (path.includes('/admin/users')) return 'users';
+    if (path.includes('/admin/api-keys')) return 'api-keys';
+    return 'dashboard';
+  };
+
+  const activeKey = getActiveKey();
 
   const userMenuItems = [
     {
@@ -53,12 +58,12 @@ export default function AdminDashboard() {
       label: t("admin.dashboard.title"),
     },
     {
-      key: 'job_monitoring',
+      key: 'posts',
       icon: <AreaChartOutlined />,
       label: t("admin.managePost.title"),
     },
     {
-      key: 'api_keys',
+      key: 'api-keys',
       icon: <KeyOutlined />,
       label: t("admin.manageAPIKey.title"),
     },
@@ -75,10 +80,10 @@ export default function AdminDashboard() {
       case 'users':
         items.push({ title: <span className="text-slate-900 text-sm font-medium">{t("admin.manageUser.title")}</span> });
         break;
-      case 'job_monitoring':
+      case 'posts':
         items.push({ title: <span className="text-slate-900 text-sm font-medium">{t("admin.managePost.title")}</span> });
         break;
-      case 'api_keys':
+      case 'api-keys':
         items.push({ title: <span className="text-slate-900 text-sm font-medium">{t("admin.manageAPIKey.title")}</span> });
         break;
       default:
@@ -111,7 +116,7 @@ export default function AdminDashboard() {
           <Menu
             mode="inline"
             selectedKeys={[activeKey]}
-            onClick={({ key }) => setActiveKey(key)}
+            onClick={({ key }) => navigate(key === 'dashboard' ? '/admin/dashboard' : `/admin/${key}`)}
             className="border-r-0 px-4"
             items={menuItems.map((item) => ({
               ...item,
@@ -152,7 +157,7 @@ export default function AdminDashboard() {
               separator={<span className="text-slate-300">/</span>}
             />
           </div>
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <Button
               type="text"
               icon={<SearchOutlined />}
@@ -163,25 +168,14 @@ export default function AdminDashboard() {
               icon={<BellOutlined />}
               className="text-slate-400 hover:text-slate-600"
             />
-          </div>
+          </div> */}
         </Header>
 
         <Content
           className="m-0 overflow-y-auto bg-background-light p-8"
         >
           <div className="max-w-6xl mx-auto space-y-6">
-            {activeKey === 'dashboard' && <Dashboard setActiveTab={setActiveKey} />}
-            {activeKey === 'job_monitoring' && <ManagePost />}
-            {activeKey === 'users' && <ManageUser />}
-            {activeKey === 'api_keys' && <ManageApiKey />}
-            {activeKey !== 'dashboard' && activeKey !== 'job_monitoring' && activeKey !== 'users' && activeKey !== 'api_keys' && (
-              <div className="flex flex-col gap-1">
-                <h2 className="text-2xl font-light tracking-tight text-slate-900 dark:text-white">
-                  {menuItems.find((i) => i.key === activeKey)?.label}
-                </h2>
-                <p className="text-slate-500 text-sm">This section is under construction.</p>
-              </div>
-            )}
+            <Outlet />
           </div>
         </Content>
       </Layout>

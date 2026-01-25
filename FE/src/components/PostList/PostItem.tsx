@@ -3,10 +3,10 @@ import { Card, Space, Typography } from 'antd';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { getAssetUrl } from '../../services/postService';
 import type { IPost } from '../../types';
 import { formatRelativeTime } from '../../utils/util';
 import AvatarUI from '../UI/Avatar';
+import { getAssetUrl } from '../../services';
 
 const { Text, Title } = Typography;
 

@@ -2,9 +2,12 @@ from sqlalchemy.orm import Session, joinedload
 
 from src.models import Comment, CommentLike, Post, User, UserRole
 
-from .exceptions import (CommentAlreadyDeletedException,
-                         CommentNotFoundException, PermissionDeniedException,
-                         ResourceDeletedException)
+from .exceptions import (
+    CommentAlreadyDeletedException,
+    CommentNotFoundException,
+    PermissionDeniedException,
+    ResourceDeletedException,
+)
 from .schemas import CommentResponseDTO
 
 

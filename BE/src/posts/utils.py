@@ -7,8 +7,7 @@ import cv2
 from fastapi import HTTPException, UploadFile, status
 from moviepy import VideoFileClip
 
-from .exceptions import (UnsupportedVideoExtensionException,
-                         VideoTooLongException)
+from .exceptions import UnsupportedVideoExtensionException, VideoTooLongException
 
 # Move constants here or import from config
 ALLOWED_VIDEO_EXTENSIONS = {"mp4", "mov", "avi", "mkv"}

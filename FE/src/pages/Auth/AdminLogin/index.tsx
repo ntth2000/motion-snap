@@ -1,10 +1,11 @@
 import { LockOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Form, Input, Typography } from 'antd';
+import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+
 import Logo from '../../../components/UI/Logo';
 import { adminLogin } from '../../../services/adminService';
-import { message } from 'antd';
-import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 

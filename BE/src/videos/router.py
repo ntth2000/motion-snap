@@ -1,25 +1,20 @@
-from typing import List
-
-from fastapi import (APIRouter, BackgroundTasks, Depends, Query, UploadFile,
-                     status)
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, UploadFile, status
 from fastapi.params import File
-from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from src import database
-from src.auth import schemas as auth_schemas
 from src.auth.dependencies import get_current_user
 from src.users import schemas as user_schemas
 from src.videos import service
+from src.videos.models import Job, Video
 
-from .schemas import VideoListResponse, VideoResponse
+from .enums import JobStatus, ProcessingStage
+from .schemas import GetVideoUrlResponse, VideoListResponse, VideoResponse
 
 router = APIRouter(
     prefix="/api/videos",
     tags=["videos"],
 )
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="videos")
 
 
 def get_db():
@@ -61,8 +56,26 @@ def extract(
     video_id: int,
     db: Session = Depends(get_db),
     background_tasks: BackgroundTasks = None,
+    current_user: user_schemas.UserDetailResponse = Depends(get_current_user),
 ):
-    background_tasks.add_task(service.extract_poses, video_id, db)
+    video = (
+        db.query(Video)
+        .filter(Video.id == video_id)
+        .options(joinedload(Video.job), joinedload(Video.post))
+        .first()
+    )
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+
+    job = db.query(Job).filter(Job.video_id == video.id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    job.status = JobStatus.PROCESSING
+    job.stage = ProcessingStage.EXTRACTING_POSES
+    db.commit()
+
+    background_tasks.add_task(service.extract_poses, video_id)
+
     return {"message": "Start to extract poses from the video."}
 
 
@@ -71,8 +84,25 @@ def draw_poses(
     video_id: int,
     db: Session = Depends(get_db),
     background_tasks: BackgroundTasks = None,
+    current_user: user_schemas.UserDetailResponse = Depends(get_current_user),
 ):
-    background_tasks.add_task(service.draw_3d, video_id, db)
+    video = (
+        db.query(Video)
+        .filter(Video.id == video_id)
+        .options(joinedload(Video.job), joinedload(Video.post))
+        .first()
+    )
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+
+    job = db.query(Job).filter(Job.video_id == video.id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    job.status = JobStatus.PROCESSING
+    job.stage = ProcessingStage.DRAWING_3D
+    db.commit()
+
+    background_tasks.add_task(service.draw_3d, video_id)
     return {"message": "Start to draw 3d."}
 
 
@@ -86,22 +116,17 @@ def delete_video(
     return None
 
 
-@router.get("/{video_id}/extracted_poses")
-async def get_extracted_frames(
-    video_id: int,
-    db: Session = Depends(get_db),
-    current_user: user_schemas.UserDetailResponse = Depends(get_current_user),
-):
-    return service.get_extracted_poses(video_id, current_user.id, db)
+@router.get("/{video_id}/extracted_poses", response_model=GetVideoUrlResponse)
+async def get_extracted_frames(video_id: int, db: Session = Depends(get_db)):
+    return service.get_extracted_poses(video_id, db)
 
 
-@router.get("/{video_id}/drawn_3d")
+@router.get("/{video_id}/drawn_3d", response_model=GetVideoUrlResponse)
 def get_draw_3d_frames(
     video_id: int,
     db: Session = Depends(get_db),
-    current_user: user_schemas.UserDetailResponse = Depends(get_current_user),
 ):
-    return service.get_3d(video_id, current_user.id, db)
+    return service.get_3d(video_id, db)
 
 
 @router.get("/status/{video_id}")

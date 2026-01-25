@@ -45,6 +45,16 @@ export default function Topbar() {
 
   const menuItems: MenuProps['items'] = useMemo(() =>
     user?.role === 'ADMIN' ? [{
+      key: 'admin-dashboard',
+      label: (
+        <div className="flex items-center gap-2">
+          <SettingOutlined />
+          <span>{t('topbar.menu.admin')}</span>
+        </div>
+      ),
+      onClick: () => navigate('/admin/dashboard'),
+    },
+    {
       key: 'logout',
       label: (
         <div className="flex items-center gap-2 text-red-500">
@@ -150,33 +160,37 @@ export default function Topbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          {isAuthenticated ? (
-            <>
-              {user?.role !== 'ADMIN' && <Button
-                className="!flex items-center !font-medium uppercase"
-                icon={<PlusSquareOutlined />}
-                onClick={showModal}
-              >
-                {t('topbar.upload')}
-              </Button>
+          {user?.role !== 'ADMIN' && <Button
+            className="!flex items-center !font-medium uppercase"
+            icon={<PlusSquareOutlined />}
+            onClick={() => {
+              if (isAuthenticated) {
+                showModal()
+              } else {
+                navigate('/login')
               }
+            }}
+          >
+            {t('topbar.upload')}
+          </Button>
+          }
 
-              <Dropdown
-                menu={{ items: menuItems }}
-                trigger={['click']}
-                placement="bottomRight"
-                overlayClassName="min-w-[160px]"
+          {isAuthenticated ? (<Dropdown
+            menu={{ items: menuItems }}
+            trigger={['click']}
+            placement="bottomRight"
+            overlayClassName="min-w-[160px]"
+          >
+            <div className="cursor-pointer transition-opacity hover:opacity-80">
+              <Avatar
+                className="!bg-primary/10 !text-primary !font-bold border border-primary/20"
+                size="large"
               >
-                <div className="cursor-pointer transition-opacity hover:opacity-80">
-                  <Avatar
-                    className="!bg-primary/10 !text-primary !font-bold border border-primary/20"
-                    size="large"
-                  >
-                    {getFirstChar("abc")}
-                  </Avatar>
-                </div>
-              </Dropdown>
-            </>
+                {getFirstChar(user?.username || "")}
+              </Avatar>
+            </div>
+          </Dropdown>
+
           ) : (
             <Button
               type="text"

@@ -1,5 +1,7 @@
-import { format,formatDistanceToNow } from 'date-fns';
-import { enUS,vi } from 'date-fns/locale';
+import { format, formatDistanceToNow } from 'date-fns';
+import { enUS, vi } from 'date-fns/locale';
+
+import { STAGE, STATUS } from '../constants';
 
 export function formatDate(dateInput: string | number | Date, language: string = 'vi'): string {
   if (language === 'vi') return format(new Date(dateInput), "d 'tháng' M, yyyy", { locale: vi });
@@ -28,4 +30,33 @@ export function formatRelativeTime(date: string | Date, language: string = 'vi')
     addSuffix: true,
     locale: language === 'vi' ? vi : enUS,
   });
+}
+
+
+export function displayStatus(status: string, stage: string) {
+  if (status === STATUS.COMPLETED) {
+    if (stage === STAGE.DRAWING_3D) {
+      return "drawn 3D"
+    } else if (stage === STAGE.EXTRACTING_POSES) {
+      return "extracted poses"
+    } else {
+      return "new"
+    }
+  } else if (status === STATUS.PROCESSING) {
+    if (stage === STAGE.UPLOADING) {
+      return "uploading"
+    } else if (stage === STAGE.EXTRACTING_POSES) {
+      return "extracting poses"
+    } else if (stage === STAGE.DRAWING_3D) {
+      return "drawing 3D"
+    } else {
+      return "processing"
+    }
+  } else if (status === STATUS.FAILED) {
+    return "failed"
+  } else if (status === STATUS.PENDING) {
+    return "pending"
+  } else {
+    return "new"
+  }
 }

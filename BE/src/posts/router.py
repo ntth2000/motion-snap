@@ -1,7 +1,14 @@
 from typing import Optional
 
-from fastapi import (APIRouter, BackgroundTasks, Depends, File, Form, Query,
-                     UploadFile, status)
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Form,
+    UploadFile,
+    status,
+)
 from sqlalchemy.orm import Session
 
 from src.auth.dependencies import get_current_user, get_optional_current_user
@@ -18,7 +25,7 @@ router = APIRouter(
 # GET /api/posts/{post_id}
 @router.get(
     "/{post_id}",
-    response_model=schemas.PostDetailResponseDTO,  # <-- Cần tạo schema này
+    response_model=schemas.PostDetailResponseDTO,
 )
 def get_post(
     post_id: int,
@@ -88,46 +95,6 @@ def update_post(
     return service.update_post(post_id, payload.caption, current_user, db)
 
 
-# POST /api/posts/{post_id}/extract_poses
-@router.post("/extract_poses/{post_id}")
-def extract(
-    post_id: int,
-    db: Session = Depends(get_db),
-    background_tasks: BackgroundTasks = None,
-):
-    background_tasks.add_task(service.extract_poses, post_id, db)
-    return {"message": "Start to extract poses from the video."}
-
-
-# GET /api/posts/{post_id}/extract_poses
-@router.get("/{post_id}/extract_poses", response_model=schemas.PostResponseDTO)
-def extract_poses(post_id: int, db: Session = Depends(get_db)):
-    return service.get_extracted_poses(post_id, db)
-
-
-# GET /api/posts/{post_id}/status
-@router.get("/{post_id}/status")
-def get_status(post_id: int, db: Session = Depends(get_db)):
-    return service.get_status(post_id, db)
-
-
-# POST /api/posts/{post_id}/draw_3d
-@router.post("/draw_3d/{post_id}")
-def draw_3d(
-    post_id: int,
-    db: Session = Depends(get_db),
-    background_tasks: BackgroundTasks = None,
-):
-    background_tasks.add_task(service.draw_3d, post_id, db)
-    return {"message": "Start to draw 3d."}
-
-
-# GET /api/posts/{post_id}/draw_3d
-@router.get("/{post_id}/drawn_3d", response_model=schemas.PostResponseDTO)
-def get_drawn_3d(post_id: int, db: Session = Depends(get_db)):
-    return service.get_drawn_3d(post_id, db)
-
-
 # GET /api/posts/{post_id}/comments
 @router.get(
     "/{post_id}/comments",
@@ -155,19 +122,16 @@ def create_comment(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return service.post_comment(
-        post_id, payload.parent_comment_id, payload.content, current_user, db
-    )
+    return service.post_comment(post_id, payload.content, current_user, db)
 
 
 @router.get("/{post_id}/export")
 def export(
     post_id: int,
-    export_type: str = Query(..., regex="^(extracted_poses|3d)$"),
     db: Session = Depends(get_db),
     background_tasks: BackgroundTasks = None,
 ):
-    return service.export_data(post_id, export_type, db, background_tasks)
+    return service.export_data(post_id, db, background_tasks)
 
 
 @router.post("/{post_id}/like", response_model=schemas.LikeResponseDTO)

@@ -3,10 +3,12 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+from src.schemas import BaseSchema
+
 from .enums import JobStatus, ProcessingStage
 
 
-class VideoUpload(BaseModel):
+class VideoUpload(BaseSchema):
     file_name: Optional[str] = Field(..., description="Name of the video file")
     description: Optional[str] = Field(
         ..., description="Description of the video content"
@@ -21,7 +23,7 @@ class VideoUpload(BaseModel):
         }
 
 
-class VideoResponse(BaseModel):
+class VideoResponse(BaseSchema):
     id: int
     filename: str
     uploaded_at: datetime
@@ -36,15 +38,20 @@ class VideoResponse(BaseModel):
         orm_mode = True
 
 
-class VideoListResponse(BaseModel):
+class VideoListResponse(BaseSchema):
     videos: List[VideoResponse]
 
 
-class ExtractFrame(BaseModel):
+class ExtractFrame(BaseSchema):
     frame_count: int
     message: str
 
 
-class DrawPosesResponse(BaseModel):
+class DrawPosesResponse(BaseSchema):
     frame_count: int
     message: str
+
+
+class GetVideoUrlResponse(BaseSchema):
+    video_id: int
+    video_url: Optional[str] = None

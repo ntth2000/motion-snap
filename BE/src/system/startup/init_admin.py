@@ -12,8 +12,8 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "default_password")
 
 
 def init_admin(db):
-    admin = db.query(User).filter(User.id == -1).first() 
-    
+    admin = db.query(User).filter(User.id == -1).first()
+
     if not admin:
         new_admin = User(
             id=-1,

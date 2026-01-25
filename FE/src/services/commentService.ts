@@ -15,14 +15,12 @@ export const getComments = async (postId: string) => {
 export const postComment = async (
   postId: string,
   content: string,
-  parentId: number | null = null,
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void
 ) => {
   const res = await axiosInstance.post(
     API.posts.comments(postId),
     {
       content,
-      parent_comment_id: parentId,
     },
     {
       withCredentials: true,

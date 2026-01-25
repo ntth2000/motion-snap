@@ -9,6 +9,7 @@ from src.auth.constants import ACCESS_TOKEN_EXPIRE_MINUTES
 from src.auth.exceptions import TokenExpiredException, UserNotFound
 from src.auth.utils import create_access_token, verify_token
 from src.models import User
+from src.users.enums import UserRole
 
 
 def get_db():
@@ -71,11 +72,11 @@ def get_current_user(user: Optional[User] = Depends(get_optional_current_user)):
 
     return user
 
-  
+
 def get_current_admin(user: User = Depends(get_current_user)) -> User:
     if user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this resource"
+            detail="You do not have permission to access this resource",
         )
     return user
