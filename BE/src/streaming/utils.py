@@ -125,7 +125,7 @@ def process_finished_session(
             db.commit()
 
         for video_id in video_ids:
-            extract_poses(video_id)
+            extract_poses(video_id=video_id, fps=5)
 
     except Exception as e:
         logger.error(f"[Post {post_id}] Error processing session: {str(e)}")

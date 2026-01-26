@@ -1,14 +1,7 @@
 from typing import Optional
 
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Depends,
-    File,
-    Form,
-    UploadFile,
-    status,
-)
+from fastapi import (APIRouter, BackgroundTasks, Depends, File, Form,
+                     UploadFile, status)
 from sqlalchemy.orm import Session
 
 from src.auth.dependencies import get_current_user, get_optional_current_user

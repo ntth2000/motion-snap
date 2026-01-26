@@ -23,15 +23,15 @@ import { STAGE, STATUS } from '../../constants';
 import useAuth from '../../hooks/useAuth';
 import { deletePosts, getPosts } from '../../services/postService';
 import type { IPost } from '../../types';
-import { formatDate } from '../../utils/util';
+import { displayStatus, formatDate } from '../../utils/util';
 import { getAssetUrl } from '../../services';
 
 
 const renderVideoStatus = (status: string, stage: string) => {
-  let className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border ";
+  let className = "uppercase inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border ";
   if (status.toUpperCase() === STATUS.PROCESSING) {
     className += "bg-info-pastel text-blue-600 border-blue-100/50";
-    return <span className={className}>{status}</span>
+    return <span className={className}>{displayStatus(status, stage)}</span>
   } else if (stage.toUpperCase() === STAGE.UPLOADING) {
     className += "bg-success-pastel text-green-600 border-green-100/50";
   } else if (stage.toUpperCase() === STAGE.EXTRACTING_POSES) {
@@ -42,7 +42,7 @@ const renderVideoStatus = (status: string, stage: string) => {
 
   return (
     <span className={className}>
-      {stage}
+      {displayStatus(status, stage)}
     </span>
   );
 };
@@ -60,10 +60,12 @@ export default function MyVideos() {
       title: 'POST',
       dataIndex: 'caption',
       key: 'caption',
+      width: '40%',
+      ellipsis: true,
       render: (text, record) => (
         <div className="flex items-center gap-4">
-          <div className="flex flex-col">
-            <span className="text-sm font-normal text-slate-800">{text}</span>
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm font-normal text-slate-800 truncate">{text}</span>
             <span className="text-[10px] text-slate-400 font-light mt-0.5 tracking-wide">MULTICAM_PROJECT_{record.id}</span>
           </div>
         </div>
@@ -81,10 +83,6 @@ export default function MyVideos() {
       align: 'right',
       render: (record) => (
         <Space size="small">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-          />
           <Button
             type="text"
             icon={<DeleteOutlined />}

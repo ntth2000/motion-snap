@@ -7,7 +7,9 @@ import cv2
 from fastapi import HTTPException, UploadFile, status
 from moviepy import VideoFileClip
 
-from .exceptions import UnsupportedVideoExtensionException, VideoTooLongException
+from .constants import VIDEO_PATH
+from .exceptions import (UnsupportedVideoExtensionException,
+                         VideoTooLongException)
 
 # Move constants here or import from config
 ALLOWED_VIDEO_EXTENSIONS = {"mp4", "mov", "avi", "mkv"}
@@ -112,3 +114,22 @@ def generate_thumbnail(video_path: str, output_folder: str) -> str:
     except Exception as e:
         print(f"Failed to generate thumbnail: {e}")
         return None
+
+
+def check_empty_post(post_id: int, view_index: str):
+    images_path = os.path.join(VIDEO_PATH, str(post_id), view_index, "images", "video")
+    videos_path = os.path.join(
+        VIDEO_PATH, str(post_id), view_index, "videos", "video.mp4"
+    )
+
+    if not os.path.exists(images_path):
+        return True
+
+    for item in os.listdir(images_path):
+        if os.path.isfile(os.path.join(images_path, item)):
+            return False
+
+    if os.path.exists(videos_path):
+        return False
+
+    return True

@@ -41,8 +41,8 @@ export const API = {
       `/posts/${postId}/extract_poses`,
     getDrawn3DById: (postId: number | string) =>
       `/posts/${postId}/drawn_3d`,
-    export: (postId: number | string, type: string) =>
-      `/posts/${postId}/export?export_type=${type}`,
+    export: (postId: number | string) =>
+      `/posts/${postId}/export`,
     like: (postId: number | string) =>
       `/posts/${postId}/like`,
   },

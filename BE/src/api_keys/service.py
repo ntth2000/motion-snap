@@ -10,7 +10,10 @@ def get_api_key(db: Session, user_id: int):
     if not api_key:
         return {"key": None}
 
-    return {"key": f"{api_key.prefix}****************"}
+    return {
+        "key": f"{api_key.prefix}****************",
+        "is_revoked": api_key.is_revoked,
+    }
 
 
 def create_api_key(db: Session, user_id: int):

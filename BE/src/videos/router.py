@@ -1,4 +1,5 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, UploadFile, status
+from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Query,
+                     UploadFile, status)
 from fastapi.params import File
 from sqlalchemy.orm import Session, joinedload
 

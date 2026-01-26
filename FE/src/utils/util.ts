@@ -3,7 +3,7 @@ import { enUS, vi } from 'date-fns/locale';
 
 import { STAGE, STATUS } from '../constants';
 
-export function formatDate(dateInput: string | number | Date, language: string = 'vi'): string {
+export function formatDate(dateInput: string | number | Date, language: string = 'enUS'): string {
   if (language === 'vi') return format(new Date(dateInput), "d 'tháng' M, yyyy", { locale: vi });
   return format(new Date(dateInput), "d MMM yyyy", { locale: enUS });
 }
@@ -19,7 +19,7 @@ export function generateRandomHexColor() {
   return fullHexCode.toUpperCase();
 }
 
-export function formatRelativeTime(date: string | Date, language: string = 'vi') {
+export function formatRelativeTime(date: string | Date, language: string = 'enUS') {
   if (!date) return '';
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;

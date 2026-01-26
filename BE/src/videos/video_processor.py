@@ -6,8 +6,8 @@
 # 3. api: draw_3d, nhận đầu vào các các file frame ảnh rồi đầu ra là:
 #     (i) các file frame ảnh có vẽ đường bao 3D
 #     (ii) xâu JSON theo format: { "số_thứ_tự_của_điểm_trên_đường_bao_3D" : [toạ_độ_trục_x, toạ_độ_trục_y, toạ_độ_trục_z] }
-import os
 import logging
+import os
 import subprocess
 from pathlib import Path
 
@@ -22,17 +22,18 @@ from .models import Job
 logger = logging.getLogger(__name__)
 
 
-def extract_frames(video_id: int):
-    print(f"Extracting frames for video_id={video_id}...")
-    input_path = f"/workspace/inputs/{video_id}"
+def extract_frames(post_id: int, sub_folder_name: str):
+    print(f"Extracting frames for video_path={post_id}/{sub_folder_name}...")
+    input_path = f"/workspace/inputs/{post_id}/{sub_folder_name}"
 
     cmd = [
         "docker",
         "run",
+        "--rm",
         "--name",
-        f"extract_frames_{video_id}",
+        f"extract_frames_{post_id}_{sub_folder_name}",
         "-v",
-        f"{os.getcwd()}/storage/inputs/{video_id}:{input_path}",
+        f"{os.getcwd()}/storage/inputs/{post_id}/{sub_folder_name}:{input_path}",
         "easymocap",
         "bash",
         "-c",
@@ -40,7 +41,7 @@ def extract_frames(video_id: int):
     ]
 
     subprocess.run(cmd, check=True)
-    print(f"Frames extracted successfully for video_id={video_id}")
+    print(f"Frames extracted successfully for video_path={post_id}/{sub_folder_name}")
 
 
 def extract_2d(post_id: int, view_index: int):

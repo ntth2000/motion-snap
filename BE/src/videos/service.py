@@ -277,7 +277,7 @@ def delete_video(video_id: int, user_id: int, db: Session):
     db.commit()
 
 
-def extract_poses(video_id: int, fps: int = 5):
+def extract_poses(video_id: int, fps: int = 30):
     db = SessionLocal()
     try:
         video = db.query(Video).filter(Video.id == video_id).first()
@@ -286,7 +286,9 @@ def extract_poses(video_id: int, fps: int = 5):
         # Update status ban đầu
         job.status = JobStatus.PROCESSING
         job.stage = ProcessingStage.EXTRACTING_POSES
-        logger.info(f"===> [Video {video_id} job_id {job.id}] Updating DB to PROCESSING...")
+        logger.info(
+            f"===> [Video {video_id} job_id {job.id}] Updating DB to PROCESSING..."
+        )
         db.commit()
 
         logger.info(f"===> [Video {video_id}] Start extract pipeline")
@@ -320,7 +322,7 @@ def extract_poses(video_id: int, fps: int = 5):
             raise FileNotFoundError(f"Video input not found: {video_input_path}")
 
         if not fps:
-          fps = get_video_fps(video_input_path)
+            fps = get_video_fps(video_input_path)
         logger.info(f"===> FPS detected: {fps}")
 
         output_path = (
@@ -423,9 +425,7 @@ def get_extracted_frames(video_id: int, user_id: int, db: Session):
         ]
     )
 
-    base_url = (
-        "http://localhost:8000"
-    )
+    base_url = "http://localhost:8000"
     frame_urls = [
         f"{base_url}/storage/inputs/{video_id}/images/{frames_dir.name}/{f.name}"
         for f in frame_files

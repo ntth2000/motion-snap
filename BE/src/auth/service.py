@@ -1,19 +1,11 @@
 from datetime import datetime
 
 from src import models
-from src.auth.exceptions import (
-    ExistingUserException,
-    InvalidTokenException,
-    InvalidUserInfoException,
-    TokenExpiredException,
-)
-from src.auth.utils import (
-    create_access_token,
-    create_refresh_token,
-    hash_password,
-    verify_password,
-    verify_token,
-)
+from src.auth.exceptions import (ExistingUserException, InvalidTokenException,
+                                 InvalidUserInfoException,
+                                 TokenExpiredException)
+from src.auth.utils import (create_access_token, create_refresh_token,
+                            hash_password, verify_password, verify_token)
 from src.users.utils import generate_username
 
 

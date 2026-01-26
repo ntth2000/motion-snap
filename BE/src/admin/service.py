@@ -5,7 +5,8 @@ from sqlalchemy import case, desc, func
 from sqlalchemy.orm import Session, joinedload
 
 from src.auth.exceptions import InvalidUserInfoException
-from src.auth.utils import create_access_token, create_refresh_token, verify_password
+from src.auth.utils import (create_access_token, create_refresh_token,
+                            verify_password)
 from src.models import APIKey, Job, Post, RefreshToken, User, Video
 from src.videos.enums import JobStatus, ProcessingStage
 

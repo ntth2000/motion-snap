@@ -47,15 +47,16 @@ export const deletePosts = async (postIds: number[]) => {
   }
 }
 
-export const getExportedData = async (postId: string | number, type: string = "extracted_poses") => {
+export const getExportedData = async (postId: string | number, onProgress?: (progressEvent: any) => void) => {
   try {
     const response = await axiosInstance.get(
-      `${API.posts.export(postId, type)}`,
+      `${API.posts.export(postId)}`,
       {
         responseType: 'blob',
         headers: {
           'Content-Type': 'application/zip',
         },
+        onDownloadProgress: onProgress,
         withCredentials: true,
       }
     )

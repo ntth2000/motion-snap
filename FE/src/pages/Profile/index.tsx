@@ -7,6 +7,8 @@ import AvatarUI from "../../components/UI/Avatar";
 import { getPosts } from "../../services/postService";
 import { getUserByUsername } from "../../services/userService";
 import { type IPost } from "../../types";
+import { Avatar } from "antd";
+import { getFirstChar } from "../../utils/util";
 export default function UserProfile() {
   const { t } = useTranslation();
   const { username: profileOwner } = useParams<{ username: string }>();
@@ -45,7 +47,11 @@ export default function UserProfile() {
   return <main className="max-w-250 mx-auto pb-20">
     <section className="flex flex-col items-center pt-12 px-4">
       <div className="relative">
-        <AvatarUI height="h-20" width="w-20" name={userDetail?.name || ""} />
+        <Avatar
+          className={`w-20! h-20! text-2xl! !bg-primary/10 !text-primary !font-bold border border-primary/20`}
+        >
+          {getFirstChar(userDetail?.name || "")}
+        </Avatar>
       </div>
       <div className="mt-6 flex flex-col items-center gap-1">
         <h2 className="text-[#0d121b] dark:text-white text-3xl font-bold leading-tight tracking-tight">{userDetail?.name}</h2>

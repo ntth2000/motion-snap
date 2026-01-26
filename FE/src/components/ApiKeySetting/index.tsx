@@ -15,6 +15,7 @@ const maskKey = (key: string) => {
 type ApiKeyState = {
   key: string | null;
   canCopy: boolean;
+  isRevoked?: boolean;
 };
 
 export default function ApiKeySetting({ }) {
@@ -27,7 +28,7 @@ export default function ApiKeySetting({ }) {
     try {
       setLoading(true);
       const res = await getKey();
-      setApiKey({ key: res.key, canCopy: false });
+      setApiKey({ key: res.key, canCopy: false, isRevoked: res.isRevoked });
     } catch (err) {
       message.error("Failed to load API key");
     } finally {
@@ -111,6 +112,9 @@ export default function ApiKeySetting({ }) {
                 </Button>
               </Space>
             </div>
+            {apiKey.isRevoked && (
+              <Text type="danger" className="mt-2">Your key has been revoked. Please generate a new key.</Text>
+            )}
           </Space>
         ) : (
           <Button
@@ -123,6 +127,11 @@ export default function ApiKeySetting({ }) {
           </Button>
         )
       }
+      <div className="mt-8">
+        <Text type="secondary">Please use this API key to authenticate requests from multiple camera remote to MotionSnap API.</Text>
+        <br />
+        <Text type="secondary">For more information, please refer to the <a href="https://github.com/ntth2000/multiple-camera-remote" target="_blank">Multiple camera remote</a> repository.</Text>
+      </div>
     </div >
   );
 };

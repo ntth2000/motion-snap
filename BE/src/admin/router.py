@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from src.admin import service
-from src.auth.constants import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
+from src.auth.constants import (ACCESS_TOKEN_EXPIRE_MINUTES,
+                                REFRESH_TOKEN_EXPIRE_DAYS)
 from src.auth.dependencies import get_current_admin
 from src.auth.schemas import LoginRequest, UserResponse
 from src.database import get_db

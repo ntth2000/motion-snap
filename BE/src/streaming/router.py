@@ -5,14 +5,8 @@ from datetime import datetime
 
 import cv2
 import numpy as np
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Depends,
-    Header,
-    WebSocket,
-    WebSocketDisconnect,
-)
+from fastapi import (APIRouter, BackgroundTasks, Depends, Header, WebSocket,
+                     WebSocketDisconnect)
 from sqlalchemy.orm import Session
 
 from src.database import get_db

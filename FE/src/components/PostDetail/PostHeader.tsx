@@ -10,6 +10,7 @@ import useAuth from "../../hooks/useAuth";
 import { deletePosts, getExportedData, toggleLikePost, updatePostCaption } from "../../services/postService";
 import type { IPost } from "../../types";
 import { formatDate, getFirstChar } from "../../utils/util";
+import UploadProgress from "../UI/Progress";
 
 interface PostHeaderProps {
   postDetail: IPost;
@@ -27,6 +28,8 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
   const [messageApi, msgContextHolder] = message.useMessage();
   const [isEditingCaption, setIsEditingCaption] = useState<boolean>(false);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
   const [content, setContent] = useState<string>(postDetail?.caption || '');
   const [tempContent, setTempContent] = useState<string>(postDetail?.caption || '');
   const [likeStatus, setLikeStatus] = useState<{ liked: boolean, likeCount: number }>({
@@ -81,9 +84,12 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
   };
 
   const handleDownload = async () => {
-    const type = viewMode === VIEW_MODE.EXTRACTED_POSES ? "extracted_poses" : "draw_3d"
     try {
-      const response = await getExportedData(postDetail.id, type);
+      setIsDownloading(true);
+      const response = await getExportedData(postDetail.id, (progressEvent: any) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        setProgress(percentCompleted);
+      });
       const url = window.URL.createObjectURL(response.data);
       const link = document.createElement("a");
       link.href = url;
@@ -94,6 +100,8 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Export failed:", err);
+    } finally {
+      setIsDownloading(false);
     }
   }
 
@@ -116,6 +124,7 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
   return <>
     {modalContextHolder}
     {msgContextHolder}
+    {isDownloading && <UploadProgress title="Downloading" uploadProgress={progress} />}
     <div className="px-8 py-2">
       <div className="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div className="mt-6 flex items-center gap-2">

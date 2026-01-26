@@ -11,3 +11,4 @@ class CreateApiKeyResponse(BaseSchema):
 
 class ApiKeyGet(BaseSchema):
     key: Optional[str] = None
+    is_revoked: Optional[int] = None

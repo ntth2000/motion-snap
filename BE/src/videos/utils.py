@@ -8,16 +8,10 @@ from pathlib import Path
 from fastapi import HTTPException, UploadFile, status
 from moviepy import VideoFileClip
 
-from src.videos.constants import (
-    ALLOWED_VIDEO_EXTENSIONS,
-    COCO_12_POINTS,
-    MAX_DURATION_IN_SECONDS,
-    VIDEO_PATH,
-)
-from src.videos.exceptions import (
-    UnsupportedVideoExtensionException,
-    VideoTooLongException,
-)
+from src.videos.constants import (ALLOWED_VIDEO_EXTENSIONS, COCO_12_POINTS,
+                                  MAX_DURATION_IN_SECONDS, VIDEO_PATH)
+from src.videos.exceptions import (UnsupportedVideoExtensionException,
+                                   VideoTooLongException)
 
 
 def validate_extension(file: UploadFile) -> bool:

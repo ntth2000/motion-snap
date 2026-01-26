@@ -16,25 +16,16 @@ from src.comments.schemas import CommentResponseDTO
 from src.models import Job, Post, PostLike, User, UserRole
 from src.posts import schemas
 from src.posts.constants import RESULT_PATH, VIDEO_PATH
+from src.posts.utils import check_empty_post
 from src.videos.enums import JobStatus, ProcessingStage
 from src.videos.models import Video, VideoStatus
 from src.videos.utils import remove_file
+from src.videos.video_processor import extract_frames
 
-from .exceptions import (
-    PermissionDeniedException,
-    PostNotFoundException,
-    ResourceDeletedException,
-    UploadFilesFailedException,
-)
+from .exceptions import (EmptyPostException, PermissionDeniedException,
+                         PostNotFoundException, ResourceDeletedException,
+                         UploadFilesFailedException)
 from .schemas import PostResponseDTO
-from .video_processor import (
-    draw_2d_vertices,
-    draw_3d_vertices,
-    extract_2d,
-    extract_frames,
-    get_video_fps,
-    render_frames_to_video,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -53,20 +44,27 @@ def get_posts(db: Session, username: Optional[str]):
 
     all_posts = query.all()
 
+    valid_posts = []
+
     for post in all_posts:
+        if check_empty_post(post.id, "000") and check_empty_post(post.id, "001"):
+            continue
+
         if post.videos and len(post.videos) > 1:
             post.view_mode = "multi"
         elif post.videos:
             post.view_mode = "single"
 
         for video in post.videos:
+
             video.file_url = video.file_url
             video.status = video.job.status if video.job else JobStatus.COMPLETED
             video.stage = video.job.stage if video.job else ProcessingStage.UPLOADED
             video.thumbnail_url = video.thumbnail_url
             video.job_id = video.job.id if video.job else None
 
-    return all_posts
+        valid_posts.append(post)
+    return valid_posts
 
 
 def get_post_by_id(db: Session, post_id: int, user_id: Optional[int]):
@@ -82,6 +80,7 @@ def get_post_by_id(db: Session, post_id: int, user_id: Optional[int]):
 
     if post.is_deleted:
         raise ResourceDeletedException(message="This post has been deleted.")
+
     post.username = post.user.username if post.user else "Unknown"
     post.userId = post.user_id
     if post.videos and len(post.videos) > 1:
@@ -107,6 +106,8 @@ def get_post_by_id(db: Session, post_id: int, user_id: Optional[int]):
             v.status = v.job.status if v.job else JobStatus.COMPLETED
             v.stage = v.job.stage if v.job else ProcessingStage.UPLOADED
             v.job_id = v.job.id if v.job else None
+            if check_empty_post(post_id, f"{v.view_index:03d}"):
+                raise EmptyPostException()
 
     return post
 
@@ -302,49 +303,6 @@ def delete_post(post_ids: list[int], current_user: User, db: Session):
     return {"message": "Post deleted successfully"}
 
 
-def extract_poses(post_id: int, db: Session):
-    post = (
-        db.query(Post)
-        .filter(Post.id == post_id)
-        .options(joinedload(Post.videos))
-        .first()
-    )
-
-    if not post:
-        raise PostNotFoundException()
-
-    if post.is_deleted:
-        raise ResourceDeletedException(message="Post is already deleted.")
-
-    try:
-        # 1. Update Status
-        post.video.job.status = JobStatus.PROCESSING
-        post.video.job.stage = ProcessingStage.EXTRACTING_POSES
-        db.commit()
-        db.refresh(post)  # Refresh để lấy data mới nhất
-
-        # 2. Tính toán sub_folders dựa trên video
-        extract_2d(post_id, "001")
-        draw_2d_vertices(post_id, "001")
-
-        post.job.status = JobStatus.COMPLETED
-        post.job.stage = ProcessingStage.EXTRACTING_POSES
-        db.commit()
-        fps = get_video_fps(
-            Path(VIDEO_PATH) / str(post_id) / "001" / "videos" / "video.mp4"
-        )
-        render_frames_to_video(
-            frames_dir=Path(RESULT_PATH) / str(post_id) / "001" / "vis_keypoints2d",
-            output_path=Path(RESULT_PATH) / str(post_id) / "001" / "vis_2d.mp4",
-            fps=fps,
-        )
-        return {"message": "Pose extraction completed"}
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Pose extraction failed")
-
-
 def get_status(post_id: int, db: Session):
     post = db.query(Post).filter(Post.id == post_id).first()
 
@@ -355,121 +313,6 @@ def get_status(post_id: int, db: Session):
         raise ResourceDeletedException(message="Post is already deleted.")
 
     return post.job
-
-
-def draw_3d(post_id: int, db: Session):
-    post = db.query(Post).filter(Post.id == post_id).first()
-    if not post:
-        return None
-
-    post.job.status = JobStatus.PROCESSING
-    post.job.stage = ProcessingStage.DRAWING_3D
-    db.commit()
-    draw_3d_vertices(post_id)
-
-    fps = get_video_fps(
-        Path(VIDEO_PATH) / str(post_id) / "001" / "videos" / "video.mp4"
-    )
-
-    render_frames_to_video(
-        frames_dir=Path(RESULT_PATH) / str(post_id) / "001" / "render",
-        output_path=Path(RESULT_PATH) / str(post_id) / "001" / "vis_3d.mp4",
-        fps=fps,
-    )
-
-    post.job.status = JobStatus.COMPLETED
-    post.job.stage = ProcessingStage.DRAWING_3D
-    db.commit()
-
-    return {"frame_count": 0, "message": "3D drawing completed"}
-
-
-def get_status(post_id: int, db: Session):
-    post = (
-        db.query(Post).filter(Post.id == post_id).options(joinedload(Post.job)).first()
-    )
-
-    if not post:
-        raise PostNotFoundException()
-
-    if post.is_deleted:
-        raise ResourceDeletedException(message="Post is already deleted.")
-
-    return {
-        "post_id": post.id,
-        "status": post.job.status,
-        "stage": post.job.stage,
-    }
-
-
-def get_extracted_poses(post_id: int, db: Session):
-    post = (
-        db.query(Post)
-        .filter(Post.id == post_id)
-        .options(joinedload(Post.videos), joinedload(Post.job), joinedload(Post.user))
-        .first()
-    )
-    if not post:
-        return None
-
-    if not post.videos:
-        return None
-
-    result = {}
-    result["id"] = post.id
-    result["caption"] = post.caption
-    result["created_at"] = post.created_at
-    result["thumbnail_url"] = post.thumbnail_url
-    result["user_id"] = post.user_id
-    result["username"] = post.user.username
-
-    base_url = "http://localhost:8000/api"
-    result["videos"] = []
-    for v in post.videos:
-        video_url = (
-            f"{base_url}/storage/outputs/{post_id}/{(v.view_index):03}/vis_2d.mp4"
-        )
-        result["videos"].append(
-            {"id": v.id, "file_url": video_url, "view_index": v.view_index}
-        )
-
-    return result
-
-
-def get_drawn_3d(post_id: int, db: Session):
-    post = (
-        db.query(Post)
-        .filter(Post.id == post_id)
-        .options(joinedload(Post.videos), joinedload(Post.job), joinedload(Post.user))
-        .first()
-    )
-    if not post:
-        return None
-
-    if not post.videos:
-        return None
-
-    result = {}
-    result["id"] = post.id
-    result["caption"] = post.caption
-    result["created_at"] = post.created_at
-    result["thumbnail_url"] = post.thumbnail_url
-    result["user_id"] = post.user_id
-    result["username"] = post.user.username
-    result["current_stage"] = post.job.current_stage
-    result["status"] = post.job.status
-
-    base_url = "http://localhost:8000/api"
-    result["videos"] = []
-    for v in post.videos:
-        video_url = (
-            f"{base_url}/storage/outputs/{post_id}/{(v.view_index):03}/vis_3d.mp4"
-        )
-        result["videos"].append(
-            {"id": v.id, "file_url": video_url, "view_index": v.view_index}
-        )
-
-    return result
 
 
 def get_comments_by_post_id(db: Session, post_id: int, user_id: Optional[int]):
@@ -578,6 +421,11 @@ def export_data(
             original_dir = video_export_dir / "original"
             original_dir.mkdir(exist_ok=True)
             shutil.copy(original_video_path, original_dir / "video.mp4")
+        original_frames_dir = input_dir / "images" / "video"
+        if original_frames_dir.exists():
+            shutil.copytree(
+                original_frames_dir, original_dir / "frames", dirs_exist_ok=True
+            )
 
         pose_2d_video = output_dir / "vis_2d.mp4"
         if pose_2d_video.exists():
