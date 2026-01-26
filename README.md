@@ -5,45 +5,49 @@ It allows users to upload videos, view them in a paginated list, and organize or
 
 ## Pose Extraction Visualization
 
-<p align="center">
-  <img src="./asset/images/original.jpg" width="45%" style="margin-right: 10px;" />
-  <img src="./asset/images/vis_2d.jpg" width="45%" />
-</p>
-
-<p align="center">
-  <img src="./asset/images/vis_3d.jpg" width="60%" />
-</p>
+<div align="center" style="display: flex; justify-content: space-between; gap: 10px;">
+  <img src="./asset/images/original.jpg" width="30%" alt="Original Frame" />
+  <img src="./asset/images/vis_2d.jpg" width="30%" alt="2D Visualization" />
+  <img src="./asset/images/vis_3d.jpg" width="30%" alt="3D Visualization" />
+</div>
 
 <p align="center">
   <em>Original → 2D Pose Estimation → 3D Pose Visualization</em>
 </p>
-
 > **Note:** Only support 1view-1person video.
 
 ---
 
-## 🚀 Features
+## Features
 
-- Upload and store videos locally.  
-- Display paginated video lists with thumbnails and metadata.  
-- View video details and status.  
-- Organized architecture separating frontend, backend, and storage.  
-- Ready for future extensions like AI-based video analysis or cloud storage.
-
----
-
-## 🏗️ Tech Stack
-
-| Layer | Technology |
-|-------|-------------|
-| **Frontend** | React, TypeScript |
-| **Backend** | FastAPI (Python 3.10+) |
-| **Database** | PostgreSQL |
-| **Storage** | Local file system (`/storage` folder) |
+*   **Video Management**: Upload, store, and manage videos locally with ease.
+*   **Pose Extraction**: Automatically extract 2D and 3D poses from uploaded footage, [Mono_mocap](https://github.com/thanh094118/Mono_mocap) by [@thanh094118](https://github.com/thanh094118) is used for 3D pose visualization.
+*   **Visualization dashboard**: View processed videos, extracted poses.
+*   **Direct Mobile Upload**: Integrated support for uploading frames directly from Android devices via [Multiple camera remote](https://github.com/ntth2000/multiple-camera-remote) (forked from [@tranbadat](https://github.com/tranbadat)).
+*   **Scalable Architecture**: Clean separation between Frontend, Backend, and Storage services.
 
 ---
 
-## 📁 Project Structure
+## Tech Stack
+
+### Frontend
+*   **Framework**: [React 19](https://react.dev/)
+*   **Build Tool**: [Vite](https://vitejs.dev/)
+*   **Language**: TypeScript
+*   **UI Library**: [Ant Design](https://ant.design/)
+*   **Styling**: [TailwindCSS](https://tailwindcss.com/)
+*   **Networking**: Axios
+
+### Backend
+*   **Framework**: [FastAPI](https://fastapi.tiangolo.com/) (Python 3.10+)
+*   **Database**: PostgreSQL
+*   **ORM**: SQLAlchemy & Verify with Pydantic
+*   **Video Processing**: EasyMocap, OpenCV, MoviePy
+*   **Authentication**: PyJWT
+
+---
+
+## Project Structure
 
 ```bash
 motion-snap/
@@ -57,15 +61,6 @@ motion-snap/
 │   │   ├── services.py
 │   │   ├── router.py
 │   │   └── utils.py
-│   │   ...
-│   ├── videos/
-│   │   ├── constants.py
-│   │   ├── dependencies.py
-│   │   ├── models.py
-│   │   ├── schemas.py
-│   │   ├── services.py
-│   │   ├── router.py
-│   │   ├── utils.py
 │   │   ...
 │   ├── storage/
 │   │   ├──inputs
@@ -86,7 +81,10 @@ motion-snap/
 ├── installation.md
 └── README.md
 ```
-## Setup instruction
+
+---
+
+## Installation & Setup
 
 ### Prerequisites
 Before starting, make sure you have installed:
@@ -100,60 +98,71 @@ This project uses EasyMocap for pose extraction.
 Please follow the instructions in installation.md to set up EasyMocap properly before running any pose-related endpoints.
 
 Create a .env file in BE/ with the following content:
-```bash
-SECRET_KEY=your_secret_key
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=your_db_name
-ADMIN_EMAIL=your_admin_email
-ADMIN_PASSWORD=your_admin_password
-```
-Make sure to replace the placeholder values with your actual credentials.
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-Start server:
-```bash
-cd BE
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-Access the API at: http://localhost:8000
+4.  Configure Environment Variables:
+    Create a `.env` file in `BE/` and add your database and app credentials:
+    ```env
+    SECRET_KEY=your_secure_secret_key
+    
+    # Database Configuration
+    DB_USER=your_db_user
+    DB_PASSWORD=your_db_password
+    DB_HOST=localhost
+    DB_PORT=5432
+    DB_NAME=your_db_name
+    
+    # Admin Setup (Optional)
+    ADMIN_EMAIL=admin@example.com
+    ADMIN_PASSWORD=admin_password
+    ```
 
-### Frontend
-Create a .env file in FE/ with the following content:
-```bash
-VITE_API_URL=http://localhost:8000/api
-```
+5.  Start the Backend Server:
+    ```bash
+    cd BE
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    uvicorn app.main:app --reload
+    ```
+    The API will be available at `http://localhost:8000`.
 
-Start FE:
-```bash
-cd FE
-npm install
-npm run dev
-```
-Then open http://localhost:5173/
+### Frontend Setup
 
-## Key API endpoints
-```bash
-POST /upload
-```
-Upload a video and automatically extract frames.
-```bash
-POST /extract_poses/{video_id}
-```
-Extract 2D and 3D poses using EasyMocap.
-```bash
-POST /draw_3d/{video_id}
-```
-Generate and save 3D pose visualization.
-```bash
-GET /{video_id}/extracted_poses
-```
-Retrieve 2D pose data, frames, and original video info.
-```bash
-GET /{video_id}/drawn_3d
-```
-Retrieve 3D pose data, 3D visualizations, and related outputs.
+1.  Navigate to the frontend directory:
+    ```bash
+    cd FE
+    ```
+
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+3.  Configure Environment Variables:
+    Create a `.env` file in `FE/`:
+    ```env
+    VITE_API_URL=http://localhost:8000/api
+    ```
+
+4.  Start the Development Server:
+    ```bash
+    npm run dev
+    ```
+    Access the application at `http://localhost:5173`.
+
+---
+
+## Key API Endpoints
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/upload` | Upload a video and extract frames. |
+| `POST` | `/extract_poses/{video_id}` | Extract 2D and 3D poses using EasyMocap. |
+| `POST` | `/draw_3d/{video_id}` | Generate and save 3D pose visualization. |
+| `GET` | `/{video_id}/extracted_poses` | Retrieve 2D pose data, frames, and video info. |
+| `GET` | `/{video_id}/drawn_3d` | Retrieve 3D pose data, visualizations, and outputs. |
+
+For full API documentation, visit `http://localhost:8000/docs` while the backend is running.
