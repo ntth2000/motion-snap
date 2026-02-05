@@ -1,5 +1,5 @@
 import { GithubOutlined } from '@ant-design/icons';
-import { Button,Layout, Typography } from 'antd';
+import { Button, Layout, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 const { Footer } = Layout;

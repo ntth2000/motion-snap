@@ -46,9 +46,12 @@ def get_db():
 
 @app.on_event("startup")
 def startup_tasks():
-    db: Session = next(get_db())
-    init_admin(db)
-    rollback_jobs(db)
+    db = database.SessionLocal()
+    try:
+        init_admin(db)
+        rollback_jobs(db)
+    finally:
+        db.close()
 
 
 app.include_router(auth_router.router)

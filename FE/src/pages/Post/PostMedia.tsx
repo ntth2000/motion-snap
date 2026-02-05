@@ -5,9 +5,9 @@ import { useTranslation } from "react-i18next"
 import { STAGE, STATUS } from "../../constants"
 import { draw3D, extractPoses, getDrawn3DById, getExtractedPosesById, getJobStatus } from "../../services/videoService"
 import type { IVideo } from "../../types"
-import Progress from "../UI/Progress"
-import { SegmentedControl } from "../UI/SegmentedControl"
 import { getAssetUrl } from "../../services"
+import { SegmentedControl } from "../../components/UI/SegmentedControl"
+import UploadProgress from "../../components/UI/Progress"
 
 interface PostMediaProps {
   video: IVideo,
@@ -177,9 +177,10 @@ export default function PostMedia({ video, isOwner }: PostMediaProps) {
   return <>
     {msgContextHolder}
     {jobStatus?.status === STATUS.PROCESSING && isOwner &&
-      <Progress
+      <UploadProgress
         description={"Please wait for the process to complete."}
         title={jobStatus.stage === STAGE.EXTRACTING_POSES ? "Extracting poses" : "Drawing 3D"}
+        isDisplayBackBtn={true}
       />
     }
     <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -196,7 +197,7 @@ export default function PostMedia({ video, isOwner }: PostMediaProps) {
           ) : (
             viewMode === 'extractedPoses' ?
               <div className="flex flex-col h-full w-full items-center justify-center bg-gray-50">
-                <p className="text-center">Poses haven't been extracted yet.</p>
+                <p className="text-center text-slate-600">{t('pages.post.posesNotExtracted')}</p>
                 {isOwner && <div className="flex justify-center mt-4">
                   <Button
                     type="primary"
@@ -204,12 +205,12 @@ export default function PostMedia({ video, isOwner }: PostMediaProps) {
                     className="h-12 text-base font-bold shadow-lg shadow-primary/30 uppercase"
                     onClick={() => handleExtractPoses(videoDetails.id)}
                   >
-                    Extract Poses
+                    {t("pages.post.extractPoseBtn")}
                   </Button>
                 </div>}
               </div> :
               <div className="flex flex-col h-full w-full items-center justify-center bg-gray-50">
-                <p className="text-center">3D hasn't been drawn yet.</p>
+                <p className="text-center text-slate-600">{t('pages.post.3dNotDrawn')}</p>
                 {isOwner && <div className="flex justify-center mt-4">
                   <Button
                     type="primary"
@@ -217,7 +218,7 @@ export default function PostMedia({ video, isOwner }: PostMediaProps) {
                     className="h-12 text-base font-bold shadow-lg shadow-primary/30 uppercase"
                     onClick={() => handleDraw3d(videoDetails.id)}
                   >
-                    Draw 3D
+                    {t("pages.post.draw3DBtn")}
                   </Button>
                 </div>}
               </div>
@@ -225,14 +226,12 @@ export default function PostMedia({ video, isOwner }: PostMediaProps) {
         </div>
       </div >
       {
-        viewOptions.length > 1 && <div className="border-b border-slate-50 pb-4">
-          <div className="rounded-xl bg-slate-50 p-1">
-            <SegmentedControl
-              options={viewOptions}
-              value={viewMode}
-              onChange={(val) => setViewMode(val as 'originalVideo' | 'extractedPoses' | 'draw3d')}
-            />
-          </div>
+        viewOptions.length > 1 && <div className="px-4">
+          <SegmentedControl
+            options={viewOptions}
+            value={viewMode}
+            onChange={(val) => setViewMode(val as 'originalVideo' | 'extractedPoses' | 'draw3d')}
+          />
         </div>
       }
     </div>

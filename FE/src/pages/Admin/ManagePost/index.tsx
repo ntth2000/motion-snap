@@ -38,20 +38,27 @@ interface DataType {
 }
 
 const renderVideoStatus = (status: string, stage: string) => {
-  let className = "uppercase inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border";
-  if (status?.toUpperCase() === STATUS.PROCESSING) {
-    className += "bg-info-pastel text-blue-600 border-blue-100/50";
-    return <span className={className}>{displayStatus(status, stage)}</span>
-  } else if (stage?.toUpperCase() === STAGE.UPLOADING) {
-    className += "bg-success-pastel text-green-600 border-green-100/50";
-  } else if (stage?.toUpperCase() === STAGE.EXTRACTING_POSES) {
-    className += "bg-processing-pastel text-amber-600 border-amber-100/50";
-  } else {
-    className += "bg-slate-100 text-slate-600 border-slate-200";
+  const s = status.toUpperCase();
+  const st = stage.toUpperCase();
+
+  let colors = "bg-slate-50 text-slate-500 border-slate-200";
+
+  if (s === STATUS.FAILED) {
+    colors = "bg-rose-50 text-rose-600 border-rose-100";
+  } else if (s === STATUS.PROCESSING) {
+    colors = "bg-sky-50 text-sky-600 border-sky-100";
+  } else if (st === STAGE.UPLOADING) {
+    colors = "bg-blue-50 text-blue-600 border-blue-100";
+  } else if (st === STAGE.EXTRACTING_FRAMES) {
+    colors = "bg-cyan-50 text-cyan-600 border-cyan-100";
+  } else if (st === STAGE.EXTRACTING_POSES) {
+    colors = "bg-amber-50 text-amber-600 border-amber-100";
+  } else if (st === STAGE.DRAWING_3D) {
+    colors = "bg-green-50 text-green-600 border-green-100";
   }
 
   return (
-    <span className={className}>
+    <span className={`uppercase inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${colors}`}>
       {displayStatus(status, stage)}
     </span>
   );
@@ -108,7 +115,7 @@ export default function ManagePost() {
     modal.confirm({
       title: t('pages.post.deleteConfirmTitle'),
       icon: <ExclamationCircleOutlined />,
-      okText: "OK",
+      okText: t('common.ok'),
       okType: 'danger',
       cancelText: t("common.cancel"),
       onOk: async () => {
@@ -116,14 +123,14 @@ export default function ManagePost() {
           await adminDeletePost(postId);
           messageApi.open({
             type: 'success',
-            content: 'Post deleted successfully',
+            content: t('admin.managePost.deleteSuccess'),
           });
           fetchData(pagination.current, pagination.pageSize);
         } catch (error) {
           console.error(error);
           messageApi.open({
             type: 'error',
-            content: 'Failed to delete post',
+            content: t('admin.managePost.deleteError'),
           });
         }
       },
@@ -132,7 +139,7 @@ export default function ManagePost() {
 
   const columns: ColumnsType<DataType> = [
     {
-      title: 'POST',
+      title: t('admin.managePost.table.post'),
       dataIndex: 'caption',
       key: 'caption',
       width: '30%',
@@ -147,7 +154,7 @@ export default function ManagePost() {
       ),
     },
     {
-      title: 'USER',
+      title: t('admin.managePost.table.user'),
       dataIndex: 'user',
       key: 'user',
       render: (user) => (
@@ -163,13 +170,13 @@ export default function ManagePost() {
       ),
     },
     {
-      title: 'DATE',
+      title: t('admin.managePost.table.date'),
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (text) => <span className="text-sm text-slate-400">{formatDate(text)}</span>,
     },
     {
-      title: 'ACTIONS',
+      title: t('admin.managePost.table.actions'),
       key: 'actions',
       align: 'right',
       render: (_, record) => (
@@ -260,10 +267,10 @@ export default function ManagePost() {
             showSizeChanger: false,
             itemRender: (_, type, originalElement) => {
               if (type === 'prev') {
-                return <button className="px-3 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded hover:bg-white transition-colors bg-white cursor-pointer">Previous</button>;
+                return <button className="px-3 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded hover:bg-white transition-colors bg-white cursor-pointer">{t('common.previous')}</button>;
               }
               if (type === 'next') {
-                return <button className="mr-4 px-3 py-1 text-xs bg-primary text-white rounded hover:bg-primary/90 transition-colors border-none cursor-pointer">Next</button>;
+                return <button className="mr-4 px-3 py-1 text-xs bg-primary text-white rounded hover:bg-primary/90 transition-colors border-none cursor-pointer">{t('common.next')}</button>;
               }
               return originalElement;
             }

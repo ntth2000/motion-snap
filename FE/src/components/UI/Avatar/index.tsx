@@ -1,19 +1,34 @@
+import type { AvatarProps as AntdAvatarProps } from "antd";
 import { Avatar } from "antd";
 
 import { getFirstChar } from "../../../utils/util";
 
-type AvatarProps = {
-  name?: string,
-  height?: string,
-  width?: string,
-  onClick?: () => void
+type AvatarUIProps = {
+  name?: string;
+  size?: AntdAvatarProps['size'];
+  className?: string;
+  avatarUrl?: string;
+  onClick?: () => void;
 }
 
-export default function AvatarUI({ name = '', height = 'h-10', width = 'w-10', onClick }: AvatarProps) {
-  return <Avatar
-    className={`${height}! ${width}! text-2xl! !bg-primary/10 !text-primary !font-bold border border-primary/20`}
-    onClick={onClick}
-  >
-    {getFirstChar(name)}
-  </Avatar>
+export default function AvatarUI({
+  name = '',
+  size,
+  className = '',
+  avatarUrl,
+  onClick
+}: AvatarUIProps) {
+  const baseClasses = "!bg-primary/10 !text-primary !font-bold border border-primary/20";
+
+  const combinedClassName = `${baseClasses} ${className}`.trim();
+
+  return (
+    <Avatar
+      size={size}
+      className={combinedClassName}
+      onClick={onClick}
+    >
+      {avatarUrl ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" /> : getFirstChar(name)}
+    </Avatar>
+  );
 }

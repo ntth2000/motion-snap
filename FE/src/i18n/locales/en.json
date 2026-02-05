@@ -7,33 +7,90 @@
     "close": "Close",
     "next": "Next",
     "back": "Back",
-    "retry": "Retry"
+    "previous": "Previous",
+    "retry": "Retry",
+    "ok": "OK",
+    "delete": "Delete"
   },
   "admin": {
     "console": "Admin Console",
     "systemAdmin": "System Admin",
     "dashboard": {
       "title": "Dashboard",
-      "description": "Welcome to the admin console."
+      "description": "Welcome to the admin console.",
+      "overview": "Statistics Overview",
+      "stats": {
+        "totalUsers": "Total Users",
+        "totalApiKeys": "Total API Keys",
+        "totalJobs": "Total Jobs"
+      },
+      "recentUsers": {
+        "title": "Recent Users",
+        "viewAll": "View All",
+        "noUsers": "No recent users"
+      },
+      "recentJobs": {
+        "title": "Recent Jobs",
+        "viewAll": "View All",
+        "noJobs": "No recent jobs"
+      }
     },
     "managePost": {
       "title": "Manage Posts",
-      "description": "Manage posts on the platform."
+      "description": "Manage posts on the platform.",
+      "deleteSuccess": "Post deleted successfully",
+      "deleteError": "Failed to delete post",
+      "table": {
+        "post": "POST",
+        "user": "USER",
+        "date": "DATE",
+        "actions": "ACTIONS"
+      }
     },
     "manageUser": {
       "title": "Manage Users",
-      "description": "Manage users on the platform."
+      "description": "Manage users on the platform.",
+      "deactivateConfirm": "Are you sure you want to deactivate this user?",
+      "deactivateBtn": "Deactivate",
+      "deactivateSuccess": "User deactivated successfully",
+      "deactivateError": "Failed to deactivate user",
+      "table": {
+        "userName": "USER NAME",
+        "email": "EMAIL",
+        "role": "ROLE",
+        "joined": "JOINED",
+        "actions": "ACTIONS"
+      }
     },
     "manageAPIKey": {
       "title": "Manage API Keys",
-      "description": "Control access, monitor usage, and manage developer keys."
+      "description": "Control access, monitor usage, and manage developer keys.",
+      "revokeConfirm": "Are you sure you want to revoke this API key?",
+      "revokeBtn": "Revoke",
+      "revokeSuccess": "API Key revoked successfully",
+      "revokeError": "Failed to revoke API key",
+      "status": {
+        "active": "ACTIVE",
+        "revoked": "REVOKED"
+      },
+      "table": {
+        "owner": "OWNER",
+        "maskedKey": "MASKED KEY",
+        "status": "STATUS",
+        "actions": "ACTIONS",
+        "revokeKey": "Revoke Key",
+        "revoked": "Revoked"
+      }
     }
   },
   "auth": {
     "login": {
       "title": "Welcome back to MotionSnap",
+      "subtitle": "Motion Capture Platform",
       "adminTitle": "Admin Login",
       "adminConsoleSubtitle": "Access the management console",
+      "secureLogin": "Secure Administrator Login",
+      "signInToConsole": "Sign In to Console",
       "hint": "Log in to continue using the app",
       "email": "Email",
       "password": "Password",
@@ -41,16 +98,21 @@
       "noAccount": "Don't have an account?",
       "loginBtn": "Log in",
       "registerLink": "Sign up now",
+      "or": "or",
+      "googleLogin": "Login with Google",
       "message": {
         "emailRequired": "Please enter your email.",
         "passwordRequired": "Please enter your password.",
         "invalidEmail": "Invalid email address.",
         "invalidPassword": "Invalid password.",
-        "invalidCredentials": "Invalid credentials. Please try again."
+        "invalidCredentials": "Invalid credentials. Please try again.",
+        "success": "Logged in successfully! Redirect to home page.",
+        "failed": "Login failed. Please try again."
       }
     },
     "register": {
       "title": "Create a new account",
+      "subtitle": "Motion Capture Platform",
       "hint": "Sign up to get started with MotionSnap",
       "username": "Username",
       "email": "Email",
@@ -65,7 +127,9 @@
         "usernameRequired": "Please enter a username.",
         "passwordTooShort": "Password must be at least 6 characters.",
         "passwordMismatch": "Passwords do not match.",
-        "invalidEmail": "Invalid email address."
+        "invalidEmail": "Invalid email address.",
+        "success": "Registered successfully! Please login.",
+        "failed": "Registration failed"
       }
     },
     "logout": {
@@ -111,7 +175,8 @@
     "copyBtn": "Copy",
     "regenerateBtn": "Regenerate",
     "noApiKey": "You don't have an API Key yet.",
-    "subTitle": "Your API Key",
+    "revoked": "Your key has been revoked. Please generate a new key.",
+    "info": "Please use this API key to authenticate requests from multiple camera remote to MotionSnap API.",
     "message": {
       "generateSuccess": "API Key generated successfully.",
       "generateFailed": "Failed to generate API Key.",
@@ -128,9 +193,16 @@
       }
     },
     "feed": {
-      "title": "Explore"
+      "title": "Explore",
+      "description": "Discover the latest motion captures from the community.",
+      "column": "Columns"
     },
     "post": {
+      "loading": "Loading post...",
+      "notFound": "Post Not Found",
+      "notFoundDesc": "Sorry, the page you visited does not exist.",
+      "loadError": "Failed to load post data",
+      "backHome": "Back Home",
       "shareBtn": "Share",
       "downloadBtn": "Download",
       "viewOptions": {
@@ -146,11 +218,26 @@
         "delete_error": "Delete failed. Please try again.",
         "update_error": "Update failed. Please try again.",
         "update_success": "Update successful."
-      }
+      },
+      "posesNotExtracted": "Poses haven't been extracted yet.",
+      "3dNotDrawn": "3D hasn't been drawn yet.",
+      "extractPoseBtn": "Extract Poses",
+      "draw3DBtn": "Draw 3D"
     },
     "profile": {
       "editProfileBtn": "Edit Profile",
       "noPosts": "No posts yet."
+    },
+    "myVideos": {
+      "title": "My Videos",
+      "description": "Manage and monitor your multi-camera motion captures.",
+      "table": {
+        "post": "POST",
+        "date": "DATE",
+        "actions": "ACTIONS"
+      },
+      "viewPost": "View post",
+      "deleteBtn": "Delete"
     }
   },
   "uploadModal": {

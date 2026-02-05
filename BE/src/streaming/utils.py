@@ -50,7 +50,7 @@ def process_finished_session(
     db = SessionLocal()
     try:
         video_ids = []
-        for x in range(2):
+        for x, _ in enumerate(session_status[post_id]):
             frames_dir = os.path.join(
                 VIDEO_PATH, str(post_id), f"00{x}", "images", "video"
             )

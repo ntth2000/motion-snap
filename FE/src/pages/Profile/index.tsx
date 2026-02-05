@@ -3,17 +3,17 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 import PostItem from "../../components/PostList/PostItem";
-import AvatarUI from "../../components/UI/Avatar";
 import { getPosts } from "../../services/postService";
 import { getUserByUsername } from "../../services/userService";
-import { type IPost } from "../../types";
+import { type IPost, type IUser } from "../../types";
 import { Avatar } from "antd";
 import { getFirstChar } from "../../utils/util";
+
 export default function UserProfile() {
   const { t } = useTranslation();
   const { username: profileOwner } = useParams<{ username: string }>();
   const navigate = useNavigate();
-  const [userDetail, setUserDetail] = useState<{ id: number, username: string, name: string }>();
+  const [userDetail, setUserDetail] = useState<IUser>();
   const [posts, setPosts] = useState<IPost[]>([]);
 
   useEffect(() => {
@@ -24,11 +24,7 @@ export default function UserProfile() {
     const getUserInfo = async (username: string) => {
       try {
         const res = await getUserByUsername(username);
-        setUserDetail({
-          id: res.id,
-          username: res.username,
-          name: res.name
-        })
+        setUserDetail(res)
       } catch (error) {
         navigate("/");
       }
@@ -48,25 +44,22 @@ export default function UserProfile() {
     <section className="flex flex-col items-center pt-12 px-4">
       <div className="relative">
         <Avatar
-          className={`w-20! h-20! text-2xl! !bg-primary/10 !text-primary !font-bold border border-primary/20`}
+          className="!bg-primary/10 !text-primary !font-bold border border-primary/20 w-20! h-20!"
         >
-          {getFirstChar(userDetail?.name || "")}
+          {userDetail?.avatar ?
+            <img src={userDetail?.avatar} alt="avatar" className="w-full h-full object-cover" />
+            : getFirstChar(userDetail?.name || "")
+          }
         </Avatar>
       </div>
       <div className="mt-6 flex flex-col items-center gap-1">
-        <h2 className="text-[#0d121b] dark:text-white text-3xl font-bold leading-tight tracking-tight">{userDetail?.name}</h2>
-        <p className="text-primary text-lg font-medium">@{userDetail?.username}</p>
+        <h2 className="text-[#0d121b] dark:text-white text-3xl font-semibold leading-tight tracking-tight">{userDetail?.name}</h2>
+        <p className="text-primary text-md font-light">@{userDetail?.username}</p>
       </div>
     </section>
     {posts.length > 0 &&
       <section className="mt-12 px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {posts.map(post => <div
-          onClick={() => { navigate(`/posts/${post.id}`) }}
-          key={post.id}
-          className="cursor-pointer group relative bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
-        >
-          <PostItem isDisplayOwner={false} post={post} />
-        </div>)}
+        {posts.map(post => <PostItem isDisplayOwner={false} post={post} />)}
       </section>
     }
     {posts.length === 0 && <section className="mt-20">

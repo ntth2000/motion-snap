@@ -13,6 +13,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import AvatarUI from '../../../components/UI/Avatar';
 import { getAdminStats } from '../../../services/adminService';
@@ -49,6 +50,7 @@ interface DashboardStats {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [adminStats, setAdminStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
@@ -65,7 +67,7 @@ export default function Dashboard() {
 
   const stats = [
     {
-      title: 'Total Users',
+      title: t('admin.dashboard.stats.totalUsers'),
       value: adminStats?.total_users?.toLocaleString() || '0',
       change: '+12.5%', // Mock
       isPositive: true,
@@ -73,7 +75,7 @@ export default function Dashboard() {
       chartData: [30, 45, 35, 60, 50, 80, 90], // mock data for bars
     },
     {
-      title: 'Total API Keys',
+      title: t('admin.dashboard.stats.totalApiKeys'),
       value: adminStats?.total_api_keys?.toLocaleString() || '0',
       change: '+4.2%', // Mock
       isPositive: true,
@@ -81,7 +83,7 @@ export default function Dashboard() {
       chartData: [40, 30, 55, 45, 70, 60, 75],
     },
     {
-      title: 'Total Jobs',
+      title: t('admin.dashboard.stats.totalJobs'),
       value: adminStats?.total_jobs?.toLocaleString() || '0',
       status: `Success Rate: ${adminStats?.success_rate || 0}%`,
       icon: <AreaChartOutlined className="text-primary text-xl" />,
@@ -102,7 +104,7 @@ export default function Dashboard() {
     <div className="space-y-8">
       <div className="flex flex-col gap-1">
         <Title level={2} className="!mb-0 !font-light tracking-tight text-slate-900 dark:text-white">
-          Statistics Overview
+          {t('admin.dashboard.overview')}
         </Title>
       </div>
 
@@ -134,13 +136,13 @@ export default function Dashboard() {
         {/* Recent Active Users */}
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
           <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-            <h4 className="text-sm font-semibold text-slate-900 dark:text-white m-0">Recent Users</h4>
+            <h4 className="text-sm font-semibold text-slate-900 dark:text-white m-0">{t('admin.dashboard.recentUsers.title')}</h4>
             <Button
               type="link"
               className="text-primary text-xs font-medium p-0 h-auto hover:underline"
               onClick={() => navigate("/admin/users")}
             >
-              View All
+              {t('admin.dashboard.recentUsers.viewAll')}
             </Button>
           </div>
           <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -164,7 +166,7 @@ export default function Dashboard() {
               </div>
             ))}
             {(!adminStats?.recent_users || adminStats.recent_users.length === 0) && (
-              <div className="p-6 text-center text-slate-400 text-sm">No recent users</div>
+              <div className="p-6 text-center text-slate-400 text-sm">{t('admin.dashboard.recentUsers.noUsers')}</div>
             )}
           </div>
         </div>
@@ -172,8 +174,8 @@ export default function Dashboard() {
         {/* Recent Jobs */}
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
           <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-            <h4 className="text-sm font-semibold text-slate-900 dark:text-white m-0">Recent Jobs</h4>
-            <Button type="link" className="text-primary text-xs font-medium p-0 h-auto hover:underline" onClick={() => navigate("/admin/posts")}>View All</Button>
+            <h4 className="text-sm font-semibold text-slate-900 dark:text-white m-0">{t('admin.dashboard.recentJobs.title')}</h4>
+            <Button type="link" className="text-primary text-xs font-medium p-0 h-auto hover:underline" onClick={() => navigate("/admin/posts")}>{t('admin.dashboard.recentJobs.viewAll')}</Button>
           </div>
           <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
             {adminStats?.recent_jobs?.map((job, idx) => {
@@ -219,7 +221,7 @@ export default function Dashboard() {
               )
             })}
             {(!adminStats?.recent_jobs || adminStats.recent_jobs.length === 0) && (
-              <div className="p-6 text-center text-slate-400 text-sm">No recent jobs</div>
+              <div className="p-6 text-center text-slate-400 text-sm">{t('admin.dashboard.recentJobs.noJobs')}</div>
             )}
           </div>
         </div>

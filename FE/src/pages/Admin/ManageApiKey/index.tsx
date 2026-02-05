@@ -78,24 +78,24 @@ export default function ManageApiKey() {
 
   const handleRevoke = (keyId: number) => {
     modal.confirm({
-      title: 'Are you sure you want to revoke this API key?',
+      title: t('admin.manageAPIKey.revokeConfirm'),
       icon: <ExclamationCircleOutlined />,
-      okText: 'Revoke',
+      okText: t('admin.manageAPIKey.revokeBtn'),
       okType: 'danger',
-      cancelText: 'Cancel',
+      cancelText: t('common.cancel'),
       onOk: async () => {
         try {
           await revokeApiKey(keyId);
           messageApi.open({
             type: 'success',
-            content: 'API Key revoked successfully',
+            content: t('admin.manageAPIKey.revokeSuccess'),
           });
           fetchData(pagination.current, pagination.pageSize);
         } catch (error) {
           console.error(error);
           messageApi.open({
             type: 'error',
-            content: 'Failed to revoke API key',
+            content: t('admin.manageAPIKey.revokeError'),
           });
         }
       },
@@ -106,20 +106,20 @@ export default function ManageApiKey() {
     if (status === 'active') {
       return (
         <Tag className="bg-success-pastel text-[#15803d] border-none rounded-full px-2.5 py-0.5 text-xs font-medium">
-          ACTIVE
+          {t('admin.manageAPIKey.status.active')}
         </Tag>
       );
     }
     return (
       <Tag className="bg-error-pastel text-[#b91c1c] border-none rounded-full px-2.5 py-0.5 text-xs font-medium">
-        REVOKED
+        {t('admin.manageAPIKey.status.revoked')}
       </Tag>
     );
   };
 
   const columns: ColumnsType<DataType> = [
     {
-      title: 'OWNER',
+      title: t('admin.manageAPIKey.table.owner'),
       dataIndex: 'owner',
       key: 'owner',
       render: (owner) => (
@@ -135,7 +135,7 @@ export default function ManageApiKey() {
       ),
     },
     {
-      title: 'MASKED KEY',
+      title: t('admin.manageAPIKey.table.maskedKey'),
       dataIndex: 'maskedKey',
       key: 'maskedKey',
       render: (text) => (
@@ -145,13 +145,13 @@ export default function ManageApiKey() {
       ),
     },
     {
-      title: 'STATUS',
+      title: t('admin.manageAPIKey.table.status'),
       dataIndex: 'status',
       key: 'status',
       render: (status) => renderStatusTag(status),
     },
     {
-      title: 'ACTIONS',
+      title: t('admin.manageAPIKey.table.actions'),
       key: 'actions',
       align: 'right',
       render: (_, record) => (
@@ -160,11 +160,11 @@ export default function ManageApiKey() {
             className="text-xs font-medium text-red-500 hover:text-red-600 transition-colors px-3 py-1.5 border border-red-100 hover:border-red-200 rounded-lg bg-transparent cursor-pointer"
             onClick={() => handleRevoke(record.id)}
           >
-            Revoke Key
+            {t('admin.manageAPIKey.table.revokeKey')}
           </button>
         ) : (
           <button className="text-xs font-medium text-slate-400 cursor-not-allowed px-3 py-1.5 border border-slate-100 rounded-lg bg-transparent" disabled>
-            Revoked
+            {t('admin.manageAPIKey.table.revoked')}
           </button>
         )
       ),
@@ -198,10 +198,10 @@ export default function ManageApiKey() {
             showSizeChanger: false,
             itemRender: (_, type, originalElement) => {
               if (type === 'prev') {
-                return <button className="px-3 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded hover:bg-white transition-colors bg-white cursor-pointer">Previous</button>;
+                return <button className="px-3 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded hover:bg-white transition-colors bg-white cursor-pointer">{t('common.previous')}</button>;
               }
               if (type === 'next') {
-                return <button className="mr-4 px-3 py-1 text-xs bg-primary text-white rounded hover:bg-primary/90 transition-colors border-none cursor-pointer">Next</button>;
+                return <button className="mr-4 px-3 py-1 text-xs bg-primary text-white rounded hover:bg-primary/90 transition-colors border-none cursor-pointer">{t('common.next')}</button>;
               }
               return originalElement;
             }

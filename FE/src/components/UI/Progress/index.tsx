@@ -1,9 +1,11 @@
 import { CheckCircleFilled, LoadingOutlined } from "@ant-design/icons";
 import { Progress, Spin } from "antd";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
-export default function UploadProgress({ uploadProgress, title, description }: { uploadProgress?: number, title?: string, description?: string }) {
+export default function UploadProgress({ uploadProgress, title, description, isDisplayBackBtn = false }: { uploadProgress?: number, title?: string, description?: string, isDisplayBackBtn?: boolean }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const isIndeterminate = uploadProgress === undefined || uploadProgress === null;
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-md transition-all duration-300 px-4">
@@ -47,7 +49,13 @@ export default function UploadProgress({ uploadProgress, title, description }: {
             </div>
           )}
         </>}
-
+        {isDisplayBackBtn &&
+          <button
+            onClick={() => { navigate("/") }}
+            className="cursor-pointer text-slate-500 hover:text-primary">
+            Go to home
+          </button>
+        }
       </div>
     </div>
   )

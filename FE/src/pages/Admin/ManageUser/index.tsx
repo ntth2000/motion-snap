@@ -16,6 +16,7 @@ import {
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { formatDistanceToNow } from 'date-fns';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import AvatarUI from '../../../components/UI/Avatar';
 import { deactivateUser, getUsers } from '../../../services/adminService';
@@ -32,6 +33,7 @@ interface UserType {
 }
 
 export default function ManageUser() {
+  const { t } = useTranslation();
   const [data, setData] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(false);
   const [modal, modalContextHolder] = Modal.useModal();
@@ -78,24 +80,24 @@ export default function ManageUser() {
 
   const handleDeactivate = (userId: number) => {
     modal.confirm({
-      title: "Are you sure you want to deactivate this user?",
+      title: t('admin.manageUser.deactivateConfirm'),
       icon: <ExclamationCircleOutlined />,
-      okText: "Deactivate",
+      okText: t('admin.manageUser.deactivateBtn'),
       okType: 'danger',
-      cancelText: "Cancel",
+      cancelText: t('common.cancel'),
       onOk: async () => {
         try {
           await deactivateUser(userId);
           messageApi.open({
             type: 'success',
-            content: 'User deactivated successfully',
+            content: t('admin.manageUser.deactivateSuccess'),
           });
           fetchData(pagination.current || 1, pagination.pageSize || 10);
         } catch (error) {
           console.error(error);
           messageApi.open({
             type: 'error',
-            content: 'Failed to deactivate user',
+            content: t('admin.manageUser.deactivateError'),
           });
         }
       },
@@ -104,7 +106,7 @@ export default function ManageUser() {
 
   const columns: ColumnsType<UserType> = [
     {
-      title: 'USER NAME',
+      title: t('admin.manageUser.table.userName'),
       dataIndex: 'name',
       key: 'name',
       render: (text, record) => (
@@ -121,19 +123,19 @@ export default function ManageUser() {
       ),
     },
     {
-      title: 'EMAIL',
+      title: t('admin.manageUser.table.email'),
       dataIndex: 'email',
       key: 'email',
       render: (text) => <span className="text-sm text-slate-500">{text}</span>,
     },
     {
-      title: 'ROLE',
+      title: t('admin.manageUser.table.role'),
       dataIndex: 'role',
       key: 'role',
       render: (role) => renderRoleTag(role),
     },
     {
-      title: 'JOINED',
+      title: t('admin.manageUser.table.joined'),
       dataIndex: 'created_at',
       key: 'created_at',
       render: (text) => <span className="text-xs text-slate-500">
@@ -141,7 +143,7 @@ export default function ManageUser() {
       </span>,
     },
     {
-      title: 'ACTIONS',
+      title: t('admin.manageUser.table.actions'),
       key: 'actions',
       align: 'right',
       render: (record) => (
@@ -150,9 +152,9 @@ export default function ManageUser() {
             type="text"
             icon={<UserDeleteOutlined />}
             className="text-slate-400 hover:text-red-400"
-            title="Deactivate"
+            title={t('admin.manageUser.deactivateBtn')}
             onClick={() => handleDeactivate(record.id)}
-          >Deactivate</Button>
+          >{t('admin.manageUser.deactivateBtn')}</Button>
         </Space>
       ),
     },
@@ -164,7 +166,7 @@ export default function ManageUser() {
       {modalContextHolder}
       <div className="flex flex-col gap-1">
         <Title level={2} className="!mb-0 !font-light tracking-tight text-slate-900 dark:text-white">
-          Manage Users
+          {t('admin.manageUser.title')}
         </Title>
       </div>
 
@@ -176,10 +178,10 @@ export default function ManageUser() {
             ...pagination,
             itemRender: (_, type, originalElement) => {
               if (type === 'prev') {
-                return <a className="px-3 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded hover:bg-white transition-colors text-black">Previous</a>;
+                return <a className="px-3 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded hover:bg-white transition-colors text-black">{t('common.previous')}</a>;
               }
               if (type === 'next') {
-                return <a className="px-3 py-1 text-xs bg-primary text-white rounded hover:bg-primary/90 transition-colors">Next</a>;
+                return <a className="px-3 py-1 text-xs bg-primary text-white rounded hover:bg-primary/90 transition-colors">{t('common.next')}</a>;
               }
               return originalElement;
             }

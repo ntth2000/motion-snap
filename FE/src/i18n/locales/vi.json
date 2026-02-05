@@ -7,11 +7,89 @@
     "close": "Đóng",
     "next": "Tiếp theo",
     "back": "Quay lại",
-    "retry": "Tải lại"
+    "previous": "Trước",
+    "retry": "Tải lại",
+    "ok": "OK",
+    "delete": "Xóa"
+  },
+  "admin": {
+    "console": "Admin Console",
+    "systemAdmin": "Quản trị hệ thống",
+    "dashboard": {
+      "title": "Bảng điều khiển",
+      "description": "Chào mừng đến với trang quản trị.",
+      "overview": "Tổng quan thống kê",
+      "stats": {
+        "totalUsers": "Tổng người dùng",
+        "totalApiKeys": "Tổng API Keys",
+        "totalJobs": "Tổng công việc"
+      },
+      "recentUsers": {
+        "title": "Người dùng gần đây",
+        "viewAll": "Xem tất cả",
+        "noUsers": "Không có người dùng gần đây"
+      },
+      "recentJobs": {
+        "title": "Công việc gần đây",
+        "viewAll": "Xem tất cả",
+        "noJobs": "Không có công việc gần đây"
+      }
+    },
+    "managePost": {
+      "title": "Quản lý bài đăng",
+      "description": "Quản lý các bài đăng trên nền tảng.",
+      "deleteSuccess": "Đã xóa bài đăng thành công",
+      "deleteError": "Xóa bài đăng thất bại",
+      "table": {
+        "post": "BÀI ĐĂNG",
+        "user": "NGƯỜI DÙNG",
+        "date": "NGÀY",
+        "actions": "HÀNH ĐỘNG"
+      }
+    },
+    "manageUser": {
+      "title": "Quản lý người dùng",
+      "description": "Quản lý người dùng trên nền tảng.",
+      "deactivateConfirm": "Bạn có chắc chắn muốn vô hiệu hóa người dùng này?",
+      "deactivateBtn": "Vô hiệu hóa",
+      "deactivateSuccess": "Vô hiệu hóa người dùng thành công",
+      "deactivateError": "Vô hiệu hóa thất bại",
+      "table": {
+        "userName": "TÊN NGƯỜI DÙNG",
+        "email": "EMAIL",
+        "role": "VAI TRÒ",
+        "joined": "NGÀY THAM GIA",
+        "actions": "HÀNH ĐỘNG"
+      }
+    },
+    "manageAPIKey": {
+      "title": "Quản lý API Keys",
+      "description": "Kiểm soát truy cập, theo dõi sử dụng và quản lý khóa nhà phát triển.",
+      "revokeConfirm": "Bạn có chắc chắn muốn thu hồi API Key này không?",
+      "revokeBtn": "Thu hồi",
+      "revokeSuccess": "Thu hồi API Key thành công",
+      "revokeError": "Thu hồi API Key thất bại",
+      "status": {
+        "active": "HOẠT ĐỘNG",
+        "revoked": "ĐÃ THU HỒI"
+      },
+      "table": {
+        "owner": "CHỦ SỞ HỮU",
+        "maskedKey": "MÃ KHÓA",
+        "status": "TRẠNG THÁI",
+        "actions": "HÀNH ĐỘNG",
+        "revokeKey": "Thu hồi Key",
+        "revoked": "Đã thu hồi"
+      }
+    }
   },
   "auth": {
     "login": {
       "title": "Chào mừng trở lại MotionSnap",
+      "adminTitle": "Đăng nhập quản trị",
+      "adminConsoleSubtitle": "Truy cập bảng điều khiển quản lý",
+      "secureLogin": "Đăng nhập quản trị an toàn",
+      "signInToConsole": "Đăng nhập vào bảng điều khiển",
       "hint": "Đăng nhập để tiếp tục sử dụng ứng dụng",
       "email": "Email",
       "password": "Mật khẩu",
@@ -19,12 +97,16 @@
       "noAccount": "Chưa có tài khoản?",
       "loginBtn": "Đăng nhập",
       "registerLink": "Đăng ký ngay",
+      "or": "hoặc",
+      "googleLogin": "Đăng nhập với Google",
       "message": {
         "emailRequired": "Vui lòng nhập email.",
         "passwordRequired": "Vui lòng nhập mật khẩu.",
         "invalidEmail": "Địa chỉ email không hợp lệ.",
         "invalidPassword": "Mật khẩu không hợp lệ.",
-        "invalidCredentials": "Thông tin đăng nhập không hợp lệ. Vui lòng thử lại."
+        "invalidCredentials": "Thông tin đăng nhập không hợp lệ. Vui lòng thử lại.",
+        "success": "Đăng nhập thành công! Đang chuyển hướng...",
+        "failed": "Đăng nhập thất bại. Vui lòng thử lại."
       }
     },
     "register": {
@@ -43,7 +125,9 @@
         "usernameRequired": "Vui lòng nhập tên.",
         "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự.",
         "passwordMismatch": "Mật khẩu và xác nhận mật khẩu không khớp.",
-        "invalidEmail": "Địa chỉ email không hợp lệ."
+        "invalidEmail": "Địa chỉ email không hợp lệ.",
+        "success": "Đăng ký thành công! Vui lòng đăng nhập.",
+        "failed": "Đăng ký thất bại"
       }
     },
     "logout": {
@@ -73,6 +157,7 @@
     "home": "Trang chủ",
     "myVideos": "Video của tôi",
     "menu": {
+      "admin": "Admin",
       "profile": "Trang cá nhân",
       "apiKey": "API Key",
       "logout": "Đăng xuất"
@@ -108,6 +193,11 @@
       "title": "Khám phá"
     },
     "post": {
+      "loading": "Đang tải bài viết...",
+      "notFound": "Không tìm thấy bài viết",
+      "notFoundDesc": "Xin lỗi, trang bạn truy cập không tồn tại.",
+      "loadError": "Không thể tải dữ liệu bài viết",
+      "backHome": "Về trang chủ",
       "shareBtn": "Chia sẻ",
       "downloadBtn": "Tải xuống",
       "viewOptions": {
@@ -128,10 +218,36 @@
     "profile": {
       "editProfileBtn": "Thay đổi thông tin",
       "noPosts": "Chưa có bài đăng nào."
+    },
+    "myVideos": {
+      "title": "Video của tôi",
+      "description": "Quản lý và theo dõi các video motion capture.",
+      "table": {
+        "post": "BÀI ĐĂNG",
+        "date": "NGÀY",
+        "actions": "HÀNH ĐỘNG"
+      },
+      "viewPost": "Xem bài đăng",
+      "deleteBtn": "Xóa"
     }
   },
-  "upload": {
-    "uploadTitle": "Tải video",
+  "uploadModal": {
+    "subTitle": "Tải lên video để ước lượng tư thế.",
+    "viewMode": {
+      "single": "Góc nhìn đơn",
+      "multi": "Góc nhìn đa chiều"
+    },
+    "single": {
+      "title": "Tải lên 1 video",
+      "description": "Cung cấp dữ liệu một góc nhìn để hiệu chỉnh."
+    },
+    "multi": {
+      "title": "Tải lên 2 video",
+      "description": "Cung cấp dữ liệu nhiều góc nhìn để hiệu chỉnh."
+    },
+    "caption": "Mô tả",
+    "captionPlaceholder": "Mô tả đối tượng...",
+    "title": "Tải video",
     "previewTitle": "Xem trước",
     "selectFile": "Chọn tệp video",
     "dragDrop": "Hoặc kéo và thả tệp vào đây",
@@ -143,6 +259,12 @@
       "uploadFailed": "Tải lên thất bại. Vui lòng thử lại.",
       "invalidFileType": "Loại tệp không hợp lệ. Vui lòng chọn tệp video.",
       "fileTooLarge": "Kích thước tệp vượt quá giới hạn cho phép."
+    },
+    "progress": {
+      "title": "Đang tải lên...",
+      "description": "Vui lòng không đóng trình duyệt.",
+      "processing": "Đang xử lý...",
+      "finish": "Hoàn tất. Đang lưu dữ liệu..."
     }
   }
 }

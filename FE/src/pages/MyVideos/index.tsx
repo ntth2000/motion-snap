@@ -28,20 +28,27 @@ import { getAssetUrl } from '../../services';
 
 
 const renderVideoStatus = (status: string, stage: string) => {
-  let className = "uppercase inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border ";
-  if (status.toUpperCase() === STATUS.PROCESSING) {
-    className += "bg-info-pastel text-blue-600 border-blue-100/50";
-    return <span className={className}>{displayStatus(status, stage)}</span>
-  } else if (stage.toUpperCase() === STAGE.UPLOADING) {
-    className += "bg-success-pastel text-green-600 border-green-100/50";
-  } else if (stage.toUpperCase() === STAGE.EXTRACTING_POSES) {
-    className += "bg-processing-pastel text-amber-600 border-amber-100/50"; // using processing-pastel for yellow-ish as per html
-  } else {
-    className += "bg-slate-100 text-slate-600 border-slate-200";
+  const s = status.toUpperCase();
+  const st = stage.toUpperCase();
+
+  let colors = "bg-slate-50 text-slate-500 border-slate-200";
+
+  if (s === STATUS.FAILED) {
+    colors = "bg-rose-50 text-rose-600 border-rose-100";
+  } else if (s === STATUS.PROCESSING) {
+    colors = "bg-sky-50 text-sky-600 border-sky-100";
+  } else if (st === STAGE.UPLOADING) {
+    colors = "bg-blue-50 text-blue-600 border-blue-100";
+  } else if (st === STAGE.EXTRACTING_FRAMES) {
+    colors = "bg-cyan-50 text-cyan-600 border-cyan-100";
+  } else if (st === STAGE.EXTRACTING_POSES) {
+    colors = "bg-amber-50 text-amber-600 border-amber-100";
+  } else if (st === STAGE.DRAWING_3D) {
+    colors = "bg-green-50 text-green-600 border-green-100";
   }
 
   return (
-    <span className={className}>
+    <span className={`uppercase inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${colors}`}>
       {displayStatus(status, stage)}
     </span>
   );
@@ -57,7 +64,7 @@ export default function MyVideos() {
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
   const columns: ColumnsType<IPost> = [
     {
-      title: 'POST',
+      title: t('pages.myVideos.table.post'),
       dataIndex: 'caption',
       key: 'caption',
       width: '40%',
@@ -66,19 +73,21 @@ export default function MyVideos() {
         <div className="flex items-center gap-4">
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-normal text-slate-800 truncate">{text}</span>
-            <span className="text-[10px] text-slate-400 font-light mt-0.5 tracking-wide">MULTICAM_PROJECT_{record.id}</span>
+            <span className="text-[10px] text-slate-400 font-light mt-0.5 tracking-wide">
+              {record.viewMode === "single" ? "SINGLECAM_PROJECT_" : "MULTICAM_PROJECT_"}_{record.id}
+            </span>
           </div>
         </div>
       ),
     },
     {
-      title: 'DATE',
+      title: t('pages.myVideos.table.date'),
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (text) => <span className="text-sm text-slate-400">{formatDate(text)}</span>,
     },
     {
-      title: 'ACTIONS',
+      title: t('pages.myVideos.table.actions'),
       key: 'actions',
       align: 'right',
       render: (record) => (
@@ -97,7 +106,7 @@ export default function MyVideos() {
               navigate(`/posts/${record.id}`)
             }}
           >
-            View post
+            {t('pages.myVideos.viewPost')}
           </Button>
         </Space>
       ),
@@ -151,7 +160,7 @@ export default function MyVideos() {
     modal.confirm({
       title: t('pages.post.deleteConfirmTitle'),
       icon: <ExclamationCircleOutlined />,
-      okText: "OK",
+      okText: t("common.ok"),
       cancelText: t("common.cancel"),
       onOk: async () => {
         try {
@@ -179,10 +188,16 @@ export default function MyVideos() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-extralight text-slate-900 tracking-tight">My Videos</h1>
-              <p className="text-slate-400 text-sm mt-1">Manage and monitor your multi-camera motion captures.</p>
+              <h1 className="text-3xl font-extralight text-slate-900 tracking-tight">{t('pages.myVideos.title')}</h1>
+              <p className="text-slate-400 text-sm mt-1">{t('pages.myVideos.description')}</p>
             </div>
-            <Button type="primary" disabled={selectedRowKeys.length === 0} onClick={() => handleDeletePost(selectedRowKeys)}>Delete</Button>
+            <Button
+              type="primary"
+              disabled={selectedRowKeys.length === 0}
+              onClick={() => handleDeletePost(selectedRowKeys)}
+            >
+              {t("common.delete")}
+            </Button>
           </div>
         </div>
 

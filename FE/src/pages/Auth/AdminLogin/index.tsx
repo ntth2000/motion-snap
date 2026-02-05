@@ -62,85 +62,61 @@ export default function AdminLogin() {
               </Text>
             </div>
 
-            <ConfigProvider
-              theme={{
-                token: {
-                  colorPrimary: '#91caff',
-                  borderRadius: 8,
-                  controlHeight: 48,
-                },
-                components: {
-                  Input: {
-                    colorBgContainer: '#f8fafc', // slate-50
-                    colorBorder: '#e2e8f0', // slate-200
-                    activeBorderColor: '#91caff',
-                    hoverBorderColor: '#91caff',
-                  },
-                  Button: {
-                    colorPrimary: '#91caff',
-                    colorPrimaryHover: '#7dbbff',
-                    colorPrimaryActive: '#7dbbff',
-                    boxShadow: '0 10px 15px -3px rgba(145, 202, 255, 0.2)',
-                  },
-                },
-              }}
+            <Form
+              name="admin_login"
+              layout="vertical"
+              onFinish={onFinish}
+              autoComplete="off"
+              requiredMark={false}
+              className="space-y-2"
             >
-              <Form
-                name="admin_login"
-                layout="vertical"
-                onFinish={onFinish}
-                autoComplete="off"
-                requiredMark={false}
-                className="space-y-2"
+              <Form.Item
+                label={
+                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1">
+                    {t('auth.login.email')}
+                  </span>
+                }
+                name="email"
+                rules={[
+                  { required: true, message: t("auth.login.message.emailRequired") },
+                  { type: 'email', message: t("auth.login.message.invalidEmail") },
+                ]}
               >
-                <Form.Item
-                  label={
-                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1">
-                      {t('auth.login.email')}
-                    </span>
-                  }
-                  name="email"
-                  rules={[
-                    { required: true, message: t("auth.login.message.emailRequired") },
-                    { type: 'email', message: t("auth.login.message.invalidEmail") },
-                  ]}
-                >
-                  <Input
-                    placeholder="admin@motioncapture.com"
-                    className="!font-light !text-sm placeholder:!text-slate-300"
-                  />
-                </Form.Item>
+                <Input
+                  placeholder="admin@motioncapture.com"
+                  className="!font-light !text-sm placeholder:!text-slate-300"
+                />
+              </Form.Item>
 
-                <Form.Item
-                  label={
-                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1">
-                      {t('auth.login.password')}
-                    </span>
-                  }
-                  name="password"
-                  rules={[
-                    { required: true, message: t("auth.login.message.passwordRequired") },
-                  ]}
-                  className="!mb-8"
-                >
-                  <Input.Password
-                    placeholder="••••••••"
-                    className="!font-light !text-sm placeholder:!text-slate-300"
-                  />
-                </Form.Item>
+              <Form.Item
+                label={
+                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1">
+                    {t('auth.login.password')}
+                  </span>
+                }
+                name="password"
+                rules={[
+                  { required: true, message: t("auth.login.message.passwordRequired") },
+                ]}
+                className="!mb-8"
+              >
+                <Input.Password
+                  placeholder="••••••••"
+                  className="!font-light !text-sm placeholder:!text-slate-300"
+                />
+              </Form.Item>
 
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    block
-                    className="font-medium shadow-lg shadow-[#91caff]/20 h-12"
-                  >
-                    Sign In to Console
-                  </Button>
-                </Form.Item>
-              </Form>
-            </ConfigProvider>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  className="font-medium shadow-lg shadow-[#91caff]/20 h-12"
+                >
+                  {t('auth.login.signInToConsole')}
+                </Button>
+              </Form.Item>
+            </Form>
 
             <div className="flex flex-col items-center gap-6 mt-2">
               {/* <Link
@@ -152,7 +128,7 @@ export default function AdminLogin() {
               <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
                 <LockOutlined className="text-lg text-slate-400" />
                 <span className="text-[10px] text-slate-400 font-medium uppercase tracking-[0.1em]">
-                  Secure Administrator Login
+                  {t('auth.login.secureLogin')}
                 </span>
               </div>
             </div>

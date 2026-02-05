@@ -1,14 +1,17 @@
 import { Button, Result, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 
 import { Comments } from '../../components/Comment';
-import PostDetail from '../../components/PostDetail';
 import useAuth from '../../hooks/useAuth';
 import { getPostById } from '../../services/postService';
 import type { IPost } from '../../types';
+import PostMedia from './PostMedia';
+import PostHeader from './PostHeader';
 
 export default function PostPage() {
+  const { t } = useTranslation();
   const { postId } = useParams<{ postId: string }>();
   const { user, isAuthenticated } = useAuth();
   const [post, setPost] = useState<IPost | null>(null);
@@ -28,7 +31,7 @@ export default function PostPage() {
       setPost(data);
     } catch (err: any) {
       console.error(err);
-      setError('Failed to load post data');
+      setError(t('pages.post.loadError'));
     } finally {
       setLoading(false);
     }
@@ -37,7 +40,7 @@ export default function PostPage() {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Spin size="large" tip="Loading post..." />
+        <Spin size="large" tip={t('pages.post.loading')} />
       </div>
     );
   }
@@ -47,9 +50,9 @@ export default function PostPage() {
       <div className="flex h-screen items-center justify-center">
         <Result
           status="404"
-          title="Post Not Found"
-          subTitle={error || "Sorry, the page you visited does not exist."}
-          extra={<Button type="primary" href="/">Back Home</Button>}
+          title={t('pages.post.notFound')}
+          subTitle={error || t('pages.post.notFoundDesc')}
+          extra={<Button type="primary" href="/">{t('pages.post.backHome')}</Button>}
         />
       </div>
     );
@@ -59,7 +62,23 @@ export default function PostPage() {
 
   return <div className={`flex flex-col gap-2 w-full ${post.viewMode === "single" ? "max-w-250" : ""} mx-auto`}>
     <div className="">
-      <PostDetail post={post} isOwner={isOwner} />
+      <div className="flex flex-col gap-8">
+        <div className='flex flex-row gap-4 w-full'>
+          {
+            post?.videos?.map((video, index) => (
+              <div className='flex-1' key={index}>
+                <PostMedia
+                  video={video}
+                  isOwner={isOwner}
+                />
+              </div>
+            ))
+          }
+        </div>
+        <div className="rounded-xl bg-white shadow-sm w-full">
+          <PostHeader postDetail={post} isOwner={isOwner} />
+        </div>
+      </div >
     </div>
     {user?.role !== "ADMIN" && <div className="space-y-10">
       <Comments postId={post.id.toString()} isAuthenticated={isAuthenticated} />

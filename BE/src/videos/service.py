@@ -91,7 +91,8 @@ def get_video_by_id(video_id: int, user_id: int, db: Session):
                 f.read()
             ).decode("utf-8")
 
-    status = video.job.status.value if video.job else ""
+    status = video.job.status if video.job else JobStatus.COMPLETED
+    stage = video.job.stage if video.job else ProcessingStage.UPLOADING
     base_url = "http://localhost:8000"
     video_url = f"{base_url}/storage/inputs/{video_id}/videos/{video.filename}"
 
@@ -101,6 +102,7 @@ def get_video_by_id(video_id: int, user_id: int, db: Session):
         uploaded_at=video.uploaded_at,
         thumbnail_url=thumbnail_b64,
         status=status,
+        stage=stage,
         video_url=video_url,
         width=width,
         height=height,
@@ -142,7 +144,8 @@ def get_videos_by_user(user_id: int, db: Session):
                     f.read()
                 ).decode("utf-8")
 
-        status = video.job.status.value if video.job else ""
+        status = video.job.status if video.job else JobStatus.COMPLETED
+        stage = video.job.stage if video.job else ProcessingStage.UPLOADING
 
         result.append(
             VideoResponse(
@@ -151,6 +154,7 @@ def get_videos_by_user(user_id: int, db: Session):
                 uploaded_at=video.uploaded_at,
                 thumbnail_url=thumbnail_b64,
                 status=status,
+                stage=stage
             )
         )
 
@@ -172,8 +176,7 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
         db.commit()
         db.refresh(new_job)
 
-        validate_extension(file)
-        await validate_duration(file)
+        await validate_videos([file])
 
         new_video = Video(
             filename=file.filename,

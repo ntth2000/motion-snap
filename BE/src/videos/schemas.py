@@ -29,7 +29,7 @@ class VideoResponse(BaseSchema):
     uploaded_at: datetime
     thumbnail_url: Optional[str] = None
     status: Optional[JobStatus] = None
-    current_stage: Optional[ProcessingStage] = None
+    stage: Optional[ProcessingStage] = None
     video_url: Optional[str] = None
     width: Optional[int] = None
     height: Optional[int] = None

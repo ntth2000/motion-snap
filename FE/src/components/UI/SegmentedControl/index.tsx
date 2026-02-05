@@ -14,7 +14,7 @@ interface SegmentedControlProps {
 
 export const SegmentedControl = ({ options, value, onChange, className = '' }: SegmentedControlProps) => {
   return (
-    <div className={`flex w-full items-baseline justify-start rounded-lg bg-gray-100 p-1 sm:w-auto ${className}`}>
+    <div className={`flex w-full items-center justify-start border-b border-slate-200 ${className}`}>
       {options.map((option) => {
         const isActive = value === option.value;
         return (
@@ -23,15 +23,17 @@ export const SegmentedControl = ({ options, value, onChange, className = '' }: S
             type="button"
             onClick={() => onChange(option.value)}
             className={`
-              group flex-1 items-center justify-center whitespace-nowrap py-2 align-middle transition-all duration-300 ease-in-out 
-              w-full gap-1.5 px-3 sm:w-auto rounded-md cursor-pointer
+              font-light cursor-pointer relative flex-1 items-center justify-center whitespace-nowrap py-3 px-4 text-sm transition-colors duration-200
               ${isActive
-                ? 'bg-white text-primary shadow-sm'
-                : 'bg-transparent text-secondary hover:text-primary'
+                ? 'text-primary'
+                : 'text-slate-400 hover:text-slate-600'
               }
             `}
           >
             {option.label}
+            {isActive && (
+              <span className="absolute bottom-0 left-0 h-0.5 w-full bg-primary rounded-t-full" />
+            )}
           </button>
         );
       })}

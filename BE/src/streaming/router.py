@@ -22,6 +22,7 @@ router = APIRouter(
     tags=["streaming"],
 )
 
+ALLOWED_CAMS = {"000", "001"}
 
 @router.post("/start-recording")
 def start_recording(
@@ -49,8 +50,6 @@ def start_recording(
             exist_ok=True,
         )
 
-    session_status[post_id] = {"000": False, "001": False}
-
     return {"status": "ready", "post_id": post_id, "user": user.username}
 
 
@@ -65,18 +64,25 @@ async def ws_upload(
     background_tasks: BackgroundTasks = None,
 ):
 
+    if cam_id not in ALLOWED_CAMS:
+        await websocket.close(code=1008)
+        print(f"[WS] Reject cam_id={cam_id}")
+        return
+
     await websocket.accept()
+    if post_id not in session_status:
+        session_status[post_id] = {}
+    session_status[post_id][cam_id] = False
 
     user = verify_credentials(x_username, x_api_key, db)
     if not user:
         await websocket.close()
         return
 
-    base_dir = os.path.abspath(VIDEO_PATH)
-    save_dir = os.path.join(base_dir, str(post_id), cam_id, "images", "video")
-    print("save_dir: ", save_dir)
+    save_dir = os.path.join(VIDEO_PATH, str(post_id), cam_id, "images", "video")
+    os.makedirs(save_dir, exist_ok=True)
+    print(f"[WS] Camera {cam_id} connected → folder created: {save_dir}")
 
-    txt_file = os.path.join(save_dir, "received.txt")
     frame_count = 0
     try:
         while True:
@@ -89,7 +95,6 @@ async def ws_upload(
                 await websocket.close()
                 break
 
-            save_dir = os.path.join(VIDEO_PATH, str(post_id), cam_id, "images", "video")
             os.makedirs(save_dir, exist_ok=True)
             if not os.path.exists(save_dir):
                 print(f"[WS] Không thể tạo thư mục: {save_dir}")
@@ -115,7 +120,7 @@ async def ws_upload(
     finally:
         if post_id in session_status:
             session_status[post_id][cam_id] = True
-
+            print(f"[WS] Post {post_id} {cam_id} finished recording. Session status: {session_status[post_id]}")
             if all(session_status[post_id].values()):
                 threading.Thread(
                     target=process_finished_session,

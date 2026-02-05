@@ -2,8 +2,7 @@ import { CopyOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Button, message, Space, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import { generateKey, getKey } from "../../services/apiKeyService";
+import { generateKey, getKey } from "../../../services/apiKeyService";
 
 const { Text } = Typography;
 
@@ -69,17 +68,16 @@ export default function ApiKeySetting({ }) {
   }, []);
 
   return (
-    <div className="px-4 mt-4 mb-15">
+    <div className="px-4 mt-4 mb-15 text-slate-600 dark:text-slate-300">
       {msgContextHolder}
-      <div style={{ marginBottom: 24 }}>
-        <Text type="secondary" style={{ whiteSpace: 'pre-line' }}>
+      <div className="mb-6">
+        <p className="whitespace-pre-line">
           {t('apiKeySetting.description')}
-        </Text>
+        </p>
       </div>
       {
         apiKey.key ? (
           <Space direction="vertical" size="middle">
-            <Text strong>{t('apiKeySetting.subTitle')}</Text>
             <div>
               <span
                 style={{
@@ -112,9 +110,10 @@ export default function ApiKeySetting({ }) {
                 </Button>
               </Space>
             </div>
-            {apiKey.isRevoked && (
-              <Text type="danger" className="mt-2">Your key has been revoked. Please generate a new key.</Text>
-            )}
+            {apiKey.isRevoked ? (
+              <Text type="danger" className="mt-2">{t('apiKeySetting.revoked')}</Text>
+            ) : null
+            }
           </Space>
         ) : (
           <Button
@@ -123,14 +122,14 @@ export default function ApiKeySetting({ }) {
             loading={loading}
             onClick={generateApiKey}
           >
-            Generate
+            {t('apiKeySetting.generateBtn')}
           </Button>
         )
       }
       <div className="mt-8">
-        <Text type="secondary">Please use this API key to authenticate requests from multiple camera remote to MotionSnap API.</Text>
+        <p className="text-slate-600 dark:text-slate-300">{t('apiKeySetting.info')}</p>
         <br />
-        <Text type="secondary">For more information, please refer to the <a href="https://github.com/ntth2000/multiple-camera-remote" target="_blank">Multiple camera remote</a> repository.</Text>
+        <p className="text-slate-600 dark:text-slate-300">For more information, please refer to the <a href="https://github.com/ntth2000/multiple-camera-remote" target="_blank">Multiple camera remote</a> repository.</p>
       </div>
     </div >
   );

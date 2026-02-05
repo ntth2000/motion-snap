@@ -8,6 +8,7 @@ from src.auth.constants import (ACCESS_TOKEN_EXPIRE_MINUTES,
                                 REFRESH_TOKEN_EXPIRE_DAYS)
 from src.auth.dependencies import get_current_user
 from src.users import schemas as user_schemas
+from src.database import get_db
 
 router = APIRouter(
     prefix="/api/auth",
@@ -15,14 +16,6 @@ router = APIRouter(
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-
-
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @router.post(

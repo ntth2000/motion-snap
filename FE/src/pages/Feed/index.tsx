@@ -1,5 +1,3 @@
-import { AppstoreOutlined } from '@ant-design/icons';
-import { Pagination, Radio } from 'antd';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -73,47 +71,43 @@ export default function Feed() {
 
   return (
     <div className="w-full py-4 max-w-250 mx-auto">
-      <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <h1 className="text-3xl font-semibold">
-          {t('pages.feed.title')}
-        </h1>
+      <div className="mb-12 flex flex-col justify-between items-center gap-6 sm:flex-row sm:items-end border-b border-slate-100 pb-8">
+        <div>
+          <h1 className="text-4xl font-extralight tracking-tight text-slate-900 dark:text-white">
+            {t('pages.feed.title')}
+          </h1>
+          <p className="mt-2 text-slate-500 font-light">
+            {t('pages.feed.description')}
+          </p>
+        </div>
 
-        {maxAllowedColumns >= 2 && <div className="flex items-center rounded-lg bg-gray-100 p-1">
-          <div className="flex h-8 items-center px-3 text-gray-500">
-            <AppstoreOutlined className="text-xl" />
+        {maxAllowedColumns >= 2 && (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mr-3">{t('pages.feed.column')}</span>
+            <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1">
+              {VIDEOS_PER_PAGE_OPTIONS.map((value) => (
+                value <= maxAllowedColumns && (
+                  <button
+                    key={value}
+                    onClick={() => setColumns(value)}
+                    className={`cursor-pointer h-7 w-8 rounded text-xs transition-all duration-300 ${columns === value
+                      ? 'bg-slate-900 text-white font-medium shadow-sm'
+                      : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                      }`}
+                  >
+                    {value}
+                  </button>
+                )
+              ))}
+            </div>
           </div>
-          <Radio.Group
-            value={columns}
-            onChange={(e) => setColumns(e.target.value)}
-            optionType="button"
-            buttonStyle="solid"
-            className="flex"
-            disabled={posts.length === 0}
-          >
-            {VIDEOS_PER_PAGE_OPTIONS.map((value) => (
-              value <= maxAllowedColumns && <Radio.Button key={value} value={value} className="!h-8 !leading-7">
-                {value}
-              </Radio.Button>
-            ))}
-          </Radio.Group>
-        </div>}
+        )}
       </div>
 
       {isError ?
         <ErrorState onRetry={fetchPosts} /> : <Suspense fallback={<PostListSkeleton columns={columns} />}>
           <PostList posts={posts} columns={columns} />
         </Suspense>}
-
-      {posts.length > 0 && (
-        <div className="mt-12 mb-8 flex justify-center">
-          <Pagination
-            defaultCurrent={1}
-            total={posts.length}
-            showSizeChanger={false}
-            hideOnSinglePage={true}
-          />
-        </div>
-      )}
     </div>
   );
 }

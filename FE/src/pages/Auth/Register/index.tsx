@@ -1,11 +1,11 @@
-import { Button, Card, Divider, Form, Input, message, Typography } from 'antd';
-import Title from 'antd/lib/typography/Title';
+import { Button, Form, Input, message, Typography } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { register } from '../../../services/authService';
 
+const { Title, Text } = Typography;
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -22,7 +22,7 @@ export default function RegisterPage() {
 
       messageApi.open({
         type: 'success',
-        content: 'Registered successfully! Please login.',
+        content: t('auth.register.message.success'),
       });
 
       setTimeout(() => {
@@ -34,7 +34,7 @@ export default function RegisterPage() {
       messageApi.open({
         key: 'register-error',
         type: 'error',
-        content: err?.response?.data?.detail || 'Registration failed',
+        content: err?.response?.data?.detail || t('auth.register.message.failed'),
       });
     } finally {
       setLoading(false);
@@ -42,109 +42,147 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="w-full min-h-[70vh] max-w-120 my-4 mx-auto! flex items-center justify-center">
+    <>
       {contextHolder}
-      <Card className="w-full shadow-xl">
-        <Title
-          level={4}
-          className="mb-2 text-center"
-        >
-          {t('auth.register.title')}
-        </Title>
-        <div
-          className="mb-6 text-center text-secondary"
-        >
-          {t('auth.register.hint')}
-        </div>
-        <Form
-          layout="vertical"
-          form={form}
-          onFinish={handleFinish}
-          requiredMark={false}
-        >
-          <Form.Item
-            name="name"
-            label={t('auth.register.username')}
-            rules={[{ required: true, message: t('auth.register.message.usernameRequired') }]}
-          >
-            <Input placeholder="Jane Doe" size="large" autoComplete="name" disabled={loading} />
-          </Form.Item>
-          <Form.Item
-            name="email"
-            label={t('auth.register.email')}
-            rules={[
-              { required: true, message: t('auth.register.message.emailRequired') },
-              { type: 'email', message: t('auth.register.message.invalidEmail') },
-            ]}
-          >
-            <Input
-              placeholder="you@example.com"
-              size="large"
-              autoComplete="email"
-              disabled={loading}
-            />
-          </Form.Item>
-          <Form.Item
-            name="password"
-            label={t('auth.register.password')}
-            rules={[
-              { required: true, message: t('auth.register.message.passwordRequired') },
-              { min: 6, message: t('auth.register.message.passwordTooShort') },
-            ]}
-          >
-            <Input.Password
-              placeholder="••••••••"
-              size="large"
-              autoComplete="new-password"
-            />
-          </Form.Item>
-          <Form.Item
-            name="confirm"
-            label={t('auth.register.confirmPassword')}
-            dependencies={['password']}
-            rules={[
-              { required: true, message: t('auth.register.message.passwordMismatch') },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue('password') === value) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(
-                    new Error(t('auth.register.message.passwordMismatch'))
-                  );
-                },
-              }),
-            ]}
-          >
-            <Input.Password
-              placeholder="••••••••"
-              size="large"
-              autoComplete="new-password"
-              disabled={loading}
-            />
-          </Form.Item>
-          <Form.Item>
-            <Button
-              size='large'
-              color="default"
-              variant="solid"
-              loading={loading}
-              htmlType="submit"
-              className="w-full py-4 mt-2"
-            >
-              {t('auth.register.registerBtn')}
-            </Button>
-          </Form.Item>
-        </Form>
-        <Divider />
+      <div className="bg-[#f5f5f5] min-h-screen flex items-center justify-center p-6 font-display text-slate-800">
+        <div className="w-full max-w-[440px] flex flex-col items-center">
+          <div className="w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-10">
+            <div className="mb-8">
+              <Title
+                level={2}
+                className="!mb-2 !text-3xl !font-light !text-slate-900"
+              >
+                {t('auth.register.title')}
+              </Title>
+              <Text className="text-slate-500 text-sm font-light">
+                {t('auth.register.hint')}
+              </Text>
+            </div>
 
-        <div className="text-center">
-          <Typography.Text> {t('auth.register.haveAccount')} </Typography.Text>
-          <Typography.Link className="hover:underline!" href="/login">
-            {t('auth.register.loginLink')}
-          </Typography.Link>
+            <Form
+              layout="vertical"
+              form={form}
+              onFinish={handleFinish}
+              requiredMark={false}
+              className="space-y-2"
+            >
+              <Form.Item
+                label={
+                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1">
+                    {t('auth.register.username')}
+                  </span>
+                }
+                name="name"
+                rules={[{ required: true, message: t('auth.register.message.usernameRequired') }]}
+              >
+                <Input
+                  placeholder="Jane Doe"
+                  className="!font-light !text-sm placeholder:!text-slate-300"
+                  autoComplete="name"
+                  disabled={loading}
+                />
+              </Form.Item>
+
+              <Form.Item
+                label={
+                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1">
+                    {t('auth.register.email')}
+                  </span>
+                }
+                name="email"
+                rules={[
+                  { required: true, message: t('auth.register.message.emailRequired') },
+                  { type: 'email', message: t('auth.register.message.invalidEmail') },
+                ]}
+              >
+                <Input
+                  placeholder="you@example.com"
+                  className="!font-light !text-sm placeholder:!text-slate-300"
+                  autoComplete="email"
+                  disabled={loading}
+                />
+              </Form.Item>
+
+              <Form.Item
+                label={
+                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1">
+                    {t('auth.register.password')}
+                  </span>
+                }
+                name="password"
+                rules={[
+                  { required: true, message: t('auth.register.message.passwordRequired') },
+                  { min: 6, message: t('auth.register.message.passwordTooShort') },
+                ]}
+              >
+                <Input.Password
+                  placeholder="••••••••"
+                  className="!font-light !text-sm placeholder:!text-slate-300"
+                  autoComplete="new-password"
+                  disabled={loading}
+                />
+              </Form.Item>
+
+              <Form.Item
+                label={
+                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1">
+                    {t('auth.register.confirmPassword')}
+                  </span>
+                }
+                name="confirm"
+                dependencies={['password']}
+                rules={[
+                  { required: true, message: t('auth.register.message.passwordMismatch') },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue('password') === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(
+                        new Error(t('auth.register.message.passwordMismatch'))
+                      );
+                    },
+                  }),
+                ]}
+                className="!mb-8"
+              >
+                <Input.Password
+                  placeholder="••••••••"
+                  className="!font-light !text-sm placeholder:!text-slate-300"
+                  autoComplete="new-password"
+                  disabled={loading}
+                />
+              </Form.Item>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading}
+                  block
+                  className="font-medium shadow-lg shadow-[#91caff]/20 h-12"
+                >
+                  {t('auth.register.registerBtn')}
+                </Button>
+              </Form.Item>
+            </Form>
+
+            <div className="flex flex-col items-center gap-6 mt-2">
+              <div className="text-center">
+                <Text className="text-slate-500 text-sm">
+                  {t('auth.register.haveAccount')}{' '}
+                </Text>
+                <Link
+                  to="/login"
+                  className="text-sm text-[#91caff] hover:text-[#7dbbff] font-medium transition-colors"
+                >
+                  {t('auth.register.loginLink')}
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
-      </Card>
-    </div>
+      </div>
+    </>
   );
 }

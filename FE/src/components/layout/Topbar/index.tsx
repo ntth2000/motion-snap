@@ -14,9 +14,9 @@ import { useLocation, useNavigate } from 'react-router';
 import useAuth from '../../../hooks/useAuth';
 import { eventEmitter } from '../../../utils/eventEmitter';
 import { getFirstChar } from '../../../utils/util';
-import ApiKeySetting from '../../ApiKeySetting';
-import CreatePostModal from '../../CreatePostModal';
+import ApiKeySetting from './ApiKeySetting';
 import Logo from '../../UI/Logo';
+import CreatePostModal from '../../CreatePost';
 
 const { Header } = Layout;
 const { Title } = Typography;

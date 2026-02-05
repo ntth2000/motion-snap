@@ -43,6 +43,18 @@ class Video(Base):
         "Job", back_populates="video", uselist=False, cascade="all, delete-orphan"
     )
 
+    @property
+    def status(self):
+        return self.job.status if self.job else JobStatus.COMPLETED
+
+    @property
+    def stage(self):
+        return self.job.stage if self.job else ProcessingStage.UPLOADING
+
+    @property
+    def job_id(self):
+        return self.job.id if self.job else None
+
 
 class Job(Base):
     __tablename__ = "jobs"

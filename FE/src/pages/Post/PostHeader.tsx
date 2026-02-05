@@ -1,5 +1,5 @@
-import { DeleteOutlined, DownloadOutlined, EditOutlined, ExclamationCircleOutlined, LikeOutlined } from "@ant-design/icons";
-import { Avatar, Button, Divider, message, Modal, Typography } from "antd";
+import { DeleteOutlined, DownloadOutlined, EditOutlined, ExclamationCircleOutlined, HeartFilled, HeartOutlined } from "@ant-design/icons";
+import { Button, Divider, message, Modal, Typography } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,8 +9,9 @@ import { VIEW_MODE } from "../../constants";
 import useAuth from "../../hooks/useAuth";
 import { deletePosts, getExportedData, toggleLikePost, updatePostCaption } from "../../services/postService";
 import type { IPost } from "../../types";
-import { formatDate, getFirstChar } from "../../utils/util";
-import UploadProgress from "../UI/Progress";
+import { formatDate } from "../../utils/util";
+import UploadProgress from "../../components/UI/Progress";
+import AvatarUI from "../../components/UI/Avatar";
 
 interface PostHeaderProps {
   postDetail: IPost;
@@ -129,22 +130,21 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
       <div className="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div className="mt-6 flex items-center gap-2">
           <div className="cursor-pointer" onClick={() => handleViewProfile(postDetail.user.username)}>
-            <Avatar
-              className="!bg-primary/10 !text-primary !font-bold border border-primary/20"
+            <AvatarUI
+              name={postDetail.user.name}
               size="large"
-            >
-              {getFirstChar(postDetail.user.name)}
-            </Avatar>
+              avatarUrl={postDetail.user.avatar}
+            />
           </div>
           <div>
             <span
               onClick={() => handleViewProfile(postDetail.user.username)}
-              className="text-md font-medium cursor-pointer hover:text-primary dark:text-slate-200"
+              className="text-slate-800! text-md font-medium cursor-pointer hover:text-primary! dark:text-slate-200"
             >
               {postDetail.user.username}
             </span>
-            <div className="text-sm text-secondary">
-              <span>{formatDate(postDetail.createdAt)}</span>
+            <div>
+              <span className="text-xs text-slate-400">{formatDate(postDetail.createdAt)}</span>
             </div>
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
                 setTempContent(content);
                 setIsEditingCaption(true);
               }}
-              className='text-secondary! flex items-center gap-2 hover:text-primary!'
+              className='text-slate-400 font-light! flex items-center gap-2 hover:text-primary!'
             >
               {t("pages.post.editBtn")}
             </Button>
@@ -166,6 +166,7 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
               color="danger"
               icon={<DeleteOutlined className="text-[20px]" />}
               onClick={() => handleDeletePost(postDetail.id)}
+              className="font-light!"
             >
               {t("pages.post.deleteBtn")}
             </Button>
@@ -198,8 +199,8 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
         <Button
           type="text"
           disabled={user?.role === "ADMIN"}
-          icon={<LikeOutlined className={`text-lg ${likeStatus.liked ? "text-primary" : ""}`} />}
-          className={`flex items-center gap-2 hover:text-primary! ${likeStatus.liked ? "text-primary!" : "text-secondary!"}`}
+          icon={likeStatus.liked ? <HeartFilled className={`text-lg`} /> : <HeartOutlined className={`text-lg`} />}
+          className={`flex items-center gap-2 hover:text-rose-500! ${likeStatus.liked ? "text-rose-500!" : "text-secondary!"}`}
           onClick={handleLikePost}
         >
           {likeStatus.likeCount || 0}
@@ -207,7 +208,7 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
         {viewMode !== VIEW_MODE.ORIGINAL_VIDEO && <Button
           type="text"
           icon={<DownloadOutlined className="text-lg" />}
-          className="text-secondary! flex items-center gap-2 hover:text-primary!"
+          className="text-slate-400! flex items-center gap-2 hover:text-primary!"
           onClick={() => handleDownload()}
         >
           {t('pages.post.downloadBtn')}

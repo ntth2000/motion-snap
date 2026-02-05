@@ -19,8 +19,8 @@ from src.posts.constants import RESULT_PATH, VIDEO_PATH
 from src.posts.utils import check_empty_post
 from src.videos.enums import JobStatus, ProcessingStage
 from src.videos.models import Video, VideoStatus
-from src.videos.utils import remove_file
-from src.videos.video_processor import extract_frames
+from src.videos.utils import remove_file, convert_2d_poses_format, convert_3d_keypoints_format
+from src.videos.video_processor import extract_frames, render_frames_to_video
 
 from .exceptions import (EmptyPostException, PermissionDeniedException,
                          PostNotFoundException, ResourceDeletedException,
@@ -56,12 +56,8 @@ def get_posts(db: Session, username: Optional[str]):
             post.view_mode = "single"
 
         for video in post.videos:
-
             video.file_url = video.file_url
-            video.status = video.job.status if video.job else JobStatus.COMPLETED
-            video.stage = video.job.stage if video.job else ProcessingStage.UPLOADED
             video.thumbnail_url = video.thumbnail_url
-            video.job_id = video.job.id if video.job else None
 
         valid_posts.append(post)
     return valid_posts
@@ -102,10 +98,13 @@ def get_post_by_id(db: Session, post_id: int, user_id: Optional[int]):
     if post.videos:
         post.videos.sort(key=lambda x: x.view_index)
         for v in post.videos:
+            if not os.path.exists(v.file_url):
+                sub_folder = f"{v.view_index:03d}"
+                frames_dir = os.path.join(VIDEO_PATH, str(post_id), sub_folder, "images", "video")
+                if os.path.exists(frames_dir):
+                    render_frames_to_video(frames_dir, v.file_url, fps=5)
+
             v.file_url = "http://localhost:8000/api/" + v.file_url
-            v.status = v.job.status if v.job else JobStatus.COMPLETED
-            v.stage = v.job.stage if v.job else ProcessingStage.UPLOADED
-            v.job_id = v.job.id if v.job else None
             if check_empty_post(post_id, f"{v.view_index:03d}"):
                 raise EmptyPostException()
 
@@ -441,7 +440,8 @@ def export_data(
             if json_parent.exists():
                 subfolders = [f for f in json_parent.iterdir() if f.is_dir()]
                 if subfolders:
-                    shutil.copytree(subfolders[0], poses_2d_dir / "jsons")
+                    copied_2d_keypoints_path = shutil.copytree(subfolders[0], poses_2d_dir / "jsons")
+                    convert_2d_poses_format(copied_2d_keypoints_path)
 
             shutil.copy(pose_2d_video, poses_2d_dir / "video.mp4")
 
@@ -457,7 +457,8 @@ def export_data(
                 shutil.copytree(frames_3d, poses_3d_dir / "frames")
 
             if jsons_3d.exists():
-                shutil.copytree(jsons_3d, poses_3d_dir / "jsons")
+                copied_3d_keypoints_path = shutil.copytree(jsons_3d, poses_3d_dir / "jsons")
+                convert_3d_keypoints_format(copied_3d_keypoints_path)
 
             shutil.copy(pose_3d_video, poses_3d_dir / "video.mp4")
 
