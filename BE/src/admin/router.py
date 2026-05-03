@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
@@ -10,11 +12,12 @@ from src.database import get_db
 from src.models import User
 
 router = APIRouter(prefix="/api/admin", tags=["Admin Dashboard"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/login", response_model=UserResponse)
 def login(response: Response, form_data: LoginRequest, db: Session = Depends(get_db)):
-    print(form_data)
+    logger.debug("form_data: %s", form_data)
     access_token, refresh_token, user = service.admin_login(
         db, form_data.email, form_data.password
     )

@@ -1,4 +1,5 @@
 import base64
+import logging
 import os
 import threading
 from datetime import datetime
@@ -14,6 +15,8 @@ from src.models import Post
 from src.posts.constants import VIDEO_PATH
 
 from .utils import process_finished_session, verify_credentials
+
+logger = logging.getLogger(__name__)
 
 session_status = {}
 
@@ -66,7 +69,7 @@ async def ws_upload(
 
     if cam_id not in ALLOWED_CAMS:
         await websocket.close(code=1008)
-        print(f"[WS] Reject cam_id={cam_id}")
+        logger.warning(f"[WS] Reject cam_id={cam_id}")
         return
 
     await websocket.accept()
@@ -81,7 +84,7 @@ async def ws_upload(
 
     save_dir = os.path.join(VIDEO_PATH, str(post_id), cam_id, "images", "video")
     os.makedirs(save_dir, exist_ok=True)
-    print(f"[WS] Camera {cam_id} connected → folder created: {save_dir}")
+    logger.info(f"[WS] Camera {cam_id} connected → folder created: {save_dir}")
 
     frame_count = 0
     try:
@@ -89,7 +92,7 @@ async def ws_upload(
             data = await websocket.receive_text()
 
             # Log ra console cho chắc
-            print(f"[WS] post={post_id}, cam={cam_id}, len={len(data)}")
+            logger.info(f"[WS] post={post_id}, cam={cam_id}, len={len(data)}")
 
             if data == "STOP_RECORDING":
                 await websocket.close()
@@ -97,7 +100,7 @@ async def ws_upload(
 
             os.makedirs(save_dir, exist_ok=True)
             if not os.path.exists(save_dir):
-                print(f"[WS] Không thể tạo thư mục: {save_dir}")
+                logger.error(f"[WS] Không thể tạo thư mục: {save_dir}")
                 await websocket.close()
                 return
 
@@ -112,15 +115,15 @@ async def ws_upload(
                     cv2.imwrite(filename, img)
                     frame_count += 1
             except Exception as e:
-                print(f"[Post {post_id}] {cam_id} error: {str(e)}")
+                logger.error(f"[Post {post_id}] {cam_id} error: {str(e)}")
 
     except WebSocketDisconnect:
-        print(f"[Post {post_id}] {cam_id} disconnected.")
+        logger.info(f"[Post {post_id}] {cam_id} disconnected.")
 
     finally:
         if post_id in session_status:
             session_status[post_id][cam_id] = True
-            print(f"[WS] Post {post_id} {cam_id} finished recording. Session status: {session_status[post_id]}")
+            logger.info(f"[WS] Post {post_id} {cam_id} finished recording. Session status: {session_status[post_id]}")
             if all(session_status[post_id].values()):
                 threading.Thread(
                     target=process_finished_session,
