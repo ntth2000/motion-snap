@@ -18,6 +18,10 @@ from src.users import router as user_router
 from src.videos import router as video_router
 from src.videos.constants import RESULT_PATH, VIDEO_PATH
 
+from src.core.logging_config import setup_logging
+
+setup_logging()
+
 database.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()

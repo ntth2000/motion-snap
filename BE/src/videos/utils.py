@@ -1,9 +1,12 @@
 import json
+import logging
 import os
 import shutil
 import tempfile
 from datetime import datetime
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from fastapi import HTTPException, UploadFile, status
 from moviepy import VideoFileClip
@@ -79,7 +82,7 @@ def save_upload_file(file: UploadFile, video_id: int):
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
     except Exception as e:
-        print(e)
+        logger.error(f"Error saving video: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error saving video: {str(e)}",
@@ -98,7 +101,7 @@ def remove_file(path: str):
         if file.exists():
             shutil.rmtree(file)
     except Exception as e:
-        print(f"Failed to remove {path}: {e}")
+        logger.error(f"Failed to remove {path}: {e}")
 
 
 def convert_3d_keypoints_format(jsons_dir: Path):

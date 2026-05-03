@@ -165,7 +165,7 @@ async def create_post_with_video(
         )  # List để lưu ID các video vừa tạo (để extract frames sau)
         thumbnail_created = False
         processing_queue = []
-        print("loging here 2")
+        logger.info("loging here 2")
 
         # --- 3. SAVE FILES & CREATE VIDEO RECORDS ---
         for file_obj, v_index, sub_folder_name in files_to_process:
@@ -233,7 +233,7 @@ async def create_post_with_video(
         db.refresh(new_post)
 
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         db.rollback()
 
         if post_id_backup:
@@ -315,7 +315,7 @@ def get_status(post_id: int, db: Session):
 
 
 def get_comments_by_post_id(db: Session, post_id: int, user_id: Optional[int]):
-    print("hello")
+    logger.debug("get_comments_by_post_id called")
     root_comments = (
         db.query(Comment)
         .options(
@@ -340,13 +340,13 @@ def get_comments_by_post_id(db: Session, post_id: int, user_id: Optional[int]):
             .all()
         )
         liked_comment_ids = {like.comment_id for like in likes}
-        print(liked_comment_ids)
+        logger.debug("liked_comment_ids: %s", liked_comment_ids)
 
     result = []
 
     for root in root_comments:
         is_root_liked = root.id in liked_comment_ids
-        print(is_root_liked)
+        logger.debug("is_root_liked: %s", is_root_liked)
         root_dto = schemas.CommentResponseDTO(
             id=root.id,
             user_id=root.user_id,

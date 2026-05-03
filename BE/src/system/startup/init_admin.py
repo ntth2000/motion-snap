@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 
 from src.auth.utils import hash_password
 from src.models import User, UserRole
+import logging
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -26,9 +29,9 @@ def init_admin(db):
         db.add(new_admin)
         try:
             db.commit()
-            print("Admin account seeded with ID -1.")
+            logger.info("Admin account seeded with ID -1.")
         except Exception as e:
             db.rollback()
-            print(f"Failed to seed admin: {e}")
+            logger.error(f"Failed to seed admin: {e}")
     else:
-        print("Admin with ID -1 already exists.")
+        logger.info("Admin with ID -1 already exists.")

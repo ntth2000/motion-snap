@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from typing import Optional
 
@@ -10,11 +11,13 @@ from src.auth.utils import (create_access_token, create_refresh_token,
 from src.models import APIKey, Job, Post, RefreshToken, User, Video
 from src.videos.enums import JobStatus, ProcessingStage
 
+logger = logging.getLogger(__name__)
+
 
 def admin_login(db: Session, email: str, password: str):
     user = db.query(User).filter(User.email == email, User.role == "ADMIN").first()
     if user:
-        print(user.email)
+        logger.debug("admin_login user.email: %s", user.email)
 
     if not verify_password(password, user.password_hash):
         raise InvalidUserInfoException()

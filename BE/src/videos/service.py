@@ -137,7 +137,7 @@ def get_videos_by_user(user_id: int, db: Session):
         )
 
         thumbnail_b64 = None
-        print(thumbnail_path)
+        logger.debug("thumbnail_path: %s", thumbnail_path)
         if os.path.exists(thumbnail_path):
             with open(thumbnail_path, "rb") as f:
                 thumbnail_b64 = "data:image/jpeg;base64," + base64.b64encode(
@@ -210,18 +210,18 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
             for d in os.listdir(images_path)
             if os.path.isdir(os.path.join(images_path, d))
         ]
-        print(subdirs)
+        logger.debug("subdirs: %s", subdirs)
         if len(subdirs) == 1:
             old_subdir_path = os.path.join(images_path, subdirs[0])
             new_subdir_path = os.path.join(images_path, "video")
             os.rename(old_subdir_path, new_subdir_path)
         else:
-            print("not found subfolder")
+            logger.warning("not found subfolder")
 
         if os.path.exists(os.path.dirname(Path(images_path) / "video")):
-            print("existed video folder")
+            logger.debug("existed video folder")
         else:
-            print("not existed")
+            logger.debug("not existed")
 
         new_job.status = JobStatus.UPLOADED
 
@@ -233,7 +233,7 @@ async def upload_video(user_id: int, file: UploadFile, db: Session):
         }
 
     except Exception as e:
-        print(e)
+        logger.error("Error in upload_video: %s", e)
         db.rollback()
         folder = Path(VIDEO_PATH) / str(new_video.id)
         if folder and os.path.exists(folder):
@@ -545,7 +545,7 @@ def export_video_data(
         shutil.copy(video_file, temp_export / "video.mp4")
 
     zip_path = export_dir / f"video_{video_id}_{export_type}_export.zip"
-    print(zip_path)
+    logger.debug("zip_path: %s", zip_path)
 
     # Tạo zip
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:

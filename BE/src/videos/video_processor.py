@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract_frames(post_id: int, sub_folder_name: str):
-    print(f"Extracting frames for video_path={post_id}/{sub_folder_name}...")
+    logger.info(f"Extracting frames for video_path={post_id}/{sub_folder_name}...")
     input_path = f"/workspace/inputs/{post_id}/{sub_folder_name}"
 
     cmd = [
@@ -41,13 +41,13 @@ def extract_frames(post_id: int, sub_folder_name: str):
     ]
 
     subprocess.run(cmd, check=True)
-    print(f"Frames extracted successfully for video_path={post_id}/{sub_folder_name}")
+    logger.info(f"Frames extracted successfully for video_path={post_id}/{sub_folder_name}")
 
 
 def extract_2d(post_id: int, view_index: int):
-    print("===> Start to extract 2d.")
+    logger.info("===> Start to extract 2d.")
     input_path = f"/workspace/inputs/{post_id}/{view_index:03d}"
-    print("input_path", input_path)
+    logger.info("input_path %s", input_path)
 
     cmd = [
         "docker",
@@ -61,7 +61,7 @@ def extract_2d(post_id: int, view_index: int):
         f"python3 -m apps.preprocess.extract_keypoints ../workspace/inputs/{post_id}/{view_index:03d} --mode yolo-hrnet",
     ]
 
-    print("Running command:", " ".join(cmd))
+    logger.info("Running command: %s", " ".join(cmd))
 
     try:
         result = subprocess.run(
@@ -74,12 +74,12 @@ def extract_2d(post_id: int, view_index: int):
         return {"status": "success", "output": result.stdout}
 
     except subprocess.CalledProcessError as e:
-        print("Docker command failed:")
-        print("Exit code:", e.returncode)
-        print("----- STDOUT -----")
-        print(e.stdout)
-        print("----- STDERR -----")
-        print(e.stderr)
+        logger.error("Docker command failed:")
+        logger.error("Exit code: %s", e.returncode)
+        logger.error("----- STDOUT -----")
+        logger.error("%s", e.stdout)
+        logger.error("----- STDERR -----")
+        logger.error("%s", e.stderr)
         raise Exception(e.stderr)
 
 
@@ -89,7 +89,7 @@ def draw_2d_vertices(post_id: int, view_index: int):
     Input trên host: storage/inputs/{video_id}
     Mount vào container để chạy run.py.
     """
-    print("===> Start to draw 2d vertices.")
+    logger.info("===> Start to draw 2d vertices.")
     # Đường dẫn input thực tế trên máy host
     input_path = f"/workspace/inputs/{post_id}/{view_index:03d}"
     output_path = f"/workspace/outputs/{post_id}/{view_index:03d}"
@@ -144,7 +144,7 @@ def draw_2d_vertices(post_id: int, view_index: int):
             f"Docker command failed:\n{process.stderr or process.stdout}"
         )
 
-    print(process.stdout)
+    logger.info("%s", process.stdout)
     return (
         f"2D vertices drawn successfully for post_id={post_id} view_index={view_index}"
     )
@@ -267,7 +267,7 @@ def get_video_fps(video_path: str) -> float:
     Returns:
         float: fps của video
     """
-    print(video_path)
+    logger.info("get_video_fps: %s", video_path)
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise ValueError(f"Không mở được video: {video_path}")

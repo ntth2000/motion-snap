@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import tempfile
@@ -14,6 +15,8 @@ from .exceptions import (UnsupportedVideoExtensionException,
 # Move constants here or import from config
 ALLOWED_VIDEO_EXTENSIONS = {"mp4", "mov", "avi", "mkv"}
 MAX_DURATION_IN_SECONDS = 60  # Ví dụ
+
+logger = logging.getLogger(__name__)
 
 
 def get_video_resolution(video_path: str):
@@ -32,7 +35,7 @@ def get_video_resolution(video_path: str):
         cap.release()
         return width, height
     except Exception as e:
-        print(f"Error reading video resolution: {e}")
+        logger.error(f"Error reading video resolution: {e}")
         return 0, 0
 
 
@@ -112,7 +115,7 @@ def generate_thumbnail(video_path: str, output_folder: str) -> str:
 
         return thumb_path
     except Exception as e:
-        print(f"Failed to generate thumbnail: {e}")
+        logger.error(f"Failed to generate thumbnail: {e}")
         return None
 
 
