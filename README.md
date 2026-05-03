@@ -1,7 +1,6 @@
 # MotionSnap
 
-**MotionSnap** is a full-stack web application for managing and processing videos using [EasyMocap librabry](https://chingswy.github.io/easymocap-public-doc/quickstart/quickstart.html).  
-It allows users to upload videos, view them in a paginated list, and organize or process video data through a FastAPI backend and a modern ReactJS frontend.
+**MotionSnap** is a full-stack school's project for video management and human pose extraction using [EasyMocap library](https://chingswy.github.io/easymocap-public-doc/quickstart/quickstart.html). The application enables users to upload videos or capture frames directly from a companion mobile app, then automatically extracts and visualizes 2D skeleton poses and 3D mesh reconstructions through a FastAPI backend and modern ReactJS frontend.
 
 ## Pose Extraction Visualization
 
@@ -18,13 +17,43 @@ It allows users to upload videos, view them in a paginated list, and organize or
 
 ---
 
+## Application Screenshots
+
+<div align="center" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0;">
+  <div>
+    <img src="./asset/screenshots/login_screen.png" width="100%" alt="Login Screen" />
+    <p><em>Login Screen</em></p>
+  </div>
+  <div>
+    <img src="./asset/screenshots/home_screen.png" width="100%" alt="Home Screen" />
+    <p><em>Home Screen</em></p>
+  </div>
+  <div>
+    <img src="./asset/screenshots/profile_screen.png" width="100%" alt="Profile Screen" />
+    <p><em>Profile Screen</em></p>
+  </div>
+  <div>
+    <img src="./asset/screenshots/upload_screen.png" width="100%" alt="Upload Screen" />
+    <p><em>Upload Screen</em></p>
+  </div>
+  <div>
+    <img src="./asset/screenshots/generate_key_screen.png" width="100%" alt="Generate Key Screen" />
+    <p><em>Generate Key Screen</em></p>
+  </div>
+  <div>
+    <img src="./asset/screenshots/view_post_screen.png" width="100%" alt="View Post Screen" />
+    <p><em>View Post Screen</em></p>
+  </div>
+</div>
+
+---
+
 ## Features
 
-*   **Video Management**: Upload, store, and manage videos locally with ease.
-*   **Pose Extraction**: Automatically extract 2D and 3D poses from uploaded footage, [Mono_mocap](https://github.com/thanh094118/Mono_mocap) by [@thanh094118](https://github.com/thanh094118) is used for 3D pose visualization.
-*   **Visualization dashboard**: View processed videos, extracted poses.
-*   **Direct Mobile Upload**: Integrated support for uploading frames directly from Android devices via [Multiple camera remote](https://github.com/ntth2000/multiple-camera-remote) (forked from [@tranbadat](https://github.com/tranbadat)).
-*   **Scalable Architecture**: Clean separation between Frontend, Backend, and Storage services.
+*   **Video Management**: Upload, store, and manage videos locally.
+*   **Pose Extraction**: Automatically extract 2D skeleton poses and 3D mesh reconstructions from uploaded footage using EasyMocap. [Mono_mocap](https://github.com/thanh094118/Mono_mocap) by [@thanh094118](https://github.com/thanh094118) is used for 3D pose visualization.
+*   **Dual Visualization**: View both 2D skeleton key-points and 3D mesh poses with interactive dashboards.
+*   **Direct Mobile Frame Upload**: Capture and upload frames directly from a custom Android companion app via [Multiple camera remote](https://github.com/ntth2000/multiple-camera-remote) (forked from [@tranbadat](https://github.com/tranbadat)), secured with authentication keys.
 
 ---
 
@@ -125,7 +154,7 @@ Create a .env file in BE/ with the following content:
     python3 -m venv venv
     source venv/bin/activate
     pip install -r requirements.txt
-    uvicorn app.main:app --reload
+    uvicorn src.main:app --reload
     ```
     The API will be available at `http://localhost:8000`.
 
