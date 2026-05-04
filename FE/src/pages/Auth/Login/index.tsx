@@ -32,12 +32,7 @@ export default function LoginPage() {
 
       setTimeout(() => {
         form.resetFields();
-        if (res.role === 'ADMIN') {
-          navigate('/admin/dashboard', { replace: true });
-          return;
-        } else {
-          navigate('/', { replace: true });
-        }
+        navigate('/', { replace: true });
       }, 1000);
     } catch (err: any) {
       messageApi.destroy('login-error');

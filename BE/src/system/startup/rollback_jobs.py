@@ -1,12 +1,9 @@
 from datetime import datetime
 
 from src.videos.models import Job, JobStatus
-import logging
 
-logger = logging.getLogger(__name__)
 
 def rollback_jobs(db):
-    logger.info("Rolling back processing jobs")
     processing_jobs = db.query(Job).filter(Job.status == JobStatus.PROCESSING).all()
 
     for job in processing_jobs:
@@ -15,6 +12,5 @@ def rollback_jobs(db):
         job.finished_at = datetime.utcnow()
 
     db.commit()
-    logger.info(f"Rolled back {len(processing_jobs)} processing jobs.")
 
     return len(processing_jobs)

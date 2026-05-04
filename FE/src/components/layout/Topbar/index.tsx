@@ -43,16 +43,26 @@ export default function Topbar() {
     eventEmitter.emit('open-upload-video-modal');
   };
 
-  const menuItems: MenuProps['items'] = useMemo(() =>
-    user?.role === 'ADMIN' ? [{
-      key: 'admin-dashboard',
+  const menuItems: MenuProps['items'] = useMemo(() => [
+    {
+      key: 'profile',
+      label: (
+        <div className="flex items-center gap-2">
+          <UserOutlined />
+          <span>{t('topbar.menu.profile')}</span>
+        </div>
+      ),
+      onClick: () => navigate(`/profile/${user?.username}`),
+    },
+    {
+      key: 'api-key',
       label: (
         <div className="flex items-center gap-2">
           <SettingOutlined />
-          <span>{t('topbar.menu.admin')}</span>
+          <span>{t('topbar.menu.apiKey')}</span>
         </div>
       ),
-      onClick: () => navigate('/admin/dashboard'),
+      onClick: () => setIsApiKeyModalOpen(true),
     },
     {
       key: 'logout',
@@ -63,38 +73,8 @@ export default function Topbar() {
         </div>
       ),
       onClick: onLogout,
-    }] : [
-      {
-        key: 'profile',
-        label: (
-          <div className="flex items-center gap-2">
-            <UserOutlined />
-            <span>{t('topbar.menu.profile')}</span>
-          </div>
-        ),
-        onClick: () => navigate(`/profile/${user?.username}`),
-      },
-      {
-        key: 'api-key',
-        label: (
-          <div className="flex items-center gap-2">
-            <SettingOutlined />
-            <span>{t('topbar.menu.apiKey')}</span>
-          </div>
-        ),
-        onClick: () => setIsApiKeyModalOpen(true),
-      },
-      {
-        key: 'logout',
-        label: (
-          <div className="flex items-center gap-2 text-red-500">
-            <LogoutOutlined />
-            <span>{t('topbar.menu.logout')}</span>
-          </div>
-        ),
-        onClick: onLogout,
-      },
-    ], [user]);
+    },
+  ], [user]);
 
   const navLinks = useMemo(() => [
     {
@@ -105,7 +85,7 @@ export default function Topbar() {
     {
       path: '/my-videos',
       label: t('topbar.myVideos'),
-      show: isAuthenticated && user?.role === "USER",
+      show: isAuthenticated,
     }
   ], [isAuthenticated]);
 
@@ -160,7 +140,7 @@ export default function Topbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          {user?.role !== 'ADMIN' && <Button
+          <Button
             className="!flex items-center !font-medium uppercase"
             icon={<PlusSquareOutlined />}
             onClick={() => {
@@ -173,7 +153,6 @@ export default function Topbar() {
           >
             {t('topbar.upload')}
           </Button>
-          }
 
           {isAuthenticated ? (<Dropdown
             menu={{ items: menuItems }}

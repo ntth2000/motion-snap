@@ -6,21 +6,15 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from src import database
-from src.admin import router as admin_router
 from src.api_keys import router as api_key_router
 from src.auth import router as auth_router
 from src.comments import router as comment_router
 from src.posts import router as post_router
 from src.streaming import router as streaming_router
-from src.system.startup.init_admin import init_admin
 from src.system.startup.rollback_jobs import rollback_jobs
 from src.users import router as user_router
 from src.videos import router as video_router
 from src.videos.constants import RESULT_PATH, VIDEO_PATH
-
-from src.core.logging_config import setup_logging
-
-setup_logging()
 
 database.Base.metadata.create_all(bind=database.engine)
 
@@ -52,7 +46,6 @@ def get_db():
 def startup_tasks():
     db = database.SessionLocal()
     try:
-        init_admin(db)
         rollback_jobs(db)
     finally:
         db.close()
@@ -64,7 +57,6 @@ app.include_router(api_key_router.router)
 app.include_router(comment_router.router)
 app.include_router(post_router.router)
 app.include_router(user_router.router)
-app.include_router(admin_router.router)
 app.include_router(streaming_router.router)
 
 

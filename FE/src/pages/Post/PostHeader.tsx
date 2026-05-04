@@ -24,7 +24,6 @@ const { Paragraph } = Typography;
 export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeaderProps) {
   const { t } = useTranslation();
   const [modal, modalContextHolder] = Modal.useModal();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [messageApi, msgContextHolder] = message.useMessage();
   const [isEditingCaption, setIsEditingCaption] = useState<boolean>(false);
@@ -198,7 +197,6 @@ export default function PostHeader({ postDetail, isOwner, viewMode }: PostHeader
       <div className="flex items-center gap-8 pt-2">
         <Button
           type="text"
-          disabled={user?.role === "ADMIN"}
           icon={likeStatus.liked ? <HeartFilled className={`text-lg`} /> : <HeartOutlined className={`text-lg`} />}
           className={`flex items-center gap-2 hover:text-rose-500! ${likeStatus.liked ? "text-rose-500!" : "text-secondary!"}`}
           onClick={handleLikePost}

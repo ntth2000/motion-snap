@@ -17,7 +17,7 @@ export default function UserProfile() {
   const [posts, setPosts] = useState<IPost[]>([]);
 
   useEffect(() => {
-    if (!profileOwner || profileOwner.toLowerCase() === "admin") {
+    if (!profileOwner) {
       navigate('/');
       return;
     };

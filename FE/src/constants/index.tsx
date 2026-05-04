@@ -9,13 +9,6 @@ export const API = {
     me: 'auth/me',
   },
 
-  admin: {
-    login: 'admin/login',
-    stats: 'admin/dashboard',
-    users: 'admin/users',
-    apiKeys: 'admin/api-keys',
-  },
-
   apiKey: 'api-keys',
 
   users: {

@@ -80,8 +80,8 @@ export default function PostPage() {
         </div>
       </div >
     </div>
-    {user?.role !== "ADMIN" && <div className="space-y-10">
+    <div className="space-y-10">
       <Comments postId={post.id.toString()} isAuthenticated={isAuthenticated} />
-    </div>}
+    </div>
   </div>;
 };

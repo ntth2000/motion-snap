@@ -25,14 +25,6 @@ class InvalidUserInfoException(HTTPException):
         )
 
 
-class NotAdminException(HTTPException):
-    def __init__(self):
-        super().__init__(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not an admin. Please redirect to admin page.",
-        )
-
-
 class TokenExpiredException(HTTPException):
     def __init__(self):
         super().__init__(

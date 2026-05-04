@@ -51,7 +51,7 @@ def delete_comment(comment_id: int, current_user: User, db: Session):
             message="Cannot delete comment from a deleted post."
         )
 
-    if comment.user_id != current_user.id and current_user.role != UserRole.ADMIN:
+    if comment.user_id != current_user.id:
         raise PermissionDeniedException()
 
     if comment.is_deleted:

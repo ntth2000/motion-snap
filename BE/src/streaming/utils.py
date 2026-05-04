@@ -22,6 +22,8 @@ def verify_credentials(x_username: str, x_api_key: str, db: Session) -> User:
     """
     Verify credentials from headers
     """
+    print("x_username: ", x_username)
+    print("x_api_key: ", x_api_key)
     user = db.query(User).filter(User.username == x_username).first()
     if not user:
         raise UserNotFound()
@@ -62,7 +64,7 @@ def process_finished_session(
 
             images = sorted(glob.glob(os.path.join(frames_dir, "*.jpg")))
             if not images:
-                logger.warning(f"[Post {post_id}] No images for camera {x}")
+                print(f"[Post {post_id}] No images for camera {x}")
                 continue
 
             first_frame = cv2.imread(images[0])
@@ -73,7 +75,7 @@ def process_finished_session(
             cv2.imwrite(thumb_path, first_frame)
 
             for file in images:
-                logger.debug("file %s", file)
+                print("file", file)
                 frame = cv2.imread(file)
                 out.write(frame)
 

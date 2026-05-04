@@ -13,14 +13,8 @@ import Spinner from './components/UI/Spinner';
 
 const DashboardPage = lazy(() => import('./pages/Feed'));
 const LoginPage = lazy(() => import('./pages/Auth/Login'));
-const AdminLogin = lazy(() => import('./pages/Auth/AdminLogin'));
 const RegisterPage = lazy(() => import('./pages/Auth/Register'));
 const PostPage = lazy(() => import('./pages/Post'));
-const AdminDashboardPage = lazy(() => import('./pages/Admin'));
-const AdminDashboard = lazy(() => import('./pages/Admin/Dashboard'));
-const AdminPosts = lazy(() => import('./pages/Admin/ManagePost'));
-const AdminUsers = lazy(() => import('./pages/Admin/ManageUser'));
-const AdminApiKeys = lazy(() => import('./pages/Admin/ManageApiKey'));
 const UserProfile = lazy(() => import('./pages/Profile'));
 const MyVideosPage = lazy(() => import('./pages/MyVideos'));
 
@@ -64,16 +58,6 @@ function App() {
               </Route>
               <Route element={<PrivateRoute allowedRoles={['USER']} />}>
                 <Route path="/my-videos" element={<MyVideosPage />} />
-              </Route>
-            </Route>
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route element={<PrivateRoute allowedRoles={['ADMIN']} />}>
-              <Route path="/admin" element={<AdminDashboardPage />}>
-                <Route index element={<Navigate to="dashboard" replace />} />
-                <Route path="dashboard" element={<AdminDashboard />} />
-                <Route path="posts" element={<AdminPosts />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="api-keys" element={<AdminApiKeys />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

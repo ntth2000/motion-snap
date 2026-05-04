@@ -71,12 +71,3 @@ def get_current_user(user: Optional[User] = Depends(get_optional_current_user)):
         raise TokenExpiredException()
 
     return user
-
-
-def get_current_admin(user: User = Depends(get_current_user)) -> User:
-    if user.role != UserRole.ADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this resource",
-        )
-    return user
