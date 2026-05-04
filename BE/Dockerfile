@@ -47,29 +47,6 @@ RUN apt-get update && apt-get install -y unzip && \
     unzip /app/models/pare/pare-github-data.zip -d models/pare && \
     rm /app/models/pare/pare-github-data.zip
 
-# ---------------------------
-# OpenPose build (commented out for now)
-# ---------------------------
-# WORKDIR /opt
-# RUN git clone https://github.com/CMU-Perceptual-Computing-Lab/openpose.git --depth 1
-# WORKDIR /opt/openpose
-# RUN git submodule update --init --recursive --remote
-# BUILD OpenPose với CPU_ONLY
-# WORKDIR /app/EasyMocap/openpose
-# RUN mkdir -p build && cd build && \
-#     cmake -DGPU_MODE=CPU_ONLY \
-#           -DUSE_CUDA=OFF \
-#           -DUSE_CUDNN=OFF \
-#           -DUSE_OPENCL=OFF \
-#           -DBUILD_PYTHON=ON \
-#           -DBUILD_EXAMPLES=OFF \
-#           .. && \
-#     make -j"$(nproc)"
-# ENV PYTHONPATH=/opt/openpose/build/python:$PYTHONPATH
-# ---------------------------
-
-# WORKDIR /app
-
 # Install Python requirements
 # RUN pip3 install --no-cache-dir -r EasyMocap/requirements.txt
 RUN apt-get update && apt-get install -y ffmpeg

@@ -123,60 +123,68 @@ Before starting, make sure you have installed:
 - **Docker**  
 
 ### Backend
-This project uses EasyMocap for pose extraction.
-Please follow the instructions in installation.md to set up EasyMocap properly before running any pose-related endpoints.
+This project uses EasyMocap for pose extraction. Before running the backend, you must build and run the EasyMocap Docker container.
 
-Create a .env file in BE/ with the following content:
-    ```bash
-    pip install -r requirements.txt
-    ```
+**1. Build and Run EasyMocap Docker Container:**
+```bash
+cd BE
+git clone https://github.com/zju3dv/EasyMocap.git
+```
 
-4.  Configure Environment Variables:
-    Create a `.env` file in `BE/` and add your database and app credentials:
-    ```env
-    SECRET_KEY=your_secure_secret_key
-    
-    # Database Configuration
-    DB_USER=your_db_user
-    DB_PASSWORD=your_db_password
-    DB_HOST=localhost
-    DB_PORT=5432
-    DB_NAME=your_db_name
-    
-    # Admin Setup (Optional)
-    ADMIN_EMAIL=admin@example.com
-    ADMIN_PASSWORD=admin_password
-    ```
+Follow the installation instructions in EasyMocap/doc/installation.md.
 
-5.  Start the Backend Server:
-    ```bash
-    cd BE
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-    uvicorn src.main:app --reload
-    ```
-    The API will be available at `http://localhost:8000`.
+```bash
+docker build -t easymocap .
+```
+
+**2. Configure Environment Variables:**
+Create a `.env` file in `BE/` and add your database and app credentials:
+```env
+SECRET_KEY=your_secure_secret_key
+
+# Database Configuration
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=your_db_name
+```
+
+**3. Install Backend Dependencies:**
+```bash
+cd BE
+pip install -r requirements.txt
+```
+
+**4. Start the Backend Server:**
+```bash
+cd BE
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn src.main:app --reload
+```
+The API will be available at `http://localhost:8000`.
 
 ### Frontend Setup
 
-1.  Navigate to the frontend directory:
-    ```bash
-    cd FE
-    ```
+**1. Navigate to the frontend directory:**
+```bash
+cd FE
+```
 
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
+**2. Install dependencies:**
+```bash
+npm install
+```
 
-3.  Configure Environment Variables:
-    Create a `.env` file in `FE/`:
-    ```env
-    VITE_API_URL=http://localhost:8000/api
-    ```
+**3. Configure Environment Variables:**
+Create a `.env` file in `FE/`:
+```env
+VITE_API_URL=http://localhost:8000/api
+```
 
-4.  Start the Development Server:
+**4. Start the Development Server:**
     ```bash
     npm run dev
     ```
